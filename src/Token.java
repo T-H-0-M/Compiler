@@ -1,6 +1,6 @@
 public class Token {
     private int tokenId;
-    private string lexeme;
+    private String lexeme;
     private int line;
     private int col;
 
@@ -11,16 +11,17 @@ public class Token {
         this.col = 0;
     }
 
-    public Token(int tokenId, string lexeme, int line, int col) {
+    public Token(int tokenId, String lexeme, int line, int col) {
         this.tokenId = tokenId;
         this.lexeme = lexeme;
         this.line = line;
         this.col = col;
     }
 
-    // TODO: Configure this to return a formatted token
+    // TODO: Configure the spacing for this class
     @Override
-    public static toString(){
-
+    public String toString() {
+        return String.format("Token[id=%d, lexeme='%s', line=%d, col=%d]",
+                tokenId, lexeme, line, col);
     }
 }
