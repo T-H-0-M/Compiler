@@ -52,6 +52,12 @@ public class TokenTerminator {
         boolean isSameState = true;
         boolean isFirstIteration = true;
         while (isSameState) {
+            // INFO: Discards whitespaces, line returns, carriage returns
+            // BUG: We will likely need the line returns in the future
+            if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
+                currentChar = this.getNextChar();
+                continue;
+            }
             if (!isFirstIteration) {
                 if (nextChar == 0) {
                     currentChar = this.getNextChar();
@@ -92,10 +98,14 @@ public class TokenTerminator {
     private String getType(int incomingChar) {
         if (incomingChar == 32)
             return "whitespace";
-        if (incomingChar == 10)
+        if (incomingChar == 10) {
+            // System.out.println("linefeed");
             return "linefeed";
-        if (incomingChar == 13)
+        }
+        if (incomingChar == 13) {
+            // System.out.println("carriage");
             return "carriage_return";
+        }
         if (incomingChar >= 48 && incomingChar <= 57)
             return "number";
         if ((incomingChar >= 65 && incomingChar <= 90) || (incomingChar >= 97 && incomingChar <= 122))
