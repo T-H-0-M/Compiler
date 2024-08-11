@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Arrays;
 import java.util.ArrayList;
 
 // TODO: Need to handle lines and cols
@@ -13,10 +14,34 @@ import java.util.ArrayList;
 public class TokenTerminator {
 
     private HashMap<String, Integer> intermediateCodeTable = new HashMap<>();
+    private static final String[] CHAR_TYPES = new String[128];
     private FileReader fileReader;
     private int currentChar = 0;
     private int nextChar = 0;
     private boolean commentMode = false;
+
+    // INFO: Precomputing the types table for O(1) lookup
+    static {
+        Arrays.fill(CHAR_TYPES, "other");
+
+        CHAR_TYPES[32] = "whitespace";
+        CHAR_TYPES[10] = "linefeed";
+        CHAR_TYPES[13] = "carriage_return";
+        for (int i = 48; i <= 57; i++)
+            CHAR_TYPES[i] = "number";
+        for (int i = 65; i <= 90; i++)
+            CHAR_TYPES[i] = "letter";
+        for (int i = 97; i <= 122; i++)
+            CHAR_TYPES[i] = "letter";
+        for (int i = 33; i <= 47; i++)
+            CHAR_TYPES[i] = "potential_delimiter";
+        for (int i = 58; i <= 64; i++)
+            CHAR_TYPES[i] = "potential_delimiter";
+        for (int i = 91; i <= 96; i++)
+            CHAR_TYPES[i] = "potential_delimiter";
+        for (int i = 123; i <= 126; i++)
+            CHAR_TYPES[i] = "potential_delimiter";
+    }
 
     public TokenTerminator() {
     }
@@ -239,20 +264,7 @@ public class TokenTerminator {
      *         - "other" for any character not falling into the above categories
      */
     private String getType(int incomingChar) {
-        if (incomingChar == 32)
-            return "whitespace";
-        if (incomingChar == 10)
-            return "linefeed";
-        if (incomingChar == 13)
-            return "carriage_return";
-        if (incomingChar >= 48 && incomingChar <= 57)
-            return "number";
-        if ((incomingChar >= 65 && incomingChar <= 90) || (incomingChar >= 97 && incomingChar <= 122))
-            return "letter";
-        if ((incomingChar >= 33 && incomingChar <= 47) || (incomingChar >= 58 && incomingChar <= 64) ||
-                (incomingChar >= 91 && incomingChar <= 96) || (incomingChar >= 123 && incomingChar <= 126))
-            return "potential_delimiter";
-        return "other";
+        return incomingChar < 128 ? CHAR_TYPES[incomingChar] : "other";
     }
 
     /**
