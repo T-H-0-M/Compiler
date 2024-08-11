@@ -15,6 +15,7 @@ public class TokenTerminator {
     private int currentChar = 0;
     private int nextChar = 0;
     private boolean commentMode = false;
+    private boolean stringMode = false;
 
     public TokenTerminator() {
     }
@@ -58,17 +59,13 @@ public class TokenTerminator {
                     currentChar = fileReader.read();
                 }
             }
+
             return tempChar;
         } catch (IOException e) {
             System.out.println("Exception " + e);
             return 0;
         }
     }
-
-    // to enter comment mode, if lexeme = /** comment mode = true
-    // to exit comment mode , if lexeme = **/ comment mode = false
-    // to enter comment mode, if lexeme = /-- comment mode = true;
-    // to exit comment mode, if lexeme = eol comment mode = false
 
     public Token getNextToken() {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
@@ -88,6 +85,16 @@ public class TokenTerminator {
             }
             if (currentChar == -1) {
                 return new Token(1, "TEOF", 0, 0);
+            }
+            if (currentChar == 34) {
+                stringMode = true;
+                currentChar = getNextChar();
+                while (currentChar != 34) {
+                    asciiCharList.add(currentChar);
+                    currentChar = getNextChar();
+                }
+                currentChar = getNextChar();
+                return new Token(1, asciiArrayListToString(asciiCharList), 0, 0);
             }
             isFirstIteration = false;
             if (!asciiCharList.isEmpty()) {
