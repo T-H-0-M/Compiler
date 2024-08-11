@@ -1,3 +1,14 @@
+/**
+ * Token class
+ * 
+ * This class represents a token in the lexical analysis phase of the compiler.
+ * It stores information about the token's id, lexeme, and position in the
+ * source code.
+ * 
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ * @since 2024-08-11
+ */
 public class Token {
     private int tokenId;
     private String lexeme;
@@ -12,21 +23,20 @@ public class Token {
     }
 
     public Token(int tokenId, String lexeme, int line, int col) {
-        // TODO: Do we want to use token id? or just the token name
         this.tokenId = tokenId;
         this.lexeme = lexeme;
         this.line = line;
         this.col = col;
     }
 
-    // TODO: Configure the spacing for this class
     @Override
     public String toString() {
+        // TODO: Configure the spacing for this class
         return String.format("Token[id=%d, lexeme='%s', line=%d, col=%d]",
                 tokenId, lexeme, line, col);
     }
 
-    // Getters
+    // ------------------------- Getters and Setters ------------------------- //
     public int getTokenId() {
         return tokenId;
     }
@@ -43,7 +53,6 @@ public class Token {
         return col;
     }
 
-    // Setters
     public void setTokenId(int tokenId) {
         this.tokenId = tokenId;
     }
