@@ -17,7 +17,6 @@ public class TokenTerminator {
     private int currentChar = 0;
     private int nextChar = 0;
     private boolean commentMode = false;
-    private boolean stringMode = false;
 
     public TokenTerminator() {
     }
@@ -52,34 +51,10 @@ public class TokenTerminator {
      */
     public int getNextChar() {
         try {
-            // INFO: File reader returns a char in unicode. Unicode is indenitcal to ascii
-            // for the first 127 characters. We will just calculate all characters in ascii.
-            // We will throw an error for any characters that are >127
             int tempChar = fileReader.read();
             if (tempChar > 127) {
                 // TODO: Handle non-ascii characters
             }
-            if (commentMode) {
-                currentChar = tempChar;
-                String delimiterBuffer = "";
-                while (true) {
-                    if (currentChar == -1) {
-                        commentMode = false;
-                        break;
-                    }
-                    if (currentChar == 42 || currentChar == 47) {
-                        delimiterBuffer += (char) currentChar;
-                        if (delimiterBuffer.equals("**/")) {
-                            commentMode = false;
-                            break;
-                        }
-                    } else {
-                        delimiterBuffer = "";
-                    }
-                    currentChar = fileReader.read();
-                }
-            }
-
             return tempChar;
         } catch (IOException e) {
             System.out.println("Exception " + e);
@@ -91,13 +66,21 @@ public class TokenTerminator {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
         boolean isFirstIteration = true;
+
+        handleCommentOccurence();
         while (isSameState) {
+
             // INFO: Handle EOF
+            if (currentChar == -1) {
+                return new Token(0, "", 0, 0);
+            }
+
             // INFO: Handle dead characters
             if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
                 currentChar = this.getNextChar();
                 continue;
             }
+
             // INFO: Ensure that the held char is accounted for
             if (!isFirstIteration) {
                 if (nextChar == 0) {
@@ -107,21 +90,14 @@ public class TokenTerminator {
                     nextChar = 0;
                 }
             }
-            if (currentChar == -1) {
-                return new Token(1, "TEOF", 0, 0);
-            }
+
             // INFO: Handle strings when " found
             if (currentChar == 34) {
-                stringMode = true;
-                currentChar = getNextChar();
-                while (currentChar != 34) {
-                    asciiCharList.add(currentChar);
-                    currentChar = getNextChar();
-                }
-                currentChar = getNextChar();
-                return new Token(1, asciiArrayListToString(asciiCharList), 0, 0);
+                return handleStringOccurrence();
             }
+
             isFirstIteration = false;
+
             if (!asciiCharList.isEmpty()) {
                 int previousChar = asciiCharList.get(asciiCharList.size() - 1);
                 isSameState = checkState(currentChar, previousChar);
@@ -144,6 +120,7 @@ public class TokenTerminator {
             }
 
         }
+
         Token tempToken = findToken(asciiArrayListToString(asciiCharList));
 
         // INFO: Recursive goodness?
@@ -151,6 +128,22 @@ public class TokenTerminator {
             tempToken = getNextToken();
         }
         return tempToken;
+    }
+
+    private boolean commentCheck(String lexeme) {
+
+        if (lexeme.equals("/**")) {
+            this.commentMode = true;
+            return true;
+        }
+        if (lexeme.equals("/--")) {
+            int tempChar = getNextChar();
+            while (tempChar != 10) {
+                tempChar = getNextChar();
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -162,11 +155,35 @@ public class TokenTerminator {
      * @return A Token object representing the string literal. The token has an ID
      *         of 67 (TSTRG),and its value is the content of the string (excluding
      *         the quotation marks).
+     *
      * @implNote This method assumes that the opening quotation mark has already
      *           been consumed. It does not include the quotation marks in the
      *           returned token's value. After processing the string, it advances
      *           the currentChar to the character following the closing quote.
      */
+    private void handleCommentOccurence() {
+        if (commentMode) {
+            String delimiterBuffer = "";
+            while (true) {
+                if (currentChar == -1) {
+                    commentMode = false;
+                    break;
+                }
+                if (currentChar == 42 || currentChar == 47) {
+                    delimiterBuffer += (char) currentChar;
+                    if (delimiterBuffer.equals("**/")) {
+                        commentMode = false;
+                        break;
+                    }
+                } else {
+                    delimiterBuffer = "";
+                }
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+        }
+    }
+
     /**
      * Handles the occurrence of comments in the input.
      * This method is called when the scanner is in comment mode (commentMode is
@@ -179,6 +196,17 @@ public class TokenTerminator {
      *           not return anything but updates the currentChar to the first
      *           character after the comment.
      */
+    private Token handleStringOccurrence() {
+        ArrayList<Integer> asciiCharList = new ArrayList<>();
+        currentChar = getNextChar();
+        while (currentChar != 34) {
+            asciiCharList.add(currentChar);
+            currentChar = getNextChar();
+        }
+        currentChar = getNextChar();
+        return new Token(67, asciiArrayListToString(asciiCharList), 0, 0);
+    }
+
     /**
      * Checks if two characters are of the same type, determining if they belong to
      * the same lexical state.
@@ -261,16 +289,7 @@ public class TokenTerminator {
      *         comment or known symbol.
      */
     private Token findToken(String lexeme) {
-        if (lexeme.equals("/**")) {
-            this.commentMode = true;
-            return new Token(-1, "comment", 0, 0);
-        }
-        // BUG: Def needs to be relocated
-        if (lexeme.equals("/--")) {
-            int tempChar = getNextChar();
-            while (tempChar != 10) {
-                tempChar = getNextChar();
-            }
+        if (commentCheck(lexeme)) {
             return new Token(-1, "comment", 0, 0);
         }
 
@@ -278,8 +297,6 @@ public class TokenTerminator {
             return new Token(intermediateCodeTable.get(lexeme), "", 0, 0);
         }
         return new Token(2, lexeme, 0, 0);
-
-
     }
 
     private void initialiseIntermediateCodeTable() {
