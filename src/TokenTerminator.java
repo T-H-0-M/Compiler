@@ -49,7 +49,6 @@ public class TokenTerminator {
     public TokenTerminator(String filePath) {
         try {
             fileReader = new FileReader(new File(filePath));
-            this.initialiseIntermediateCodeTable();
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
         }
@@ -302,94 +301,31 @@ public class TokenTerminator {
      */
     private Token findToken(String lexeme) {
         if (commentCheck(lexeme)) {
-            return new Token(-1, "comment", 0, 0);
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "comment", 0, 0);
         }
 
-        if (intermediateCodeTable.containsKey(lexeme)) {
-            return new Token(intermediateCodeTable.get(lexeme), "", 0, 0);
+        Tokeniser.TokenType keywordType = Tokeniser.getKeywordTokenType(lexeme);
+        if (keywordType != null) {
+            return new Token(Tokeniser.getTokenCode(keywordType), "", 0, 0);
         }
-        return new Token(2, lexeme, 0, 0);
-    }
 
-    private void initialiseIntermediateCodeTable() {
-        intermediateCodeTable = new HashMap<>();
+        if (lexeme.matches("\\d+")) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, 0, 0);
+        }
+        if (lexeme.matches("\\d+\\.\\d+")) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, 0, 0);
+        }
+        if (lexeme.matches("[a-zA-Z][a-zA-Z0-9]*")) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TIDEN), lexeme, 0, 0);
+        }
 
-        // Token value for end of file
-        intermediateCodeTable.put("TTEOF", 0);
+        Tokeniser.TokenType operatorType = Tokeniser.getOperatorTokenType(lexeme);
+        if (operatorType != null) {
+            return new Token(Tokeniser.getTokenCode(operatorType), "", 0, 0);
+        }
 
-        // The 38 keywords
-        intermediateCodeTable.put("TCD24", 1);
-        intermediateCodeTable.put("TCONS", 2);
-        intermediateCodeTable.put("TTYPD", 3);
-        intermediateCodeTable.put("TTDEF", 4);
-        intermediateCodeTable.put("TARRD", 5);
-        intermediateCodeTable.put("TMAIN", 6);
-        intermediateCodeTable.put("TBEGN", 7);
-        intermediateCodeTable.put("TTEND", 8);
-        intermediateCodeTable.put("TARAY", 9);
-        intermediateCodeTable.put("TTTOF", 10);
-        intermediateCodeTable.put("TFUNC", 11);
-        intermediateCodeTable.put("TVOID", 12);
-        intermediateCodeTable.put("TCNST", 13);
-        intermediateCodeTable.put("TINTG", 14);
-        intermediateCodeTable.put("TFLOT", 15);
-        intermediateCodeTable.put("TBOOL", 16);
-        intermediateCodeTable.put("TTFOR", 17);
-        intermediateCodeTable.put("TREPT", 18);
-        intermediateCodeTable.put("TUNTL", 19);
-        intermediateCodeTable.put("TTTDO", 20);
-        intermediateCodeTable.put("TWHIL", 21);
-        intermediateCodeTable.put("TIFTH", 22);
-        intermediateCodeTable.put("TELSE", 23);
-        intermediateCodeTable.put("TELIF", 24);
-        intermediateCodeTable.put("TSWTH", 25);
-        intermediateCodeTable.put("TCASE", 26);
-        intermediateCodeTable.put("TDFLT", 27);
-        intermediateCodeTable.put("TBREK", 28);
-        intermediateCodeTable.put("TINPT", 29);
-        intermediateCodeTable.put("TPRNT", 30);
-        intermediateCodeTable.put("TPRLN", 31);
-        intermediateCodeTable.put("TRETN", 32);
-        intermediateCodeTable.put("TNOTT", 33);
-        intermediateCodeTable.put("TTAND", 34);
-        intermediateCodeTable.put("TTTOR", 35);
-        intermediateCodeTable.put("TTXOR", 36);
-        intermediateCodeTable.put("TTRUE", 37);
-        intermediateCodeTable.put("TFALS", 38);
-
-        // The operators and delimiters
-        intermediateCodeTable.put("TCOMA", 39);
-        intermediateCodeTable.put("TLBRK", 40);
-        intermediateCodeTable.put("TRBRK", 41);
-        intermediateCodeTable.put("TLPAR", 42);
-        intermediateCodeTable.put("TRPAR", 43);
-        intermediateCodeTable.put("TEQUL", 44);
-        intermediateCodeTable.put("TPLUS", 45);
-        intermediateCodeTable.put("TMINS", 46);
-        intermediateCodeTable.put("TSTAR", 47);
-        intermediateCodeTable.put("TDIVD", 48);
-        intermediateCodeTable.put("TPERC", 49);
-        intermediateCodeTable.put("TCART", 50);
-        intermediateCodeTable.put("TLESS", 51);
-        intermediateCodeTable.put("TGRTR", 52);
-        intermediateCodeTable.put("TCOLN", 53);
-        intermediateCodeTable.put("TSEMI", 54);
-        intermediateCodeTable.put("TDOTT", 55);
-        intermediateCodeTable.put("TLEQL", 56);
-        intermediateCodeTable.put("TGEQL", 57);
-        intermediateCodeTable.put("TNEQL", 58);
-        intermediateCodeTable.put("TEQEQ", 59);
-        intermediateCodeTable.put("TPLEQ", 60);
-        intermediateCodeTable.put("TMNEQ", 61);
-        intermediateCodeTable.put("TSTEQ", 62);
-        intermediateCodeTable.put("TDVEQ", 63);
-
-        // The tokens which need tuple values
-        intermediateCodeTable.put("TIDEN", 64);
-        intermediateCodeTable.put("TILIT", 65);
-        intermediateCodeTable.put("TFLIT", 66);
-        intermediateCodeTable.put("TSTRG", 67);
-        intermediateCodeTable.put("TUNDF", 68);
+        // If no match found, return TUNDF
+        return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), lexeme, 0, 0);
     }
 
 }
