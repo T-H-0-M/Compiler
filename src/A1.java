@@ -11,10 +11,11 @@ public class A1 {
     // NOTE: For debug
     private static void run(TokenTerminator tokenTerminator) {
         Token currentToken = tokenTerminator.getNextToken();
-        while (currentToken.getTokenId() != 0) {
+        while (true) {
             System.out.println(currentToken.toString());
             currentToken = tokenTerminator.getNextToken();
-            if (currentToken.getLexeme().equals("TEOF")) {
+            if (currentToken.getTokenId() == 0) {
+                System.out.println("Breaking");
                 break;
             }
         }

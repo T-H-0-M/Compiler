@@ -5,17 +5,21 @@ import java.util.Map;
 public class Tokeniser {
 
     public enum TokenType {
+        // End of file
+        TTEOF,
+
         // Keywords
-        TCD24, TCONS, TTYPD, TTDEF, TARRD, TMAIN, TBEGN, TTEND, TARAY, TTTOF, TFUNC, TVOID, TCNST,
-        TINTG, TFLOT, TBOOL, TTFOR, TREPT, TUNTL, TTTDO, TWHIL, TIFTH, TELSE, TELIF, TSWTH, TCASE,
-        TDFLT, TBREK, TINPT, TPRNT, TPRLN, TRETN, TNOTT, TTAND, TTTOR, TTXOR, TTRUE, TFALS,
+        TCD24, TCONS, TTYPD, TTDEF, TARRD, TMAIN, TBEGN, TTEND, TARAY, TTTOF, TFUNC, TVOID,
+        TCNST, TINTG, TFLOT, TBOOL, TTFOR, TREPT, TUNTL, TTTDO, TWHIL, TIFTH, TELSE, TELIF,
+        TSWTH, TCASE, TDFLT, TBREK, TINPT, TPRNT, TPRLN, TRETN, TNOTT, TTAND, TTTOR, TTXOR,
+        TTRUE, TFALS,
 
         // Operators and delimiters
         TCOMA, TLBRK, TRBRK, TLPAR, TRPAR, TEQUL, TPLUS, TMINS, TSTAR, TDIVD, TPERC, TCART,
         TLESS, TGRTR, TCOLN, TSEMI, TDOTT, TLEQL, TGEQL, TNEQL, TEQEQ, TPLEQ, TMNEQ, TSTEQ, TDVEQ,
 
         // Other token types
-        TTEOF, TIDEN, TILIT, TFLIT, TSTRG, TUNDF
+        TIDEN, TILIT, TFLIT, TSTRG, TUNDF
     }
 
     private static final EnumMap<TokenType, Integer> tokenCodeTable = new EnumMap<>(TokenType.class);
@@ -23,12 +27,22 @@ public class Tokeniser {
     private static final Map<String, TokenType> operatorTable = new HashMap<>();
 
     static {
-        int code = 0;
-        for (TokenType type : TokenType.values()) {
-            tokenCodeTable.put(type, code++);
+        // Initialize token codes
+        tokenCodeTable.put(TokenType.TTEOF, 0);
+        for (int i = 1; i <= 38; i++) {
+            tokenCodeTable.put(TokenType.values()[i], i);
         }
+        for (int i = 39; i <= 63; i++) {
+            tokenCodeTable.put(TokenType.values()[i], i);
+        }
+        tokenCodeTable.put(TokenType.TIDEN, 64);
+        tokenCodeTable.put(TokenType.TILIT, 65);
+        tokenCodeTable.put(TokenType.TFLIT, 66);
+        tokenCodeTable.put(TokenType.TSTRG, 67);
+        tokenCodeTable.put(TokenType.TUNDF, 68);
 
-        keywordTable.put("CD24", TokenType.TCD24);
+        // Initialize keyword table
+        keywordTable.put("cd24", TokenType.TCD24);
         keywordTable.put("constants", TokenType.TCONS);
         keywordTable.put("typedef", TokenType.TTYPD);
         keywordTable.put("def", TokenType.TTDEF);
@@ -67,6 +81,7 @@ public class Tokeniser {
         keywordTable.put("true", TokenType.TTRUE);
         keywordTable.put("false", TokenType.TFALS);
 
+        // Initialize operator table
         operatorTable.put(",", TokenType.TCOMA);
         operatorTable.put("[", TokenType.TLBRK);
         operatorTable.put("]", TokenType.TRBRK);
@@ -93,7 +108,6 @@ public class Tokeniser {
         operatorTable.put("*=", TokenType.TSTEQ);
         operatorTable.put("/=", TokenType.TDVEQ);
     }
-
     // TODO: map other items to their tokens
 
     public static int getTokenCode(TokenType type) {
@@ -101,7 +115,6 @@ public class Tokeniser {
     }
 
     public static TokenType getKeywordTokenType(String keyword) {
-        System.out.println("in le " + keyword);
         return keywordTable.get(keyword.toLowerCase());
     }
 

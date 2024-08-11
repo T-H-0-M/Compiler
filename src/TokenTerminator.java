@@ -2,23 +2,24 @@ import java.io.FileReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-// TODO: Need to handle lines and cols
 // TODO: Need to handle lexical errors
-// TODO: Need a hash map that maps all keyword to a number
 // TODO: Slim down java docs once up to speed
 
 public class TokenTerminator {
 
-    private HashMap<String, Integer> intermediateCodeTable = new HashMap<>();
     private static final String[] CHAR_TYPES = new String[128];
     private FileReader fileReader;
     private int currentChar = 0;
     private int nextChar = 0;
     private boolean commentMode = false;
+
+    private int currentLine = 1;
+    private int currentColumn = 0;
+    private int tokenStartLine = 1;
+    private int tokenStartColumn = 0;
 
     // INFO: Precomputing the types table for O(1) lookup
     static {
@@ -77,8 +78,10 @@ public class TokenTerminator {
         try {
             int tempChar = fileReader.read();
             if (tempChar > 127) {
+                System.out.println("error");
                 // TODO: Handle non-ascii characters
             }
+            updatePosition(tempChar);
             return tempChar;
         } catch (IOException e) {
             System.out.println("Exception " + e);
@@ -92,6 +95,9 @@ public class TokenTerminator {
         boolean isFirstIteration = true;
 
         handleCommentOccurence();
+        tokenStartLine = currentLine;
+        tokenStartColumn = currentColumn;
+
         while (isSameState) {
 
             if (currentChar == 0) {
@@ -105,6 +111,8 @@ public class TokenTerminator {
             // INFO: Handle dead characters
             if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
                 currentChar = this.getNextChar();
+                tokenStartLine = currentLine;
+                tokenStartColumn = currentColumn;
                 continue;
             }
 
@@ -185,19 +193,16 @@ public class TokenTerminator {
     }
 
     /**
-     * Handles the occurrence of a string literal in the input.
-     * This method is called when a double quote (") is encountered, denoting the
-     * start of a string. It reads characters until the closing double quote is
-     * found, constructing the string token.
+     * Handles the occurrence of comments in the input.
+     * This method is called when the scanner is in comment mode (commentMode is
+     * true). It processes characters until the end of the comment is reached or the
+     * end of file is encountered.
      *
-     * @return A Token object representing the string literal. The token has an ID
-     *         of 67 (TSTRG),and its value is the content of the string (excluding
-     *         the quotation marks).
-     *
-     * @implNote This method assumes that the opening quotation mark has already
-     *           been consumed. It does not include the quotation marks in the
-     *           returned token's value. After processing the string, it advances
-     *           the currentChar to the character following the closing quote.
+     * @implNote This method handles multi-line comments that start with "/**" and
+     *           end with "**\/". It updates the commentMode flag to false when the
+     *           end of a comment is reached or EOF is encountered. The method does
+     *           not return anything but updates the currentChar to the first
+     *           character after the comment.
      */
     private void handleCommentOccurence() {
         if (commentMode) {
@@ -223,26 +228,32 @@ public class TokenTerminator {
     }
 
     /**
-     * Handles the occurrence of comments in the input.
-     * This method is called when the scanner is in comment mode (commentMode is
-     * true). It processes characters until the end of the comment is reached or the
-     * end of file is encountered.
+     * Handles the occurrence of a string literal in the input.
+     * This method is called when a double quote (") is encountered, denoting the
+     * start of a string. It reads characters until the closing double quote is
+     * found, constructing the string token.
      *
-     * @implNote This method handles multi-line comments that start with "/**" and
-     *           end with "**\/". It updates the commentMode flag to false when the
-     *           end of a comment is reached or EOF is encountered. The method does
-     *           not return anything but updates the currentChar to the first
-     *           character after the comment.
+     * @return A Token object representing the string literal. The token has an ID
+     *         of 67 (TSTRG),and its value is the content of the string (excluding
+     *         the quotation marks).
+     *
+     * @implNote This method assumes that the opening quotation mark has already
+     *           been consumed. It does not include the quotation marks in the
+     *           returned token's value. After processing the string, it advances
+     *           the currentChar to the character following the closing quote.
      */
     private Token handleStringOccurrence() {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
+        tokenStartLine = currentLine;
+        tokenStartColumn = currentColumn;
+
         currentChar = getNextChar();
         while (currentChar != 34) {
             asciiCharList.add(currentChar);
             currentChar = getNextChar();
         }
         currentChar = getNextChar();
-        return new Token(67, asciiArrayListToString(asciiCharList), 0, 0);
+        return new Token(67, asciiArrayListToString(asciiCharList), tokenStartLine, tokenStartColumn);
     }
 
     /**
@@ -315,35 +326,44 @@ public class TokenTerminator {
      */
     private Token findToken(String lexeme) {
         if (commentCheck(lexeme)) {
-            return new Token(-1, "comment", 0, 0);
+            return new Token(-1, "comment", tokenStartLine, tokenStartColumn);
         }
 
-        System.out.println("Searching for matching keyword for ");
         Tokeniser.TokenType keywordType = Tokeniser.getKeywordTokenType(lexeme);
         if (keywordType != null) {
-            return new Token(Tokeniser.getTokenCode(keywordType), "", 0, 0);
+            return new Token(Tokeniser.getTokenCode(keywordType), "", tokenStartLine, tokenStartColumn);
         }
 
         if (isIntegerLiteral(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, 0, 0);
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, tokenStartLine,
+                    tokenStartColumn);
         }
 
         if (isFloatLiteral(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, 0, 0);
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, tokenStartLine,
+                    tokenStartColumn);
         }
 
         if (isIdentifier(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TIDEN), lexeme, 0, 0);
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TIDEN), lexeme, tokenStartLine,
+                    tokenStartColumn);
         }
 
         Tokeniser.TokenType operatorType = Tokeniser.getOperatorTokenType(lexeme);
         if (operatorType != null) {
-            return new Token(Tokeniser.getTokenCode(operatorType), "", 0, 0);
+            return new Token(Tokeniser.getTokenCode(operatorType), "", tokenStartLine, tokenStartColumn);
         }
 
-        return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), lexeme, 0, 0);
+        return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), lexeme, tokenStartLine, tokenStartColumn);
     }
 
+    /**
+     * Checks if the given lexeme is an integer literal.
+     * 
+     * @param lexeme The string to be checked.
+     * @return true if the lexeme consists only of digits (0-9), false otherwise.
+     *         Returns false for an empty string.
+     */
     private boolean isIntegerLiteral(String lexeme) {
         if (lexeme.isEmpty())
             return false;
@@ -354,6 +374,14 @@ public class TokenTerminator {
         return true;
     }
 
+    /**
+     * Checks if the given lexeme is a float literal.
+     * 
+     * @param lexeme The string to be checked.
+     * @return true if the lexeme is a valid float representation (contains exactly
+     *         one decimal point and only digits), false otherwise. Returns false
+     *         for an empty string or if there's more than one decimal point.
+     */
     private boolean isFloatLiteral(String lexeme) {
         if (lexeme.isEmpty())
             return false;
@@ -371,6 +399,14 @@ public class TokenTerminator {
         return hasDecimalPoint;
     }
 
+    /**
+     * Checks if the given lexeme is a valid identifier.
+     * 
+     * @param lexeme The string to be checked.
+     * @return true if the lexeme is a valid identifier (starts with a letter and
+     *         contains only letters and digits), false otherwise. Returns false
+     *         for an empty string.
+     */
     private boolean isIdentifier(String lexeme) {
         if (lexeme.isEmpty())
             return false;
@@ -382,5 +418,22 @@ public class TokenTerminator {
                 return false;
         }
         return true;
+    }
+
+    /**
+     * Updates the current line and column position based on the input character.
+     * 
+     * @param tempChar The character to process for position updating.
+     * @implNote This method increments the line counter and resets the column
+     *           counter to 0 when a newline character (ASCII 10) is encountered.
+     *           For all other characters, it increments the column counter.
+     */
+    private void updatePosition(int tempChar) {
+        if (tempChar == 10) {
+            currentLine++;
+            currentColumn = 0;
+        } else {
+            currentColumn++;
+        }
     }
 }
