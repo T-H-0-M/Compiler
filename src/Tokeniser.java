@@ -101,6 +101,7 @@ public class Tokeniser {
     }
 
     public static TokenType getKeywordTokenType(String keyword) {
+        System.out.println("in le " + keyword);
         return keywordTable.get(keyword.toLowerCase());
     }
 

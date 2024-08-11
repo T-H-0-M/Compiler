@@ -94,6 +94,9 @@ public class TokenTerminator {
         handleCommentOccurence();
         while (isSameState) {
 
+            if (currentChar == 0) {
+                currentChar = getNextChar();
+            }
             // INFO: Handle EOF
             if (currentChar == -1) {
                 return new Token(0, "", 0, 0);
@@ -125,12 +128,23 @@ public class TokenTerminator {
             if (!asciiCharList.isEmpty()) {
                 int previousChar = asciiCharList.get(asciiCharList.size() - 1);
                 isSameState = checkState(currentChar, previousChar);
+                // INFO: Handles lexemes with numbers
+                if (getType(currentChar).equals("letter")) {
+                    nextChar = this.getNextChar();
+                    if (getType(nextChar).equals("number")) {
+                        asciiCharList.add(currentChar);
+                        currentChar = nextChar;
+                        nextChar = 0;
+                        isSameState = true;
+                    }
+                }
                 // INFO: Handles doubles
                 if (currentChar == 46) {
                     nextChar = this.getNextChar();
                     if (getType(nextChar).equals("number")) {
                         asciiCharList.add(currentChar);
                         currentChar = nextChar;
+                        nextChar = 0;
                         isSameState = true;
                     }
                 }
@@ -301,21 +315,24 @@ public class TokenTerminator {
      */
     private Token findToken(String lexeme) {
         if (commentCheck(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "comment", 0, 0);
+            return new Token(-1, "comment", 0, 0);
         }
 
+        System.out.println("Searching for matching keyword for ");
         Tokeniser.TokenType keywordType = Tokeniser.getKeywordTokenType(lexeme);
         if (keywordType != null) {
             return new Token(Tokeniser.getTokenCode(keywordType), "", 0, 0);
         }
 
-        if (lexeme.matches("\\d+")) {
+        if (isIntegerLiteral(lexeme)) {
             return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, 0, 0);
         }
-        if (lexeme.matches("\\d+\\.\\d+")) {
+
+        if (isFloatLiteral(lexeme)) {
             return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, 0, 0);
         }
-        if (lexeme.matches("[a-zA-Z][a-zA-Z0-9]*")) {
+
+        if (isIdentifier(lexeme)) {
             return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TIDEN), lexeme, 0, 0);
         }
 
@@ -324,8 +341,46 @@ public class TokenTerminator {
             return new Token(Tokeniser.getTokenCode(operatorType), "", 0, 0);
         }
 
-        // If no match found, return TUNDF
         return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), lexeme, 0, 0);
     }
 
+    private boolean isIntegerLiteral(String lexeme) {
+        if (lexeme.isEmpty())
+            return false;
+        for (char c : lexeme.toCharArray()) {
+            if (!Character.isDigit(c))
+                return false;
+        }
+        return true;
+    }
+
+    private boolean isFloatLiteral(String lexeme) {
+        if (lexeme.isEmpty())
+            return false;
+        boolean hasDecimalPoint = false;
+        for (int i = 0; i < lexeme.length(); i++) {
+            char c = lexeme.charAt(i);
+            if (c == '.') {
+                if (hasDecimalPoint)
+                    return false; // More than one decimal point
+                hasDecimalPoint = true;
+            } else if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return hasDecimalPoint;
+    }
+
+    private boolean isIdentifier(String lexeme) {
+        if (lexeme.isEmpty())
+            return false;
+        if (!Character.isLetter(lexeme.charAt(0)))
+            return false;
+        for (int i = 1; i < lexeme.length(); i++) {
+            char c = lexeme.charAt(i);
+            if (!Character.isLetterOrDigit(c))
+                return false;
+        }
+        return true;
+    }
 }
