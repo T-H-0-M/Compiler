@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-//TODO: Handle whitespace
 //TODO: Handle Comments
 //TODO: Handle Strings
 
@@ -15,6 +14,7 @@ public class TokenTerminator {
     private FileReader fileReader;
     private int currentChar = 0;
     private int nextChar = 0;
+    private boolean commentMode = false;
 
     public TokenTerminator() {
     }
@@ -35,10 +35,28 @@ public class TokenTerminator {
             // for the first 127 characters. We will just calculate all characters in ascii.
             // We will throw an error for any characters that are >127
             int tempChar = fileReader.read();
-            if (tempChar == -1) {
-            }
             if (tempChar > 127) {
                 // TODO: Handle non-ascii characters
+            }
+            if (commentMode) {
+                currentChar = tempChar;
+                String delimiterBuffer = "";
+                while (true) {
+                    if (currentChar == -1) {
+                        commentMode = false;
+                        break;
+                    }
+                    if (currentChar == 42 || currentChar == 47) {
+                        delimiterBuffer += (char) currentChar;
+                        if (delimiterBuffer.equals("**/")) {
+                            commentMode = false;
+                            break;
+                        }
+                    } else {
+                        delimiterBuffer = "";
+                    }
+                    currentChar = fileReader.read();
+                }
             }
             return tempChar;
         } catch (IOException e) {
@@ -47,12 +65,17 @@ public class TokenTerminator {
         }
     }
 
+    // to enter comment mode, if lexeme = /** comment mode = true
+    // to exit comment mode , if lexeme = **/ comment mode = false
+    // to enter comment mode, if lexeme = /-- comment mode = true;
+    // to exit comment mode, if lexeme = eol comment mode = false
+
     public Token getNextToken() {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
         boolean isFirstIteration = true;
         while (isSameState) {
-            // INFO: Discards whitespaces, line returns, carriage returns
+            // INFO: Discards whitespaces, line returns and carriage returns
             // BUG: We will likely need the line returns in the future
             if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
                 currentChar = this.getNextChar();
@@ -88,7 +111,13 @@ public class TokenTerminator {
             }
 
         }
-        return findToken(asciiArrayListToString(asciiCharList));
+        Token tempToken = findToken(asciiArrayListToString(asciiCharList));
+
+        // INFO: Recursive goodness?
+        if (tempToken.getTokenId() == -1) {
+            tempToken = getNextToken();
+        }
+        return tempToken;
     }
 
     private boolean checkState(int char1, int char2) {
@@ -98,14 +127,10 @@ public class TokenTerminator {
     private String getType(int incomingChar) {
         if (incomingChar == 32)
             return "whitespace";
-        if (incomingChar == 10) {
-            // System.out.println("linefeed");
+        if (incomingChar == 10)
             return "linefeed";
-        }
-        if (incomingChar == 13) {
-            // System.out.println("carriage");
+        if (incomingChar == 13)
             return "carriage_return";
-        }
         if (incomingChar >= 48 && incomingChar <= 57)
             return "number";
         if ((incomingChar >= 65 && incomingChar <= 90) || (incomingChar >= 97 && incomingChar <= 122))
@@ -128,6 +153,19 @@ public class TokenTerminator {
     }
 
     private Token findToken(String lexeme) {
+        // BUG: This does not belong here but we will move it later
+        if (lexeme.equals("/**")) {
+            this.commentMode = true;
+            return new Token(-1, "comment", 0, 0);
+        }
+        // BUG: Def needs to be relocated
+        if (lexeme.equals("/--")) {
+            int tempChar = getNextChar();
+            while (tempChar != 10) {
+                tempChar = getNextChar();
+            }
+            return new Token(-1, "comment", 0, 0);
+        }
 
         if (intermediateCodeTable.containsKey(lexeme)) {
             return new Token(intermediateCodeTable.get(lexeme), "", 0, 0);
