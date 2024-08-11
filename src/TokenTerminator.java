@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-//TODO: Handle whitespace
 //TODO: Handle Comments
 //TODO: Handle Strings
 
@@ -15,6 +14,8 @@ public class TokenTerminator {
     private FileReader fileReader;
     private int currentChar = 0;
     private int nextChar = 0;
+    private boolean commentMode = false;
+    private boolean stringMode = false;
 
     public TokenTerminator() {
     }
@@ -35,11 +36,30 @@ public class TokenTerminator {
             // for the first 127 characters. We will just calculate all characters in ascii.
             // We will throw an error for any characters that are >127
             int tempChar = fileReader.read();
-            if (tempChar == -1) {
-            }
             if (tempChar > 127) {
                 // TODO: Handle non-ascii characters
             }
+            if (commentMode) {
+                currentChar = tempChar;
+                String delimiterBuffer = "";
+                while (true) {
+                    if (currentChar == -1) {
+                        commentMode = false;
+                        break;
+                    }
+                    if (currentChar == 42 || currentChar == 47) {
+                        delimiterBuffer += (char) currentChar;
+                        if (delimiterBuffer.equals("**/")) {
+                            commentMode = false;
+                            break;
+                        }
+                    } else {
+                        delimiterBuffer = "";
+                    }
+                    currentChar = fileReader.read();
+                }
+            }
+
             return tempChar;
         } catch (IOException e) {
             System.out.println("Exception " + e);
@@ -52,19 +72,38 @@ public class TokenTerminator {
         boolean isSameState = true;
         boolean isFirstIteration = true;
         while (isSameState) {
+            // INFO: Discards whitespaces, line returns and carriage returns
+            // BUG: We will likely need the line returns in the future
+            if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
+                currentChar = this.getNextChar();
+                continue;
+            }
             if (!isFirstIteration) {
                 if (nextChar == 0) {
                     currentChar = this.getNextChar();
+                } else {
+                    currentChar = nextChar;
+                    nextChar = 0;
                 }
             }
             if (currentChar == -1) {
                 return new Token(1, "TEOF", 0, 0);
             }
+            if (currentChar == 34) {
+                stringMode = true;
+                currentChar = getNextChar();
+                while (currentChar != 34) {
+                    asciiCharList.add(currentChar);
+                    currentChar = getNextChar();
+                }
+                currentChar = getNextChar();
+                return new Token(1, asciiArrayListToString(asciiCharList), 0, 0);
+            }
             isFirstIteration = false;
             if (!asciiCharList.isEmpty()) {
                 int previousChar = asciiCharList.get(asciiCharList.size() - 1);
                 isSameState = checkState(currentChar, previousChar);
-                if ((int) currentChar == 46) {
+                if (currentChar == 46) {
                     nextChar = this.getNextChar();
                     if (getType(nextChar).equals("number")) {
                         asciiCharList.add(currentChar);
@@ -82,7 +121,13 @@ public class TokenTerminator {
             }
 
         }
-        return findToken(asciiArrayListToString(asciiCharList));
+        Token tempToken = findToken(asciiArrayListToString(asciiCharList));
+
+        // INFO: Recursive goodness?
+        if (tempToken.getTokenId() == -1) {
+            tempToken = getNextToken();
+        }
+        return tempToken;
     }
 
     private boolean checkState(int char1, int char2) {
@@ -118,6 +163,19 @@ public class TokenTerminator {
     }
 
     private Token findToken(String lexeme) {
+        // BUG: This does not belong here but we will move it later
+        if (lexeme.equals("/**")) {
+            this.commentMode = true;
+            return new Token(-1, "comment", 0, 0);
+        }
+        // BUG: Def needs to be relocated
+        if (lexeme.equals("/--")) {
+            int tempChar = getNextChar();
+            while (tempChar != 10) {
+                tempChar = getNextChar();
+            }
+            return new Token(-1, "comment", 0, 0);
+        }
 
         if (intermediateCodeTable.containsKey(lexeme)) {
             return new Token(intermediateCodeTable.get(lexeme), "", 0, 0);
