@@ -81,6 +81,9 @@ public class TokenTerminator {
             if (!isFirstIteration) {
                 if (nextChar == 0) {
                     currentChar = this.getNextChar();
+                } else {
+                    currentChar = nextChar;
+                    nextChar = 0;
                 }
             }
             if (currentChar == -1) {
@@ -100,7 +103,7 @@ public class TokenTerminator {
             if (!asciiCharList.isEmpty()) {
                 int previousChar = asciiCharList.get(asciiCharList.size() - 1);
                 isSameState = checkState(currentChar, previousChar);
-                if ((int) currentChar == 46) {
+                if (currentChar == 46) {
                     nextChar = this.getNextChar();
                     if (getType(nextChar).equals("number")) {
                         asciiCharList.add(currentChar);
