@@ -6,9 +6,7 @@ import java.util.List;
 // TODO: account for numeric literal overflow
 
 // INFO: This is likely the same as the output formatter
-//
-// INFO: TUNDF
-//              lexical error {lexeme} (line: 16 col: 1)
+
 public class OutputFormatter {
     private static final int LINE_LENGTH = 60;
     private static final int MAX_LINE_LENGTH = 66;
@@ -69,9 +67,7 @@ public class OutputFormatter {
                 lexeme = "\"" + lexeme + "\"";
             }
 
-            // Calculate the length of the second field (lexeme + at least one space)
             int secondFieldLength = lexeme.length() + 1;
-            // Round up to the next multiple of 6
             int paddedLength = ((secondFieldLength + 5) / 6) * 6;
 
             return String.format("%-6s%-" + paddedLength + "s", tokenName, lexeme + "");

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-// TODO: Need to handle lexical errors
 // TODO: Slim down java docs once up to speed
 
 public class TokenTerminator {
@@ -56,9 +55,6 @@ public class TokenTerminator {
 
     }
 
-    // INFO: File reader returns a char in unicode. Unicode is identical to ASCII
-    // for the first 127 characters. We will just calculate all characters in ASCII.
-    // We will throw an error for any characters that are >127
     /**
      * Reads the next character from the file input stream.
      * 
@@ -97,6 +93,7 @@ public class TokenTerminator {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
         boolean isFirstIteration = true;
+        boolean hasDot = false;
 
         handleCommentOccurence();
         tokenStartLine = currentLine;
@@ -152,8 +149,11 @@ public class TokenTerminator {
                 }
                 // INFO: Handles doubles
                 if (currentChar == 46) {
+                    // TODO: find a way to check to see if there is a second . and if there is,
+                    // return the float and hold the .
                     nextChar = this.getNextChar();
-                    if (getType(nextChar).equals("number")) {
+                    if (getType(nextChar).equals("number") && !hasDot) {
+                        hasDot = true;
                         asciiCharList.add(currentChar);
                         currentChar = nextChar;
                         nextChar = 0;
@@ -391,6 +391,9 @@ public class TokenTerminator {
         if (lexeme.isEmpty())
             return false;
         boolean hasDecimalPoint = false;
+        if (lexeme.length() == 1 && lexeme.charAt(0) == '.') {
+            return false;
+        }
         for (int i = 0; i < lexeme.length(); i++) {
             char c = lexeme.charAt(i);
             if (c == '.') {
