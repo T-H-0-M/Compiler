@@ -349,13 +349,11 @@ public class TokenTerminator {
         }
 
         if (isIntegerLiteral(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, tokenStartLine,
-                    tokenStartColumn);
+            return handleIntegerLiteral(lexeme);
         }
 
         if (isFloatLiteral(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, tokenStartLine,
-                    tokenStartColumn);
+            return handleFloatLiteral(lexeme);
         }
 
         if (isIdentifier(lexeme)) {
@@ -435,6 +433,39 @@ public class TokenTerminator {
                 return false;
         }
         return true;
+    }
+
+    private Token handleIntegerLiteral(String lexeme) {
+        try {
+            long value = Long.parseLong(lexeme);
+            // TODO: Modify the output to remove undef for integer overflows
+            if (value > Integer.MAX_VALUE) {
+                return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
+                        "Integer Literal Overflow", tokenStartLine,
+                        tokenStartColumn);
+            }
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, tokenStartLine,
+                    tokenStartColumn);
+        } catch (NumberFormatException e) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
+                    "Lexical Error: Invalid Integer Literal", tokenStartLine,
+                    tokenStartColumn);
+        }
+    }
+
+    private Token handleFloatLiteral(String lexeme) {
+        try {
+            double value = Double.parseDouble(lexeme);
+            if (value > 1.7976931348623158e+308) {
+                return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "Float Literal Overflow",
+                        tokenStartLine, tokenStartColumn);
+            }
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, tokenStartLine,
+                    tokenStartColumn);
+        } catch (NumberFormatException e) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "Invalid Float Literal", tokenStartLine,
+                    tokenStartColumn);
+        }
     }
 
     /**
