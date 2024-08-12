@@ -77,6 +77,10 @@ public class TokenTerminator {
     public int getNextChar() {
         try {
             int tempChar = fileReader.read();
+            if (tempChar < 0) {
+                tempChar = fileReader.read();
+                updatePosition(tempChar);
+            }
             if (tempChar > 127) {
                 System.out.println("error");
                 // TODO: Handle non-ascii characters
@@ -288,6 +292,7 @@ public class TokenTerminator {
      *         - "other" for any character not falling into the above categories
      */
     private String getType(int incomingChar) {
+        // System.out.println("Char :" + (char) incomingChar);
         return incomingChar < 128 ? CHAR_TYPES[incomingChar] : "other";
     }
 
