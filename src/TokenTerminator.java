@@ -104,7 +104,9 @@ public class TokenTerminator {
             if (currentChar == 0) {
                 currentChar = getNextChar();
             }
+
             // INFO: Handle EOF
+            // TODO: revisit this
             if (currentChar == -1) {
                 return new Token(0, "", 0, 0);
             }
@@ -137,6 +139,15 @@ public class TokenTerminator {
             if (!asciiCharList.isEmpty()) {
                 int previousChar = asciiCharList.get(asciiCharList.size() - 1);
                 isSameState = checkState(currentChar, previousChar);
+
+                // INFO: Handles lexemes with one letter and numbers
+                if (asciiCharList.size() == 1 && getType(previousChar).equals("letter")
+                        && getType(currentChar).equals("number")) {
+                    asciiCharList.add(currentChar);
+                    isSameState = true;
+                    currentChar = getNextChar();
+
+                }
                 // INFO: Handles lexemes with numbers
                 if (getType(currentChar).equals("letter")) {
                     nextChar = this.getNextChar();
@@ -149,8 +160,6 @@ public class TokenTerminator {
                 }
                 // INFO: Handles doubles
                 if (currentChar == 46) {
-                    // TODO: find a way to check to see if there is a second . and if there is,
-                    // return the float and hold the .
                     nextChar = this.getNextChar();
                     if (getType(nextChar).equals("number") && !hasDot) {
                         hasDot = true;
