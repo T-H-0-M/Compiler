@@ -1,3 +1,6 @@
+import java.util.Map;
+import java.util.HashMap;
+
 /**
  * Token class
  * 
@@ -15,6 +18,14 @@ public class Token {
     private int line;
     private int col;
 
+    private static final Map<Integer, String> tokenNames = new HashMap<>();
+
+    static {
+        for (Tokeniser.TokenType type : Tokeniser.TokenType.values()) {
+            tokenNames.put(Tokeniser.getTokenCode(type), type.name());
+        }
+    }
+
     public Token() {
         this.tokenId = 0;
         this.lexeme = "";
@@ -29,11 +40,20 @@ public class Token {
         this.col = col;
     }
 
+    /**
+     * Resolves a token ID to its corresponding token name.
+     * 
+     * @param tokenId The ID of the token to resolve
+     * @return The name of the token, or "UNKNOWN" if the ID is not recognized
+     */
+    public static String resolveTokenName(int tokenId) {
+        return tokenNames.getOrDefault(tokenId, "UNKNOWN");
+    }
+
     @Override
     public String toString() {
-        // TODO: Configure the spacing for this class
-        return String.format("Token[id=%d, lexeme='%s', line=%d, col=%d]",
-                tokenId, lexeme, line, col);
+        return String.format("Token[id=%d (%s), lexeme='%s', line=%d, col=%d]",
+                tokenId, resolveTokenName(tokenId), lexeme, line, col);
     }
 
     // ------------------------- Getters and Setters ------------------------- //
