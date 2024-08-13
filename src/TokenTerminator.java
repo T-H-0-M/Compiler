@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-// TODO: Need to handle lexical errors
 // TODO: Slim down java docs once up to speed
 
 public class TokenTerminator {
@@ -56,9 +55,6 @@ public class TokenTerminator {
 
     }
 
-    // INFO: File reader returns a char in unicode. Unicode is identical to ASCII
-    // for the first 127 characters. We will just calculate all characters in ASCII.
-    // We will throw an error for any characters that are >127
     /**
      * Reads the next character from the file input stream.
      * 
@@ -77,6 +73,10 @@ public class TokenTerminator {
     public int getNextChar() {
         try {
             int tempChar = fileReader.read();
+            if (tempChar < 0) {
+                tempChar = fileReader.read();
+                updatePosition(tempChar);
+            }
             if (tempChar > 127) {
                 System.out.println("error");
                 // TODO: Handle non-ascii characters
@@ -93,6 +93,7 @@ public class TokenTerminator {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
         boolean isFirstIteration = true;
+        boolean hasDot = false;
 
         handleCommentOccurence();
         tokenStartLine = currentLine;
@@ -103,7 +104,9 @@ public class TokenTerminator {
             if (currentChar == 0) {
                 currentChar = getNextChar();
             }
+
             // INFO: Handle EOF
+            // TODO: revisit this
             if (currentChar == -1) {
                 return new Token(0, "", 0, 0);
             }
@@ -136,6 +139,15 @@ public class TokenTerminator {
             if (!asciiCharList.isEmpty()) {
                 int previousChar = asciiCharList.get(asciiCharList.size() - 1);
                 isSameState = checkState(currentChar, previousChar);
+
+                // INFO: Handles lexemes with one letter and numbers
+                if (asciiCharList.size() == 1 && getType(previousChar).equals("letter")
+                        && getType(currentChar).equals("number")) {
+                    asciiCharList.add(currentChar);
+                    isSameState = true;
+                    currentChar = getNextChar();
+
+                }
                 // INFO: Handles lexemes with numbers
                 if (getType(currentChar).equals("letter")) {
                     nextChar = this.getNextChar();
@@ -149,7 +161,8 @@ public class TokenTerminator {
                 // INFO: Handles doubles
                 if (currentChar == 46) {
                     nextChar = this.getNextChar();
-                    if (getType(nextChar).equals("number")) {
+                    if (getType(nextChar).equals("number") && !hasDot) {
+                        hasDot = true;
                         asciiCharList.add(currentChar);
                         currentChar = nextChar;
                         nextChar = 0;
@@ -249,6 +262,9 @@ public class TokenTerminator {
 
         currentChar = getNextChar();
         while (currentChar != 34) {
+            if (currentChar == 10) {
+                return new Token(68, "Unterminated string", tokenStartLine, tokenStartColumn);
+            }
             asciiCharList.add(currentChar);
             currentChar = getNextChar();
         }
@@ -288,6 +304,7 @@ public class TokenTerminator {
      *         - "other" for any character not falling into the above categories
      */
     private String getType(int incomingChar) {
+        // System.out.println("Char :" + (char) incomingChar);
         return incomingChar < 128 ? CHAR_TYPES[incomingChar] : "other";
     }
 
@@ -335,13 +352,11 @@ public class TokenTerminator {
         }
 
         if (isIntegerLiteral(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, tokenStartLine,
-                    tokenStartColumn);
+            return handleIntegerLiteral(lexeme);
         }
 
         if (isFloatLiteral(lexeme)) {
-            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, tokenStartLine,
-                    tokenStartColumn);
+            return handleFloatLiteral(lexeme);
         }
 
         if (isIdentifier(lexeme)) {
@@ -386,6 +401,9 @@ public class TokenTerminator {
         if (lexeme.isEmpty())
             return false;
         boolean hasDecimalPoint = false;
+        if (lexeme.length() == 1 && lexeme.charAt(0) == '.') {
+            return false;
+        }
         for (int i = 0; i < lexeme.length(); i++) {
             char c = lexeme.charAt(i);
             if (c == '.') {
@@ -418,6 +436,39 @@ public class TokenTerminator {
                 return false;
         }
         return true;
+    }
+
+    private Token handleIntegerLiteral(String lexeme) {
+        try {
+            long value = Long.parseLong(lexeme);
+            // TODO: Modify the output to remove undef for integer overflows
+            if (value > Integer.MAX_VALUE) {
+                return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
+                        "Integer Literal Overflow", tokenStartLine,
+                        tokenStartColumn);
+            }
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TILIT), lexeme, tokenStartLine,
+                    tokenStartColumn);
+        } catch (NumberFormatException e) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
+                    "Lexical Error: Invalid Integer Literal", tokenStartLine,
+                    tokenStartColumn);
+        }
+    }
+
+    private Token handleFloatLiteral(String lexeme) {
+        try {
+            double value = Double.parseDouble(lexeme);
+            if (value > 1.7976931348623158e+308) {
+                return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "Float Literal Overflow",
+                        tokenStartLine, tokenStartColumn);
+            }
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TFLIT), lexeme, tokenStartLine,
+                    tokenStartColumn);
+        } catch (NumberFormatException e) {
+            return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "Invalid Float Literal", tokenStartLine,
+                    tokenStartColumn);
+        }
     }
 
     /**

@@ -3,6 +3,7 @@ import java.util.List;
 
 public class A1 {
     private static ArrayList<Token> tokenList = new ArrayList<>();
+    private static ArrayList<Token> errorList = new ArrayList<>();
     private static OutputFormatter outputFormatter = new OutputFormatter();
 
     public static void main(String[] args) {
@@ -15,15 +16,19 @@ public class A1 {
         TokenTerminator tokenTerminator = new TokenTerminator(filePath);
         run(tokenTerminator);
         printFormattedOutput();
-        // printTokenList();
     }
 
     private static void run(TokenTerminator tokenTerminator) {
         Token currentToken;
         do {
             currentToken = tokenTerminator.getNextToken();
-            tokenList.add(currentToken);
-            outputFormatter.addToken(currentToken);
+            if (currentToken.getTokenId() == 68) {
+                errorList.add(currentToken);
+                outputFormatter.addError(currentToken);
+            } else {
+                tokenList.add(currentToken);
+                outputFormatter.addToken(currentToken);
+            }
         } while (currentToken.getTokenId() != 0);
     }
 
