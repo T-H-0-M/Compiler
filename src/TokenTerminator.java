@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 // TODO: Slim down java docs once up to speed
+// TODO: Check how underscores are handled
 
 public class TokenTerminator {
 
@@ -13,6 +14,7 @@ public class TokenTerminator {
     private FileReader fileReader;
     private int currentChar = 0;
     private int nextChar = 0;
+    private ArrayList<Integer> charBuffer = new ArrayList<>();
     private boolean commentMode = false;
     private OutputController outputController;
 
@@ -124,19 +126,25 @@ public class TokenTerminator {
 
             // INFO: Ensure that the held char is accounted for
             if (!isFirstIteration) {
-                if (nextChar == 0) {
+                if (charBuffer.size() != 0) {
+                    currentChar = charBuffer.getFirst();
+                    charBuffer.removeFirst();
+                } else if (nextChar == 0) {
                     currentChar = this.getNextChar();
                 } else {
                     currentChar = nextChar;
                     nextChar = 0;
                 }
+            } else {
+                if (charBuffer.size() != 0) {
+                    currentChar = charBuffer.getFirst();
+                    charBuffer.removeFirst();
+                }
             }
-
             // INFO: Handle strings when " found
             if (currentChar == 34) {
                 return handleStringOccurrence();
             }
-
             isFirstIteration = false;
 
             if (!asciiCharList.isEmpty()) {
@@ -172,13 +180,43 @@ public class TokenTerminator {
                         isSameState = true;
                     }
                 }
-                if (isSameState) {
+                if (getType(previousChar).equals("potential_delimiter") && isSameState) {
+                    if (isValidChar(previousChar) && previousChar == 47
+                            && (currentChar != 42 && currentChar != 45)) {
+                        isSameState = false;
+                        break;
+                    } else if (isValidChar(previousChar) && previousChar == 47
+                            && (currentChar == 42 || currentChar == 45)) {
+                        nextChar = getNextChar();
+                        // TODO : Error lies here somewhere
+                        if (nextChar == 42 && currentChar == 42 || nextChar == 45 && currentChar == 45) {
+                            asciiCharList.add(currentChar);
+                            asciiCharList.add(nextChar);
+                            nextChar = 0;
+                            currentChar = getNextChar();
+                        } else {
+                            // TODO : Error lies here somewhere
+                            charBuffer.add(currentChar);
+                            charBuffer.add(nextChar);
+                            nextChar = 0;
+                        }
+                    } else {
+                        asciiCharList.add(currentChar);
+                        isSameState = false;
+                    }
+                } else if (isSameState) {
                     asciiCharList.add(currentChar);
                 } else {
                     break;
                 }
             } else {
                 asciiCharList.add(currentChar);
+                if (isValidChar(currentChar) && getType(currentChar).equals("potential_delimiter")
+                        && (currentChar != 47)) {
+                    isSameState = false;
+                    currentChar = getNextChar();
+                }
+
             }
 
         }
@@ -203,6 +241,8 @@ public class TokenTerminator {
             while (tempChar != 10) {
                 tempChar = getNextChar();
             }
+            nextChar = 0;
+            currentChar = getNextChar();
             return true;
         }
         return false;
@@ -240,6 +280,7 @@ public class TokenTerminator {
                 currentChar = getNextChar();
             }
             currentChar = getNextChar();
+            nextChar = 0;
         }
     }
 
@@ -472,6 +513,15 @@ public class TokenTerminator {
             return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF), "Invalid Float Literal", tokenStartLine,
                     tokenStartColumn);
         }
+    }
+
+    private boolean isValidChar(int ch) {
+        if ((ch < 33 || ch > 126) || (ch != 44 && ch != 91 && ch != 93 && ch != 40 && ch != 41 &&
+                ch != 61 && ch != 43 && ch != 45 && ch != 42 && ch != 47 && ch != 37 && ch != 94 &&
+                ch != 60 && ch != 62 && ch != 58 && ch != 59 && ch != 46)) {
+            return false;
+        }
+        return true;
     }
 
     /**
