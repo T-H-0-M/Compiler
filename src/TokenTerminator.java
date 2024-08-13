@@ -181,6 +181,10 @@ public class TokenTerminator {
                     }
                 }
                 if (getType(previousChar).equals("potential_delimiter") && isSameState) {
+                    if (!isValidChar(currentChar) && !isValidChar(previousChar)) {
+                        asciiCharList.add(currentChar);
+                        currentChar = getNextChar();
+                    }
                     if (isValidChar(previousChar) && previousChar == 47
                             && (currentChar != 42 && currentChar != 45)) {
                         isSameState = false;
@@ -203,6 +207,7 @@ public class TokenTerminator {
                     } else {
                         asciiCharList.add(currentChar);
                         isSameState = false;
+                        currentChar = getNextChar();
                     }
                 } else if (isSameState) {
                     asciiCharList.add(currentChar);
