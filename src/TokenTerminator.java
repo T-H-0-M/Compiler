@@ -14,6 +14,7 @@ public class TokenTerminator {
     private int currentChar = 0;
     private int nextChar = 0;
     private boolean commentMode = false;
+    private OutputController outputController;
 
     private int currentLine = 1;
     private int currentColumn = 0;
@@ -46,9 +47,10 @@ public class TokenTerminator {
     public TokenTerminator() {
     }
 
-    public TokenTerminator(String filePath) {
+    public TokenTerminator(String filePath, OutputController outputController) {
         try {
             fileReader = new FileReader(new File(filePath));
+            this.outputController = outputController;
         } catch (FileNotFoundException e) {
             System.out.println("File not found");
         }
@@ -81,6 +83,7 @@ public class TokenTerminator {
                 System.out.println("error");
                 // TODO: Handle non-ascii characters
             }
+            outputController.outputToListing((char) tempChar);
             updatePosition(tempChar);
             return tempChar;
         } catch (IOException e) {
