@@ -185,6 +185,12 @@ public class TokenTerminator {
                         asciiCharList.add(currentChar);
                         currentChar = getNextChar();
                     }
+                    if (isCombinedOperator(previousChar, currentChar)) {
+                        asciiCharList.add(currentChar);
+                        currentChar = getNextChar();
+                        isSameState = false;
+                        break;
+                    }
                     if (isValidChar(previousChar) && previousChar == 47
                             && (currentChar != 42 && currentChar != 45)) {
                         isSameState = false;
@@ -217,7 +223,7 @@ public class TokenTerminator {
             } else {
                 asciiCharList.add(currentChar);
                 if (isValidChar(currentChar) && getType(currentChar).equals("potential_delimiter")
-                        && (currentChar != 47)) {
+                        && (currentChar != 47) && !isCombinedOperator(currentChar, 61)) {
                     isSameState = false;
                     currentChar = getNextChar();
                 }
@@ -233,6 +239,16 @@ public class TokenTerminator {
             tempToken = getNextToken();
         }
         return tempToken;
+    }
+
+    private boolean isCombinedOperator(int char1, int char2) {
+        if (char2 == 61) {
+            if (char1 == 60 || char1 == 62 || char1 == 61 || char1 == 33 || char1 == 42 || char1 == 43 || char1 == 45
+                    || char1 == 47) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean commentCheck(String lexeme) {
