@@ -83,8 +83,8 @@ public class TokenTerminator {
                 System.out.println("error");
                 // TODO: Handle non-ascii characters
             }
-            outputController.outputToListing((char) tempChar);
             updatePosition(tempChar);
+            outputController.outputToListing((char) tempChar, currentColumn);
             return tempChar;
         } catch (IOException e) {
             System.out.println("Exception " + e);
