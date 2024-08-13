@@ -16,7 +16,6 @@ public class A1 {
         TokenTerminator tokenTerminator = new TokenTerminator(filePath);
         run(tokenTerminator);
         printFormattedOutput();
-        // printTokenList();
     }
 
     private static void run(TokenTerminator tokenTerminator) {

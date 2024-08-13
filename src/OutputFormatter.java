@@ -2,8 +2,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 // TODO: ensure no newline/illegal char/ unterminated in string.
-// TODO: handle floats that have more than one .
-// TODO: account for numeric literal overflow
 
 // INFO: This is likely the same as the output formatter
 
@@ -20,7 +18,7 @@ public class OutputFormatter {
 
     public void addError(Token token) {
         String tokenString = formatToken(token) + "\n    lexical error " + token.getLexeme() + " (line: "
-                + token.getLine() + " col: " + token.getCol() + ")\n" + formatToken(token) + "\n";
+                + token.getLine() + " col: " + token.getCol() + ")\n";
 
         if (currentLine.length() + tokenString.length() > MAX_LINE_LENGTH) {
             formattedLines.add(currentLine.toString());

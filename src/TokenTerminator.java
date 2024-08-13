@@ -262,6 +262,9 @@ public class TokenTerminator {
 
         currentChar = getNextChar();
         while (currentChar != 34) {
+            if (currentChar == 10) {
+                return new Token(68, "Unterminated string", tokenStartLine, tokenStartColumn);
+            }
             asciiCharList.add(currentChar);
             currentChar = getNextChar();
         }
