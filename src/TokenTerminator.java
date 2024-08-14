@@ -82,8 +82,7 @@ public class TokenTerminator {
                 updatePosition(tempChar);
             }
             if (tempChar > 127) {
-                System.out.println("error");
-                // TODO: Handle non-ascii characters
+                System.out.println("Error: Non Ascii character");
             }
             updatePosition(tempChar);
             outputController.outputToListing((char) tempChar, currentColumn);
@@ -112,7 +111,6 @@ public class TokenTerminator {
             }
 
             // INFO: Handle EOF
-            // TODO: revisit this
             if (currentChar == -1) {
                 return new Token(0, "", 0, 0);
             }
@@ -327,7 +325,8 @@ public class TokenTerminator {
         currentChar = getNextChar();
         while (currentChar != 34) {
             if (currentChar == 10) {
-                return new Token(68, "Unterminated string", tokenStartLine, tokenStartColumn);
+                return new Token(68, "Unterminated string: \"" + asciiArrayListToString(asciiCharList), tokenStartLine,
+                        tokenStartColumn);
             }
             asciiCharList.add(currentChar);
             currentChar = getNextChar();
