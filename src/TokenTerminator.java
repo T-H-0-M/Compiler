@@ -94,6 +94,7 @@ public class TokenTerminator {
         }
     }
 
+    // TODO: check the lexical errors produced here
     public Token getNextToken() {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
@@ -127,8 +128,8 @@ public class TokenTerminator {
             // INFO: Ensure that the held char is accounted for
             if (!isFirstIteration) {
                 if (charBuffer.size() != 0) {
-                    currentChar = charBuffer.getFirst();
-                    charBuffer.removeFirst();
+                    currentChar = charBuffer.get(0);
+                    charBuffer.remove(0);
                 } else if (nextChar == 0) {
                     currentChar = this.getNextChar();
                 } else {
@@ -137,8 +138,8 @@ public class TokenTerminator {
                 }
             } else {
                 if (charBuffer.size() != 0) {
-                    currentChar = charBuffer.getFirst();
-                    charBuffer.removeFirst();
+                    currentChar = charBuffer.remove(0);
+                    charBuffer.remove(0);
                 }
             }
             // INFO: Handle strings when " found
