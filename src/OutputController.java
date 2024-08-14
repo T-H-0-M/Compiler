@@ -5,8 +5,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: ensure no newline/illegal char/ unterminated in string.
-
 public class OutputController {
     private static final int LINE_LENGTH = 60;
     private static final int MAX_LINE_LENGTH = 66;
@@ -49,18 +47,10 @@ public class OutputController {
 
     public void addToken(Token token) {
         String tokenString = formatToken(token);
-
-        if (currentLine.length() + tokenString.length() > MAX_LINE_LENGTH) {
+        currentLine.append(tokenString);
+        if (currentLine.length() > LINE_LENGTH) {
             formattedLines.add(currentLine.toString());
             currentLine = new StringBuilder();
-        }
-
-        if (currentLine.length() >= LINE_LENGTH) {
-            currentLine.append(tokenString);
-            formattedLines.add(currentLine.toString());
-            currentLine = new StringBuilder();
-        } else {
-            currentLine.append(tokenString);
         }
     }
 

@@ -198,14 +198,12 @@ public class TokenTerminator {
                     } else if (isValidChar(previousChar) && previousChar == 47
                             && (currentChar == 42 || currentChar == 45)) {
                         nextChar = getNextChar();
-                        // TODO : Error lies here somewhere
                         if (nextChar == 42 && currentChar == 42 || nextChar == 45 && currentChar == 45) {
                             asciiCharList.add(currentChar);
                             asciiCharList.add(nextChar);
                             nextChar = 0;
                             currentChar = getNextChar();
                         } else {
-                            // TODO : Error lies here somewhere
                             charBuffer.add(currentChar);
                             charBuffer.add(nextChar);
                             nextChar = 0;
