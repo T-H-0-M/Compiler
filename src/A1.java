@@ -1,20 +1,34 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.nio.file.Paths;
 
 public class A1 {
     private static ArrayList<Token> tokenList = new ArrayList<>();
     private static ArrayList<Token> errorList = new ArrayList<>();
-    private static OutputFormatter outputFormatter = new OutputFormatter();
+    private static OutputController outputController;
 
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Please provide a file path as an argument.");
             return;
         }
+        String sourceFilePath = args[0];
+        File sourceFile = new File(sourceFilePath);
 
-        String filePath = args[0];
-        TokenTerminator tokenTerminator = new TokenTerminator(filePath);
+        // Get the directory of the source file
+        String sourceDir = ".";
+
+        String sourceFileName = sourceFile.getName();
+        String baseName = sourceFileName.substring(0, sourceFileName.lastIndexOf('.'));
+
+        String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
+
+        outputController = new OutputController(outputFilePath);
+        TokenTerminator tokenTerminator = new TokenTerminator(sourceFilePath, outputController);
+
         run(tokenTerminator);
+        outputController.closeOutput();
         printFormattedOutput();
     }
 
@@ -24,16 +38,16 @@ public class A1 {
             currentToken = tokenTerminator.getNextToken();
             if (currentToken.getTokenId() == 68) {
                 errorList.add(currentToken);
-                outputFormatter.addError(currentToken);
+                outputController.addError(currentToken);
             } else {
                 tokenList.add(currentToken);
-                outputFormatter.addToken(currentToken);
+                outputController.addToken(currentToken);
             }
         } while (currentToken.getTokenId() != 0);
     }
 
     private static void printFormattedOutput() {
-        List<String> formattedOutput = outputFormatter.getFormattedOutput();
+        List<String> formattedOutput = outputController.getFormattedOutput();
         for (String line : formattedOutput) {
             System.out.println(line);
         }
