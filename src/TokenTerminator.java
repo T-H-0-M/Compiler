@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-// TODO: Slim down java docs once up to speed
-// TODO: Check how underscores are handled
-
 public class TokenTerminator {
 
     private static final String[] CHAR_TYPES = new String[128];
@@ -106,6 +103,7 @@ public class TokenTerminator {
 
         while (isSameState) {
 
+            // INFO: Handle new start
             if (currentChar == 0) {
                 currentChar = getNextChar();
             }
@@ -115,11 +113,8 @@ public class TokenTerminator {
                 return new Token(0, "", 0, 0);
             }
 
-            // INFO: Handle dead characters
-            if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
-                currentChar = this.getNextChar();
-                tokenStartLine = currentLine;
-                tokenStartColumn = currentColumn;
+            // INFO: Handle Dead Characters
+            if (handleDeadCharacters(asciiCharList, isSameState)) {
                 continue;
             }
 
@@ -179,38 +174,10 @@ public class TokenTerminator {
                         isSameState = true;
                     }
                 }
+                // INFO: Handles Delimiters
                 if (getType(previousChar).equals("potential_delimiter") && isSameState) {
-                    if (!isValidChar(currentChar) && !isValidChar(previousChar)) {
-                        asciiCharList.add(currentChar);
-                        currentChar = getNextChar();
-                    }
-                    if (isCombinedOperator(previousChar, currentChar)) {
-                        asciiCharList.add(currentChar);
-                        currentChar = getNextChar();
-                        isSameState = false;
+                    if (handlePotentialDelimiters(asciiCharList, previousChar, isSameState)) {
                         break;
-                    }
-                    if (isValidChar(previousChar) && previousChar == 47
-                            && (currentChar != 42 && currentChar != 45)) {
-                        isSameState = false;
-                        break;
-                    } else if (isValidChar(previousChar) && previousChar == 47
-                            && (currentChar == 42 || currentChar == 45)) {
-                        nextChar = getNextChar();
-                        if (nextChar == 42 && currentChar == 42 || nextChar == 45 && currentChar == 45) {
-                            asciiCharList.add(currentChar);
-                            asciiCharList.add(nextChar);
-                            nextChar = 0;
-                            currentChar = getNextChar();
-                        } else {
-                            charBuffer.add(currentChar);
-                            charBuffer.add(nextChar);
-                            nextChar = 0;
-                        }
-                    } else {
-                        asciiCharList.add(currentChar);
-                        isSameState = false;
-                        currentChar = getNextChar();
                     }
                 } else if (isSameState) {
                     asciiCharList.add(currentChar);
@@ -236,6 +203,68 @@ public class TokenTerminator {
             tempToken = getNextToken();
         }
         return tempToken;
+    }
+
+    // INFO: Returns true if loop continue, false otherwise
+    private boolean handleDeadCharacters(ArrayList<Integer> asciiCharList, boolean isSameState) {
+
+        if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
+            currentChar = this.getNextChar();
+            tokenStartLine = currentLine;
+            tokenStartColumn = currentColumn;
+            return true;
+        }
+        return false;
+    }
+
+    // INFO: Returns true if loop breaking, false otherwise
+    private boolean handlePotentialDelimiters(ArrayList<Integer> asciiCharList, int previousChar, boolean isSameState) {
+        if (!isValidChar(currentChar) && !isValidChar(previousChar)) {
+            while (!isValidChar(currentChar) && getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        }
+        if (isCombinedOperator(previousChar, currentChar)) {
+            while (getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        }
+        if (isValidChar(previousChar) && previousChar == 47
+                && (currentChar != 42 && currentChar != 45)) {
+            while (getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        } else if (isValidChar(previousChar) && previousChar == 47
+                && (currentChar == 42 || currentChar == 45)) {
+            nextChar = getNextChar();
+            if (nextChar == 42 && currentChar == 42 || nextChar == 45 && currentChar == 45) {
+                asciiCharList.add(currentChar);
+                asciiCharList.add(nextChar);
+                nextChar = 0;
+                currentChar = getNextChar();
+            } else {
+                charBuffer.add(currentChar);
+                charBuffer.add(nextChar);
+                nextChar = 0;
+            }
+        } else {
+            while (getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        }
+        return false;
     }
 
     private boolean isCombinedOperator(int char1, int char2) {
@@ -514,7 +543,7 @@ public class TokenTerminator {
                     tokenStartColumn);
         } catch (NumberFormatException e) {
             return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
-                    "Lexical Error: Invalid Integer Literal", tokenStartLine,
+                    "lexical error: Invalid Integer Literal", tokenStartLine,
                     tokenStartColumn);
         }
     }
