@@ -3,6 +3,18 @@ import java.util.List;
 import java.io.File;
 import java.nio.file.Paths;
 
+/**
+ * A1 class
+ * 
+ * This class serves as the main entry point for the compiler or lexical
+ * analyzer.
+ * It handles the processing of input files, manages token and error lists,
+ * and coordinates the output of results.
+ * 
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ * @since 2024-08-15
+ */
 public class A1 {
     private static ArrayList<Token> tokenList = new ArrayList<>();
     private static ArrayList<Token> errorList = new ArrayList<>();
@@ -31,6 +43,13 @@ public class A1 {
         printFormattedOutput();
     }
 
+    /**
+     * Runs the main processing loop of the compiler or lexical analyzer.
+     * It repeatedly fetches tokens from the CompilerScanner and processes them,
+     * adding them to either the tokenList or errorList as appropriate.
+     *
+     * @param compilerScanner The CompilerScanner object used to fetch tokens.
+     */
     private static void run(CompilerScanner compilerScanner) {
         Token currentToken;
         do {
@@ -45,22 +64,15 @@ public class A1 {
         } while (currentToken.getTokenId() != 0);
     }
 
+    /**
+     * Prints the formatted output of the compilation or lexical analysis process.
+     * This method retrieves the formatted output from the OutputController
+     * and prints it to the console.
+     */
     private static void printFormattedOutput() {
         List<String> formattedOutput = outputController.getFormattedOutput();
         for (String line : formattedOutput) {
             System.out.println(line);
         }
-    }
-
-    /**
-     * Prints all tokens in the tokenList.
-     * Each token is printed on a new line with its index in the list.
-     */
-    private static void printTokenList() {
-        System.out.println("\n--- All Tokens in tokenList ---");
-        for (Token token : tokenList) {
-            System.out.println(token.toString());
-        }
-        System.out.println("--- End of tokenList ---\n");
     }
 }
