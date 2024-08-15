@@ -2,23 +2,31 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Tokeniser class
+ * 
+ * This class is responsible for managing token types, their codes, and
+ * providing utility methods for token identification in the lexical analysis
+ * phase of the compiler. It defines token types as an enum and maintains
+ * mappings between tokens, keywords, and operators.
+ * 
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ * @since 2024-08-15
+ */
 public class Tokeniser {
 
     public enum TokenType {
-        // End of file
         TTEOF,
 
-        // Keywords
         TCD24, TCONS, TTYPD, TTDEF, TARRD, TMAIN, TBEGN, TTEND, TARAY, TTTOF, TFUNC, TVOID,
         TCNST, TINTG, TFLOT, TBOOL, TTFOR, TREPT, TUNTL, TTTDO, TWHIL, TIFTH, TELSE, TELIF,
         TSWTH, TCASE, TDFLT, TBREK, TINPT, TPRNT, TPRLN, TRETN, TNOTT, TTAND, TTTOR, TTXOR,
         TTRUE, TFALS,
 
-        // Operators and delimiters
         TCOMA, TLBRK, TRBRK, TLPAR, TRPAR, TEQUL, TPLUS, TMINS, TSTAR, TDIVD, TPERC, TCART,
         TLESS, TGRTR, TCOLN, TSEMI, TDOTT, TLEQL, TGEQL, TNEQL, TEQEQ, TPLEQ, TMNEQ, TSTEQ, TDVEQ,
 
-        // Other token types
         TIDEN, TILIT, TFLIT, TSTRG, TUNDF
     }
 
@@ -27,7 +35,6 @@ public class Tokeniser {
     private static final Map<String, TokenType> operatorTable = new HashMap<>();
 
     static {
-        // Initialize token codes
         tokenCodeTable.put(TokenType.TTEOF, 0);
         for (int i = 1; i <= 38; i++) {
             tokenCodeTable.put(TokenType.values()[i], i);
@@ -41,7 +48,6 @@ public class Tokeniser {
         tokenCodeTable.put(TokenType.TSTRG, 67);
         tokenCodeTable.put(TokenType.TUNDF, 68);
 
-        // Initialize keyword table
         keywordTable.put("cd24", TokenType.TCD24);
         keywordTable.put("constants", TokenType.TCONS);
         keywordTable.put("typedef", TokenType.TTYPD);
@@ -81,7 +87,6 @@ public class Tokeniser {
         keywordTable.put("true", TokenType.TTRUE);
         keywordTable.put("false", TokenType.TFALS);
 
-        // Initialize operator table
         operatorTable.put(",", TokenType.TCOMA);
         operatorTable.put("[", TokenType.TLBRK);
         operatorTable.put("]", TokenType.TRBRK);
@@ -108,18 +113,36 @@ public class Tokeniser {
         operatorTable.put("*=", TokenType.TSTEQ);
         operatorTable.put("/=", TokenType.TDVEQ);
     }
-    // TODO: map other items to their tokens
 
+    /**
+     * Retrieves the integer code associated with a given token type.
+     *
+     * @param type The TokenType for which to retrieve the code.
+     * @return The integer code associated with the given TokenType.
+     */
     public static int getTokenCode(TokenType type) {
         return tokenCodeTable.get(type);
     }
 
+    /**
+     * Retrieves the TokenType associated with a given keyword string.
+     *
+     * @param keyword The keyword string to look up.
+     * @return The TokenType associated with the given keyword, or null if the
+     *         keyword is not found.
+     */
     public static TokenType getKeywordTokenType(String keyword) {
         return keywordTable.get(keyword.toLowerCase());
     }
 
+    /**
+     * Retrieves the TokenType associated with a given operator string.
+     *
+     * @param operator The operator string to look up.
+     * @return The TokenType associated with the given operator, or null if the
+     *         operator is not found.
+     */
     public static TokenType getOperatorTokenType(String operator) {
         return operatorTable.get(operator);
     }
-
 }

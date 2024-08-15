@@ -9,12 +9,11 @@ import java.util.ArrayList;
  * CompilerScanner class
  * 
  * This class is responsible for tokenizing input from a file during the lexical
- * analysis phase of the compiler.
- * It reads characters, identifies tokens, and handles various lexical elements
- * such as comments, strings,
- * and different types of literals. The class maintains state information about
- * the current position in the
- * input and provides methods for token identification and processing.
+ * analysis phase of the compiler. It reads characters, identifies tokens, and
+ * handles various lexical elements such as comments, strings, and different
+ * types of literals. The class maintains state information about the current
+ * position in the input and provides methods for token identification and
+ * processing.
  * 
  * @author Thomas Bandy, Benjamin Rogers
  * @version 1.0
