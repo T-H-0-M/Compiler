@@ -1,0 +1,13 @@
+FROM openjdk:17-jdk-slim
+
+WORKDIR /app
+
+# Copy the Java source file and compile script
+COPY . .
+COPY compile.sh .
+
+# Make the compile script executable
+RUN chmod +x compile.sh
+
+# Run the compile script when the container starts
+CMD ["./compile.sh"]

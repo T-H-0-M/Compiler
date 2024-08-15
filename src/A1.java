@@ -20,22 +20,23 @@ public class A1 {
         String sourceDir = ".";
 
         String sourceFileName = sourceFile.getName();
+        System.out.println(sourceFileName);
         String baseName = sourceFileName.substring(0, sourceFileName.lastIndexOf('.'));
 
         String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
 
         outputController = new OutputController(outputFilePath);
-        TokenTerminator tokenTerminator = new TokenTerminator(sourceFilePath, outputController);
+        CompilerScanner compilerScanner = new CompilerScanner(sourceFilePath, outputController);
 
-        run(tokenTerminator);
+        run(compilerScanner);
         outputController.closeOutput();
         printFormattedOutput();
     }
 
-    private static void run(TokenTerminator tokenTerminator) {
+    private static void run(CompilerScanner compilerScanner) {
         Token currentToken;
         do {
-            currentToken = tokenTerminator.getNextToken();
+            currentToken = compilerScanner.getNextToken();
             if (currentToken.getTokenId() == 68) {
                 errorList.add(currentToken);
                 outputController.addError(currentToken);
