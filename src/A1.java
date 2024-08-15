@@ -16,9 +16,7 @@ public class A1 {
         String sourceFilePath = args[0];
         File sourceFile = new File(sourceFilePath);
 
-        // Get the directory of the source file
         String sourceDir = ".";
-
         String sourceFileName = sourceFile.getName();
         System.out.println(sourceFileName);
         String baseName = sourceFileName.substring(0, sourceFileName.lastIndexOf('.'));
