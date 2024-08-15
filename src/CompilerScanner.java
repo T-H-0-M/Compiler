@@ -5,10 +5,21 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-// TODO: Slim down java docs once up to speed
-// TODO: Check how underscores are handled
-
-public class TokenTerminator {
+/**
+ * CompilerScanner class
+ * 
+ * This class is responsible for tokenizing input from a file during the lexical
+ * analysis phase of the compiler. It reads characters, identifies tokens, and
+ * handles various lexical elements such as comments, strings, and different
+ * types of literals. The class maintains state information about the current
+ * position in the input and provides methods for token identification and
+ * processing.
+ * 
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ * @since 2024-08-15
+ */
+public class CompilerScanner {
 
     private static final String[] CHAR_TYPES = new String[128];
     private FileReader fileReader;
@@ -23,7 +34,7 @@ public class TokenTerminator {
     private int tokenStartLine = 1;
     private int tokenStartColumn = 0;
 
-    // INFO: Precomputing the types table for O(1) lookup
+    // INFO: Precomputing the types table for O(1) lookup time complexity
     static {
         Arrays.fill(CHAR_TYPES, "other");
 
@@ -46,10 +57,20 @@ public class TokenTerminator {
             CHAR_TYPES[i] = "potential_delimiter";
     }
 
-    public TokenTerminator() {
+    /**
+     * Default constructor
+     */
+    public CompilerScanner() {
     }
 
-    public TokenTerminator(String filePath, OutputController outputController) {
+    /**
+     * Constructs a CompilerScanner with a specified file path and output
+     * controller.
+     *
+     * @param filePath         The path to the file to be tokenized.
+     * @param outputController The controller for managing output.
+     */
+    public CompilerScanner(String filePath, OutputController outputController) {
         try {
             fileReader = new FileReader(new File(filePath));
             this.outputController = outputController;
@@ -63,16 +84,15 @@ public class TokenTerminator {
      * Reads the next character from the file input stream.
      * 
      * @return The next character from the file as an integer representing its ASCII
-     *         value. Returns 0 if an IOException occurs during reading.
+     *         value. Returns -1 if the end of the file is reached or 0 if an
+     *         IOException occurs.
      * 
      * @throws RuntimeException if a non-ASCII character (value > 127) is
      *                          encountered.
      * 
-     * @implNote This method currently does not handle non-ASCII characters (Unicode
-     *           values > 127). Handling of such characters is marked as a TODO.
-     * 
-     * @implSpec If an IOException occurs during file reading, the method catches
-     *           the exception, prints it to the console, and returns 0.
+     * @implNote This method handles the reading of characters, updates the current
+     *           position, and outputs the character to the listing. It also handles
+     *           potential IOExceptions.
      */
     public int getNextChar() {
         try {
@@ -82,8 +102,7 @@ public class TokenTerminator {
                 updatePosition(tempChar);
             }
             if (tempChar > 127) {
-                System.out.println("error");
-                // TODO: Handle non-ascii characters
+                System.out.println("Error: Non Ascii character");
             }
             updatePosition(tempChar);
             outputController.outputToListing((char) tempChar, currentColumn);
@@ -94,7 +113,16 @@ public class TokenTerminator {
         }
     }
 
-    // TODO: check the lexical errors produced here
+    /**
+     * Retrieves the next token from the input.
+     * 
+     * @return A Token object representing the next identified token in the input.
+     *         Returns a token with ID 0 if the end of file is reached.
+     * 
+     * @implNote This method handles various token types including comments,
+     *           strings, numbers, and identifiers. It also manages the state of the
+     *           tokeniser and handles special cases like combined operators.
+     */
     public Token getNextToken() {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
@@ -107,21 +135,18 @@ public class TokenTerminator {
 
         while (isSameState) {
 
+            // INFO: Handle new start
             if (currentChar == 0) {
                 currentChar = getNextChar();
             }
 
             // INFO: Handle EOF
-            // TODO: revisit this
             if (currentChar == -1) {
                 return new Token(0, "", 0, 0);
             }
 
-            // INFO: Handle dead characters
-            if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
-                currentChar = this.getNextChar();
-                tokenStartLine = currentLine;
-                tokenStartColumn = currentColumn;
+            // INFO: Handle Dead Characters
+            if (handleDeadCharacters(asciiCharList, isSameState)) {
                 continue;
             }
 
@@ -181,38 +206,10 @@ public class TokenTerminator {
                         isSameState = true;
                     }
                 }
+                // INFO: Handles Delimiters
                 if (getType(previousChar).equals("potential_delimiter") && isSameState) {
-                    if (!isValidChar(currentChar) && !isValidChar(previousChar)) {
-                        asciiCharList.add(currentChar);
-                        currentChar = getNextChar();
-                    }
-                    if (isCombinedOperator(previousChar, currentChar)) {
-                        asciiCharList.add(currentChar);
-                        currentChar = getNextChar();
-                        isSameState = false;
+                    if (handlePotentialDelimiters(asciiCharList, previousChar, isSameState)) {
                         break;
-                    }
-                    if (isValidChar(previousChar) && previousChar == 47
-                            && (currentChar != 42 && currentChar != 45)) {
-                        isSameState = false;
-                        break;
-                    } else if (isValidChar(previousChar) && previousChar == 47
-                            && (currentChar == 42 || currentChar == 45)) {
-                        nextChar = getNextChar();
-                        if (nextChar == 42 && currentChar == 42 || nextChar == 45 && currentChar == 45) {
-                            asciiCharList.add(currentChar);
-                            asciiCharList.add(nextChar);
-                            nextChar = 0;
-                            currentChar = getNextChar();
-                        } else {
-                            charBuffer.add(currentChar);
-                            charBuffer.add(nextChar);
-                            nextChar = 0;
-                        }
-                    } else {
-                        asciiCharList.add(currentChar);
-                        isSameState = false;
-                        currentChar = getNextChar();
                     }
                 } else if (isSameState) {
                     asciiCharList.add(currentChar);
@@ -240,6 +237,94 @@ public class TokenTerminator {
         return tempToken;
     }
 
+    /**
+     * Handles dead characters (whitespace, line feed, carriage return) in the
+     * input.
+     * 
+     * @param asciiCharList The list of ASCII characters being processed.
+     * @param isSameState   Boolean indicating if the current state is the same as
+     *                      the previous.
+     * @return true if a dead character was handled and the loop should continue,
+     *         false otherwise.
+     */
+    private boolean handleDeadCharacters(ArrayList<Integer> asciiCharList, boolean isSameState) {
+
+        if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
+            currentChar = this.getNextChar();
+            tokenStartLine = currentLine;
+            tokenStartColumn = currentColumn;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Handles potential delimiter characters in the input.
+     * 
+     * @param asciiCharList The list of ASCII characters being processed.
+     * @param previousChar  The previous character encountered.
+     * @param isSameState   Boolean indicating if the current state is the same as
+     *                      the previous.
+     * @return true if the loop should break after handling the delimiter, false
+     *         otherwise.
+     */
+    private boolean handlePotentialDelimiters(ArrayList<Integer> asciiCharList, int previousChar, boolean isSameState) {
+        if (!isValidChar(currentChar) && !isValidChar(previousChar)) {
+            while (!isValidChar(currentChar) && getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        }
+        if (isCombinedOperator(previousChar, currentChar)) {
+            while (getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        }
+        if (isValidChar(previousChar) && previousChar == 47
+                && (currentChar != 42 && currentChar != 45)) {
+            while (getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        } else if (isValidChar(previousChar) && previousChar == 47
+                && (currentChar == 42 || currentChar == 45)) {
+            nextChar = getNextChar();
+            if (nextChar == 42 && currentChar == 42 || nextChar == 45 && currentChar == 45) {
+                asciiCharList.add(currentChar);
+                asciiCharList.add(nextChar);
+                nextChar = 0;
+                currentChar = getNextChar();
+            } else {
+                charBuffer.add(currentChar);
+                charBuffer.add(nextChar);
+                nextChar = 0;
+            }
+        } else {
+            while (getType(currentChar).equals("potential_delimiter")) {
+                asciiCharList.add(currentChar);
+                currentChar = getNextChar();
+            }
+            currentChar = getNextChar();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if two characters form a combined operator.
+     * 
+     * @param char1 The first character of the potential combined operator.
+     * @param char2 The second character of the potential combined operator.
+     * @return true if the characters form a valid combined operator, false
+     *         otherwise.
+     */
     private boolean isCombinedOperator(int char1, int char2) {
         if (char2 == 61) {
             if (char1 == 60 || char1 == 62 || char1 == 61 || char1 == 33 || char1 == 42 || char1 == 43 || char1 == 45
@@ -250,6 +335,12 @@ public class TokenTerminator {
         return false;
     }
 
+    /**
+     * Checks if a given lexeme is a comment start.
+     *
+     * @param lexeme The lexeme to check.
+     * @return true if the lexeme is a comment start, false otherwise.
+     */
     private boolean commentCheck(String lexeme) {
 
         if (lexeme.equals("/**")) {
@@ -327,7 +418,8 @@ public class TokenTerminator {
         currentChar = getNextChar();
         while (currentChar != 34) {
             if (currentChar == 10) {
-                return new Token(68, "Unterminated string", tokenStartLine, tokenStartColumn);
+                return new Token(68, "Unterminated string: \"" + asciiArrayListToString(asciiCharList), tokenStartLine,
+                        tokenStartColumn);
             }
             asciiCharList.add(currentChar);
             currentChar = getNextChar();
@@ -355,20 +447,9 @@ public class TokenTerminator {
      * Determines the type of a given character based on its ASCII value.
      *
      * @param incomingChar The ASCII value of the character to be typed.
-     * @return A String representing the type of the character. Possible return
-     *         values are:
-     *         - "whitespace" for space character (ASCII 32)
-     *         - "linefeed" for line feed character (ASCII 10)
-     *         - "carriage_return" for carriage return character (ASCII 13)
-     *         - "number" for digits 0-9 (ASCII 48-57)
-     *         - "letter" for uppercase and lowercase letters (ASCII 65-90 and
-     *         97-122)
-     *         - "potential_delimiter" for certain special characters (ASCII ranges
-     *         33-47, 58-64, 91-96, 123-126)
-     *         - "other" for any character not falling into the above categories
+     * @return A String representing the type of the character.
      */
     private String getType(int incomingChar) {
-        // System.out.println("Char :" + (char) incomingChar);
         return incomingChar < 128 ? CHAR_TYPES[incomingChar] : "other";
     }
 
@@ -377,10 +458,8 @@ public class TokenTerminator {
      *
      * @param asciiList An ArrayList of Integer objects, where each Integer
      *                  represents the ASCII code of a character.
-     *
      * @return A String formed by converting each ASCII code to its corresponding
-     *         character and concatenating them. Returns an empty string if the
-     *         input list is null or empty.
+     *         character and concatenating them.
      */
     private String asciiArrayListToString(ArrayList<Integer> asciiList) {
         if (asciiList == null || asciiList.isEmpty()) {
@@ -397,13 +476,7 @@ public class TokenTerminator {
      * Finds and returns a Token object based on the given lexeme.
      *
      * @param lexeme The string representation of the lexeme to be tokenized.
-     * @return A Token object representing the lexeme. The returned Token can be one
-     *         of three types:
-     *         1. A comment token (id: -1) if the lexeme is identified as a comment.
-     *         2. A token with an id from the intermediateCodeTable if the lexeme is
-     *         a known keyword or symbol.
-     *         3. A default token (id: 2) if the lexeme is not recognized as a
-     *         comment or known symbol.
+     * @return A Token object representing the lexeme.
      */
     private Token findToken(String lexeme) {
         if (commentCheck(lexeme)) {
@@ -441,7 +514,6 @@ public class TokenTerminator {
      * 
      * @param lexeme The string to be checked.
      * @return true if the lexeme consists only of digits (0-9), false otherwise.
-     *         Returns false for an empty string.
      */
     private boolean isIntegerLiteral(String lexeme) {
         if (lexeme.isEmpty())
@@ -457,9 +529,7 @@ public class TokenTerminator {
      * Checks if the given lexeme is a float literal.
      * 
      * @param lexeme The string to be checked.
-     * @return true if the lexeme is a valid float representation (contains exactly
-     *         one decimal point and only digits), false otherwise. Returns false
-     *         for an empty string or if there's more than one decimal point.
+     * @return true if the lexeme is a valid float representation, false otherwise.
      */
     private boolean isFloatLiteral(String lexeme) {
         if (lexeme.isEmpty())
@@ -485,9 +555,7 @@ public class TokenTerminator {
      * Checks if the given lexeme is a valid identifier.
      * 
      * @param lexeme The string to be checked.
-     * @return true if the lexeme is a valid identifier (starts with a letter and
-     *         contains only letters and digits), false otherwise. Returns false
-     *         for an empty string.
+     * @return true if the lexeme is a valid identifier, false otherwise.
      */
     private boolean isIdentifier(String lexeme) {
         if (lexeme.isEmpty())
@@ -502,6 +570,13 @@ public class TokenTerminator {
         return true;
     }
 
+    /**
+     * Handles the processing of an integer literal.
+     * 
+     * @param lexeme The string representation of the integer literal.
+     * @return A Token object representing the integer literal or an error token if
+     *         invalid.
+     */
     private Token handleIntegerLiteral(String lexeme) {
         try {
             long value = Long.parseLong(lexeme);
@@ -515,11 +590,18 @@ public class TokenTerminator {
                     tokenStartColumn);
         } catch (NumberFormatException e) {
             return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
-                    "Lexical Error: Invalid Integer Literal", tokenStartLine,
+                    "lexical error: Invalid Integer Literal", tokenStartLine,
                     tokenStartColumn);
         }
     }
 
+    /**
+     * Handles the processing of a float literal.
+     * 
+     * @param lexeme The string representation of the float literal.
+     * @return A Token object representing the float literal or an error token if
+     *         invalid.
+     */
     private Token handleFloatLiteral(String lexeme) {
         try {
             double value = Double.parseDouble(lexeme);
@@ -535,6 +617,12 @@ public class TokenTerminator {
         }
     }
 
+    /**
+     * Checks if the given character is a valid character for tokenization.
+     * 
+     * @param ch The ASCII value of the character to check.
+     * @return true if the character is valid for tokenization, false otherwise.
+     */
     private boolean isValidChar(int ch) {
         if ((ch < 33 || ch > 126) || (ch != 44 && ch != 91 && ch != 93 && ch != 40 && ch != 41 &&
                 ch != 61 && ch != 43 && ch != 45 && ch != 42 && ch != 47 && ch != 37 && ch != 94 &&
@@ -548,9 +636,6 @@ public class TokenTerminator {
      * Updates the current line and column position based on the input character.
      * 
      * @param tempChar The character to process for position updating.
-     * @implNote This method increments the line counter and resets the column
-     *           counter to 0 when a newline character (ASCII 10) is encountered.
-     *           For all other characters, it increments the column counter.
      */
     private void updatePosition(int tempChar) {
         if (tempChar == 10) {
