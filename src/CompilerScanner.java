@@ -437,6 +437,9 @@ public class CompilerScanner {
      * @return A String representing the type of the character.
      */
     private String getType(int incomingChar) {
+        if (incomingChar == -1) {
+            return "EOF";
+        }
         return incomingChar < 128 ? CHAR_TYPES[incomingChar] : "other";
     }
 
