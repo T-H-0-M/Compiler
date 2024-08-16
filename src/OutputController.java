@@ -47,18 +47,9 @@ public class OutputController {
         String tokenString = "\n" + formatToken(token) + "\n    lexical error " + token.getLexeme() + " (line: "
                 + token.getLine() + " col: " + token.getCol() + ")";
 
-        // if (currentLine.length() + tokenString.length() > MAX_LINE_LENGTH) {
-        // formattedLines.add(currentLine.toString());
-        // currentLine = new StringBuilder();
-        // }
-
-        // if (currentLine.length() > LINE_LENGTH) {
         currentLine.append(tokenString);
         formattedLines.add(currentLine.toString());
         currentLine = new StringBuilder();
-        // } else {
-        // currentLine.append(tokenString);
-        // }
     }
 
     /**
