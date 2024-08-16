@@ -278,20 +278,12 @@ public class CompilerScanner {
             return true;
         }
         if (isCombinedOperator(previousChar, currentChar)) {
-            while (getType(currentChar).equals("potential_delimiter")) {
-                asciiCharList.add(currentChar);
-                currentChar = getNextChar();
-            }
+            asciiCharList.add(currentChar);
             currentChar = getNextChar();
             return true;
         }
         if (isValidChar(previousChar) && previousChar == 47
                 && (currentChar != 42 && currentChar != 45)) {
-            while (getType(currentChar).equals("potential_delimiter")) {
-                asciiCharList.add(currentChar);
-                currentChar = getNextChar();
-            }
-            currentChar = getNextChar();
             return true;
         } else if (isValidChar(previousChar) && previousChar == 47
                 && (currentChar == 42 || currentChar == 45)) {
@@ -307,11 +299,6 @@ public class CompilerScanner {
                 nextChar = 0;
             }
         } else {
-            while (getType(currentChar).equals("potential_delimiter")) {
-                asciiCharList.add(currentChar);
-                currentChar = getNextChar();
-            }
-            currentChar = getNextChar();
             return true;
         }
         return false;
