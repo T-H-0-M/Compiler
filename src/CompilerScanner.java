@@ -274,7 +274,7 @@ public class CompilerScanner {
                 asciiCharList.add(currentChar);
                 currentChar = getNextChar();
             }
-            currentChar = getNextChar();
+            // currentChar = getNextChar();
             return true;
         }
         if (isCombinedOperator(previousChar, currentChar)) {
