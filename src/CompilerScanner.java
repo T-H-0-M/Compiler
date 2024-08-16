@@ -8,7 +8,7 @@ import java.util.ArrayList;
 /**
  * CompilerScanner class
  * 
- * This class is responsible for tokenizing input from a file during the lexical
+ * This class is responsible for tokenising input from a file during the lexical
  * analysis phase of the compiler. It reads characters, identifies tokens, and
  * handles various lexical elements such as comments, strings, and different
  * types of literals. The class maintains state information about the current
@@ -67,7 +67,7 @@ public class CompilerScanner {
      * Constructs a CompilerScanner with a specified file path and output
      * controller.
      *
-     * @param filePath         The path to the file to be tokenized.
+     * @param filePath         The path to the file to be tokenised.
      * @param outputController The controller for managing output.
      */
     public CompilerScanner(String filePath, OutputController outputController) {
@@ -465,7 +465,7 @@ public class CompilerScanner {
     /**
      * Finds and returns a Token object based on the given lexeme.
      *
-     * @param lexeme The string representation of the lexeme to be tokenized.
+     * @param lexeme The string representation of the lexeme to be tokenised.
      * @return A Token object representing the lexeme.
      */
     private Token findToken(String lexeme) {
@@ -608,10 +608,10 @@ public class CompilerScanner {
     }
 
     /**
-     * Checks if the given character is a valid character for tokenization.
+     * Checks if the given character is a valid character for tokenisation.
      * 
      * @param ch The ASCII value of the character to check.
-     * @return true if the character is valid for tokenization, false otherwise.
+     * @return true if the character is valid for tokenisation, false otherwise.
      */
     private boolean isValidChar(int ch) {
         if ((ch < 33 || ch > 126) || (ch != 44 && ch != 91 && ch != 93 && ch != 40 && ch != 41 &&

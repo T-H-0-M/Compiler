@@ -7,7 +7,7 @@ import java.nio.file.Paths;
  * A1 class
  * 
  * This class serves as the main entry point for the compiler or lexical
- * analyzer.
+ * analyser.
  * It handles the processing of input files, manages token and error lists,
  * and coordinates the output of results.
  * 
@@ -44,7 +44,7 @@ public class A1 {
     }
 
     /**
-     * Runs the main processing loop of the compiler or lexical analyzer.
+     * Runs the main processing loop of the compiler or lexical analyser.
      * It repeatedly fetches tokens from the CompilerScanner and processes them,
      * adding them to either the tokenList or errorList as appropriate.
      *

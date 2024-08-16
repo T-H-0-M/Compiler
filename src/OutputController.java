@@ -144,7 +144,7 @@ public class OutputController {
      */
     public void outputToListing(char c, int targetCol) {
         if (writer == null) {
-            System.err.println("Writer is not initialized. Cannot output to listing.");
+            System.err.println("Writer is not initialised. Cannot output to listing.");
             return;
         }
         targetCol += 4;
@@ -183,7 +183,7 @@ public class OutputController {
      */
     public void outputErrorToListing(String error, int col) {
         if (writer == null) {
-            System.err.println("Writer is not initialized. Cannot output to listing.");
+            System.err.println("Writer is not initialised. Cannot output to listing.");
             return;
         }
         String indentation = " ".repeat(Math.max(0, col + 4));

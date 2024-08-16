@@ -44,7 +44,7 @@ public class Token {
      * Resolves a token ID to its corresponding token name.
      * 
      * @param tokenId The ID of the token to resolve
-     * @return The name of the token, or "UNKNOWN" if the ID is not recognized
+     * @return The name of the token, or "UNKNOWN" if the ID is not recognised
      */
     public static String resolveTokenName(int tokenId) {
         return tokenNames.getOrDefault(tokenId, "UNKNOWN");
