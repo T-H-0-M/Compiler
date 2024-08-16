@@ -44,21 +44,21 @@ public class OutputController {
     public void addError(Token token) {
         outputErrorToListing("lexical error " + token.getLexeme() + " (line: "
                 + token.getLine() + " col: " + token.getCol() + ")\n", token.getCol());
-        String tokenString = formatToken(token) + "\n    lexical error " + token.getLexeme() + " (line: "
-                + token.getLine() + " col: " + token.getCol() + ")\n";
+        String tokenString = "\n" + formatToken(token) + "\n    lexical error " + token.getLexeme() + " (line: "
+                + token.getLine() + " col: " + token.getCol() + ")";
 
-        if (currentLine.length() + tokenString.length() > MAX_LINE_LENGTH) {
-            formattedLines.add(currentLine.toString());
-            currentLine = new StringBuilder();
-        }
+        // if (currentLine.length() + tokenString.length() > MAX_LINE_LENGTH) {
+        // formattedLines.add(currentLine.toString());
+        // currentLine = new StringBuilder();
+        // }
 
-        if (currentLine.length() > LINE_LENGTH) {
-            currentLine.append(tokenString);
-            formattedLines.add(currentLine.toString());
-            currentLine = new StringBuilder();
-        } else {
-            currentLine.append(tokenString);
-        }
+        // if (currentLine.length() > LINE_LENGTH) {
+        currentLine.append(tokenString);
+        formattedLines.add(currentLine.toString());
+        currentLine = new StringBuilder();
+        // } else {
+        // currentLine.append(tokenString);
+        // }
     }
 
     /**
