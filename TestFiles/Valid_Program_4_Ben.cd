@@ -1,0 +1,22 @@
+/**
+- This program prompts the user to enter a name and prints a specific message based on the entered name.
+**/
+
+CD24 ValidProgram4
+
+main
+    name : string;
+    begin
+        input name;  /-- Prompt the user to enter a name
+
+        switch (name)
+            case "Dan"
+                printline "Dan! What a mad lad, legendary skiier I've been told"  /-- Print a message for the name "Dan"
+            case "Nasim"
+                printline "Nasim... I've heard that name before, I think he taught operating systems"  /-- Print a message for the name "Nasim"
+            case "Ben"
+                printline "Ben, thou art mine own creator, I am but a humble program"  /-- Print a message for the name "Ben"
+            default
+                printline "Hello Stranger"  /-- Print a generic message for any other name
+        end
+end CD24 ValidProgram4

@@ -1,0 +1,130 @@
+/**
+ - This program is a grade calculator that calculates the final scores and grades for a group of students based on their assignment marks.
+ - It takes input for the number of students and the number of assignments, and then prompts the user to enter the student IDs and assignment grades.
+ - The program then calculates the final score for each student by summing up their assignment grades and assigns a grade based on the final score.
+ - Finally, it prints out the scores and grades for all students and identifies the top student based on the highest final score.
+**/
+
+CD24 gradeCalculator
+
+constants
+    STUDENTNOMAX = 20 /-- as per spec
+    ASSIGNMENTNOMAX = 100; /-- 5 assignments per student
+
+typedef
+    assignmentMark def
+        id: int,
+        score: int
+    end
+
+    student def
+        id: int,
+        finalScore: int,
+        grade: string,
+    end
+
+    /-- Stores results of all students
+    /-- Not associated with student type as properties can only be primitive (!= arrays)
+    markArray def 
+        array [ASSIGNMENTNOMAX] of assignmentMark 
+    end
+
+    studentArray def 
+        array STUDENTNOMAX] of student 
+    end
+
+arraydef
+    students: studentArray
+    marks: markArray
+
+/-- Function to input student IDs and assignment marks
+func inputStudents(students: studentArray, marks: markArray): void
+    i: int;
+    j: int;
+begin
+    for (i = 0; i <STUDENTNOMAX) /-- loop through each student
+        students[i].id = -1; /-- default value
+        print "Enter student Id: ";
+        input students[i].id;
+
+        for(j=0; j < ASSIGNMENTNOMAX;) /-- loop through each assignment for the student
+            marks[j].id = students[i].id; /-- assign the student ID to the assignment
+
+            marks[j].score = -1.0; /-- default value
+            print "Enter assignment grade: ";
+            input marks[j].score;
+            j = j + 1;
+        end
+    end
+end
+
+/-- Function to get the grade based on the score
+func getGrade(score: int): string
+begin
+    if (score >= 85)
+        return "HD" /-- High Distinction
+    else if (score >= 75)
+        return "D" /-- Distinction
+    else if (score >= 65)
+        return "C" /-- Credit
+    else if (score >= 50)
+        return "P" /-- Pass
+    else
+        return "F" /-- Fail
+    end
+end
+
+/-- Function to calculate the final scores and grades for each student
+func calculateFinalScores(students: studentArray, marks markArray): void
+    i: int
+    j: int
+begin
+    print "Calculating final scores and grades";
+
+    for(i = 0; i <STUDENTNOMAX) /-- loop through each student
+        finalScore = -1.0; /-- default value
+        for(j = 0; j < ASSIGNMENTNOMAX) /-- loops through all marks and finds the ones that match the student id
+            if (marks[j].id == students[i].id)
+                finalScore = finalScore + marks[j].score; /-- calculate the final score for the student
+            end
+        end
+        students[i].finalScore = finalScore; /-- assign the final score to the student
+        students[i].grade = getGrade(finalScore); /-- assign the grade to the student
+    
+        print "Student", students[i].id, ":", students[i].finalScore, ":", students[i].grade;
+    end
+end
+
+/-- Function to get the ID of the top student
+func getTopStudentId(students: studentArray, marks: markArray): int
+    topStudentId: int;
+begin
+    for(i = 0; i <STUDENTNOMAX) /-- loop through each student
+        if (students[i].finalScore >= students[topStudentId].finalScore) /-- spec doesn't say to account for equal scores
+            topStudentId = i; /-- update the top student ID if a higher score is found
+        end
+    end
+    return topStudentId;
+end
+
+/-- Main function to calculate grades
+/-- Take in the number of students and the number of assessments
+/-- Take in the student IDs and their assessment marks
+/-- calculate the final score for each student
+/-- Assign a grade to each student
+/-- Print all student scores and grades
+/-- Find top student and print their id and score
+main
+    begin
+        input studentNo;
+        input assignmentNo;
+
+        inputStudents(students, marks); /-- input student IDs and assignment marks
+        calculateFinalScores(students, marks); /-- calculate final scores and grades
+        printStudents(students, studentNo); /-- print all student scores and grades
+
+        /-- This is ugly but \/
+        /-- The main function should be used to output (the top student)
+        print "Top student is: ";
+        print student[getTopStudentId(students, studentNo)].id, ":", print student[getTopStudentId(students, studentNo)].finalScore, ":", print student[getTopStudentId(students, studentNo)].grade;
+end CD24 gradeCalculator
