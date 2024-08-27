@@ -1,0 +1,27 @@
+CD24 UninitialisedVariable
+/**
+ * Program: UninitialisedVariable
+ * Description: This is a program that is designed to fail semantically via 
+ * an uninitialised variable
+ * 
+ * Features:
+ * - Declares and int and a bool, the int is initialised but the bool is not.
+ *
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+ **/
+main
+num1: int
+bool1: bool
+
+begin
+    num1 = 5;
+
+    if(bool1) /-- Program will fail semantically here, due to the bool not being initialised
+        print num1;
+    end
+
+end CD24 UninitialisedVariable

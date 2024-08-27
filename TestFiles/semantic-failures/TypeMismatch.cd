@@ -1,0 +1,25 @@
+CD24 TypeMismatch
+/**
+ * Program: TypeMismatch
+ * Description: This is a program that is designed to fail semantically via 
+ * A type mismatch
+ * 
+ * Features:
+ * - Declares and int and a bool that are then initialised, and then the int is assigned to the bool.
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+ **/
+main
+num1: int
+bool1: bool
+
+begin
+    num1 = 5;
+    bool1 = true;
+
+    bool1 = num1 /-- Program will fail semantically here, due to the int/bool type mismatch
+
+end CD24 TypeMismatch

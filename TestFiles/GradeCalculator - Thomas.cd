@@ -1,0 +1,163 @@
+CD24 GradeCalculator
+/**
+ * Program: GradeCalculator
+ * Description: This program calculates and manages grades for a group of students.
+ * 
+ * Features:
+ * - Inputs student IDs and assessment scores for multiple students
+ * - Calculates final scores based on assessment grades
+ * - Determines letter grades based on final scores
+ * - Finds and displays information for the top-performing student
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+ **/
+
+main
+
+constants
+    MAXSTUDENTS = 20
+    MAXASSIGNMENTS = 5;
+
+typedef
+    student def
+        studentId: int,
+        assessments: assessmentArray,
+        finalScore: float,
+        grade: int,
+    end
+
+    studentArray def
+        array [20] of student
+    end
+
+begin
+    assessmentArray def
+        array [MAXASSIGNMENTS] of int
+    end
+
+arraydef
+    students: studentArray
+    assessments: assessmentArray
+
+begin
+
+    /**
+    This function takes in a number of students, assignments and the student 
+    array to populate. It takes input from the user for each student.
+    **/
+    func inputStudents(numStudents: int, numAssignments: int, studentArr: studentArray): void
+        i: int;
+        j: int;
+        for (i = 0; i < numStudents)
+            print "Enter student ID: ";
+            input studentArr[i].id;
+
+            for(j=0; j < numAssignments;)
+                print "Enter grade for assessment: ";
+                input studentArr[i].assessments[j];
+                j = j + 1;
+            end
+
+            /-- Declares all unused student spaces ids as -1
+            for(j= numStudents; i < MAXSTUDENTS)
+                studentArr[j].id = -1;
+                j = j + 1;
+            end
+            i = i + 1;
+        end
+    end
+
+    /** 
+    This function assumes that all assessments are weighted equally.
+    It also assumes that the grading scale is as follows - 
+    >= 85 - HD, >= 75 - D, >= 65 - C, >= 50 - P, > 50 - F 
+    **/
+    func calculateFinalScores(studentArr: studentArray): void
+        i: int
+        j: int
+        counter = 0;
+        for(i = 0; i < MAXSTUDENTS)
+            finalScore = 0.0
+            if(studentArr[i].id == -1)
+                for(j = 0; j < MAXASSIGNMENTS)
+                    if(studentArr[i].assessments[j] != 0)
+                        finalScore = finalScore + studentArr[i].assessments[j];
+                        counter = counter + 1;
+                    end
+                    j = j + 1;
+                end
+                finalScore = finalScore / counter;
+                studentArr[i].finalScore = finalScore;
+            end
+            i = i + 1;
+        end
+    end
+
+    /**
+    This function iterates through the student array, printing out their final
+    information. It ignores any students with an id of -1.
+    **/
+    func printTopStudentResults(studentArr: studentArray): void
+        i: int
+        print "Top Student Results: "
+        highestStudent = findHighestStudent(studentArr);
+        /-- TODO Ensure that print supports these operations
+        print "StudentID: ", highestStudent[i].id;
+        print "Final Score: ", highestStudent[i].finalScore;
+        print "Grade: ", highestStudent[i].grade;
+        printline "";
+    end
+
+    /**
+    This function take an arrray of students and returns the student with the 
+    highest average finalScore.
+    **/
+    func findHighestStudent(studentArr: studentArray): student
+        highestStudent: student
+        highestFinalScore = 0.0;
+        for(i = 0, i < MAXSTUDENTS)
+            if(highestFinalScore < studentArr[i].finalScore or highestFinalScore == 0.0) 
+                highestFinalScore = studentArr[i].finalScore;
+                highestStudent = studentArr[i];
+            end
+        end
+        return highestStudent; 
+    end
+
+
+    /**
+    This function takes an array of students and assigns the correct letter 
+    grade based on a students score.
+    **/
+    func assignGrades(studentArr: studentArray, numStudents: int): void
+        i: int
+        for (i = 0; i < numStudents)
+            if (studentArr[i].finalScore >= 85)
+                studentArr[i].grade = "HD"
+            else if (studentArr[i].finalScore >= 75)
+                studentArr[i].grade = "D"
+            else if (studentArr[i].finalScore >= 65)
+                studentArr[i].grade = "C"
+            else if (studentArr[i].finalScore >= 50)
+                studentArr[i].grade = "P"
+            else
+                studentArr[i].grade = "F"
+            end
+            i = i + 1
+        end
+    end
+
+    print "Enter number of students (max 20): "
+    input numStudents
+    print "Enter number of assessments (max 5): "
+    input numAssignments
+    inputStudents(numStudents, numAssignments, students)
+    assignGrades(students, numStudents)
+    calculateFinalScores(students, numStudents, numAssignments)
+    printTopStudentResults(students, numStudents)
+
+end CD24 GradeCalculator
+

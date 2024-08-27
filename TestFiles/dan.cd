@@ -1,0 +1,58 @@
+
+/-- Valid Delimiters
+; [ ] , ( ) + - * / % ^ < > | : . < > = != == += -= *= /= && || &|  
+
+/-- Keywords - all valid
+const constants types is arrays main begin end array of func void const integer real boolean for repeat until if else in out line return true false
+CONST CONSTANTS TYPES IS ARRAYS MAIN BEGIN END ARRAY OF FUNC VOID CONST INTEGER REAL BOOLEAN FOR REPEAT UNTIL IF ELSE IN OUT LINE RETURN TRUE FALSE
+CoNsT ConStAnTs TyPeS iS aRrAyS MaIn BeGiN eNd ArRaY oF fUnC vOiD cOnSt InTeGeR rEaL bOoLeAn FoR rEpEaT uNtIl If ElSe In OuT lInE rEtUrN tRuE fAlSe
+
+Dan
+
+/-- Invalid characters
+@ # ~ ` {€£¥}
+
+YE/ES
+YE\ES
+*'|--&&
+
+/-- Valid strings
+"The quick brown fox jumps over the lazy dog."
+"This is our commenting glyph /-- which is in a string :)!"
+"                 "                                              /-- Blank String
+
+"This SHOULD * BE RIGHT either"
+/-- Invalid strings
+"this string wraps around 2 lines so
+should not be right"
+
+######
+123
+1234
+334567
+73 554
+654.77
+
+/-- Challenges
+123.abc                /-- INIT VAL SHOULD FORCE 2064
+123.345.789            /-- INIT 123.456   CONST VALUE 789
+123-abc
+173,456.789
+
+
+##
+2147483647
+2147483648 /-- Overflow
+
+>=
+--
+===
+
+
+
+>>>
+
+>==
+
+void 
+test

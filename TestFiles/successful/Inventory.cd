@@ -1,0 +1,118 @@
+CD24 Inventory
+/**
+ * Program: Inventory
+ * Description: This program manages inventory for a small store.
+ * It is a very basic program to demonstrate the use of loops 
+ * and different branching techniques in CD24
+ * 
+ * Features:
+ * - Add new items to inventory
+ * - Update item quantities
+ * - Display current inventory
+ * - Find items below reorder level
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 15/08/2024
+ * Version: 1.0
+ **/
+
+constants
+    MAXITEMS = 10
+    REORDERLEVEL = 5
+
+typedef
+    item def
+        id: int,
+        quantity: int
+    end
+
+    itemArray def
+        array [MAXITEMS] of Item
+    end
+
+arraydef
+    inventory: itemArray
+
+main
+    itemCount: int;
+    choice: int;
+    tempId: int;
+    tempQuantity: int;
+
+begin
+    itemCount = 0;
+
+    repeat (choice = 0)
+        /-- Allows users to select different choices 
+        print "1: Add item";  
+        print "2: Update Quantity";  
+        print "3: Display inventory";
+        print "4: Check reorder";  
+        print "5: Exit";  
+        input choice;
+
+        /-- Handles adding a new item
+        if (choice == 1)
+            if (itemCount < MAXITEMS)
+                print "Please enter item ID";  
+                input tempId;
+                print "Please enter qty";  
+                input tempQuantity;
+                inventory[itemCount].id = tempId;
+                inventory[itemCount].quantity = tempQuantity;
+                itemCount = itemCount + 1;
+            else
+                print "Inventory is full";
+            end
+        /-- Handles changing the qty of an already added item
+        elif (choice == 2)
+            print "Please enter item ID";
+            input tempId;
+            i: int;
+            found: bool;
+            found = false;
+            for (i = 0; i < itemCount;)
+                if (inventory[i].id == tempId)
+                    print "Please enter a new qty";  
+                    input inventory[i].quantity;
+                    found = true;
+                end
+                i = i + 1;
+            end
+            if (not found)
+                print "Item not found";  
+            end
+        /-- Prints all stocked items and their qtys
+        elif (choice == 3)
+            i: int;
+            for (i = 0; i < itemCount;)
+                print inventory[i].id;
+                print inventory[i].quantity;
+                i = i + 1;
+            end
+        /-- Handles reordering of low stock items
+        elif (choice == 4)
+            i: int;
+            reorderCount: int;
+            reorderCount = 0;
+            for (i = 0; i < itemCount;)
+                if (inventory[i].quantity < REORDERLEVEL)
+                    print inventory[i].id;
+                    reorderCount = reorderCount + 1;
+                end
+                i = i + 1;
+            end
+            if (reorderCount == 0)
+                print "No items to be reordered";  
+            end
+        /-- Exits the loop
+        elif (choice == 5)
+            choice = 0; 
+        else
+            print "Invalid Choice";  
+        end
+    until choice == 0
+
+    print "Goodbye";  
+end CD24 Inventory

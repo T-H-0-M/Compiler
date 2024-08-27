@@ -1,0 +1,28 @@
+CD24 MissingSemicolon
+/**
+ * Program: MissingSemicolon
+ * Description: This is a program that is designed to fail syntactically via 
+ * two omitted semicolons
+ * 
+ * Features:
+ * - Declares two ints that are then initialised, the runs a for loop
+ * that print num2 on each pass
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+ **/
+main
+num1: int
+num2: int
+
+begin
+    num1 = 5;
+    num2 = 4    /-- Program will fail syntactically here due to the missing semicolon
+
+    for (i = 0; i < 4)  
+        print num2;
+    end
+
+end CD24 MissingSemicolon

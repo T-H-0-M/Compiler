@@ -1,0 +1,24 @@
+CD24 SimpleWorking
+/**
+ * Program: Simple
+ * Description: This is the simplest working program I could come up with
+ * Features:
+ * - None
+ *
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+**/
+
+main
+i: int
+
+begin
+test#("hello")
+++
+==
+$##$$#==
+>==
+    i = 1;
+end CD24 SimpleWorking a
