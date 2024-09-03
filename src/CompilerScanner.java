@@ -249,7 +249,7 @@ public class CompilerScanner {
      */
     private boolean handleDeadCharacters(ArrayList<Integer> asciiCharList, boolean isSameState) {
 
-        if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
+        if (currentChar == 9 || currentChar == 32 || currentChar == 10 || currentChar == 13) {
             currentChar = this.getNextChar();
             tokenStartLine = currentLine;
             tokenStartColumn = currentColumn;
