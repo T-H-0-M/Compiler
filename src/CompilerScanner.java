@@ -97,7 +97,6 @@ public class CompilerScanner {
     public int getNextChar() {
         try {
             int tempChar = fileReader.read();
-            System.out.println("Temp char" + tempChar);
             if (tempChar < 0 && tempChar != -1) {
                 tempChar = fileReader.read();
                 updatePosition(tempChar);
@@ -146,7 +145,6 @@ public class CompilerScanner {
                 return new Token(0, "", 0, 0);
             }
 
-            System.out.println("hit");
             // INFO: Handle Dead Characters
             if (handleDeadCharacters(asciiCharList, isSameState)) {
                 continue;
