@@ -3,6 +3,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the Java source file and compile script
+
 COPY . .
 COPY compile.sh .
 
