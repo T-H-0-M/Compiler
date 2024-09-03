@@ -15,7 +15,7 @@ import java.nio.file.Paths;
  * @version 1.0
  * @since 2024-08-15
  */
-public class A1 {
+public class A2 {
     private static ArrayList<Token> tokenList = new ArrayList<>();
     private static ArrayList<Token> errorList = new ArrayList<>();
     private static OutputController outputController;
