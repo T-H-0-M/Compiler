@@ -153,7 +153,7 @@ public class CompilerScanner {
             // INFO: Ensure that the held char is accounted for
             if (!isFirstIteration) {
                 if (charBuffer.size() != 0) {
-                    currentChar = charBuffer.get(0);
+                    currentChar = charBuffer.remove(0);
                     charBuffer.remove(0);
                 } else if (nextChar == 0) {
                     currentChar = this.getNextChar();
@@ -164,7 +164,6 @@ public class CompilerScanner {
             } else {
                 if (charBuffer.size() != 0) {
                     currentChar = charBuffer.remove(0);
-                    charBuffer.remove(0);
                 }
             }
             // INFO: Handle strings when " found
@@ -204,6 +203,9 @@ public class CompilerScanner {
                         currentChar = nextChar;
                         nextChar = 0;
                         isSameState = true;
+                    } else {
+                        charBuffer.add(nextChar);
+                        nextChar = 0;
                     }
                 }
                 // INFO: Handles Delimiters
