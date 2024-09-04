@@ -9,24 +9,24 @@
 
 <consts> ::= constants <initlist> | ε
 <!--INFO: Left factored: <initlist> ::= <init> | <init> , <initlist>-->
-<initlist> ::= <init> <initlistopt>
-<initlistopt> ::= , <initlist> | ε
+<initlist> ::= <init> <initlisttail>
+<initlisttail> ::= , <initlist> | ε
 <init> ::= <id> = <expr>
 
 <types> ::= typedef <typelist> | ε
 <!--INFO: Left Recursion - Left factored: <typelist> ::= <type> <typelist> | <type>-->
-<typelist> ::= <type> <typelistopt>
-<typelistopt> ::= <typelist> | ε
+<typelist> ::= <type> <typelisttail>
+<typelisttail> ::= <typelist> | ε
 <!--INFO: Concatinated for readability -->
 <type> ::= <structid> def <fields> end | <typeid> def array \[ <expr> \] of <structid> end
 <!--INFO: Left factored: <fields> ::= <sdecl> | <sdecl> , <fields>-->
-<fields> ::= <sdecl> <fieldsopt>
-<fieldsopt> ::= , <fields> | ε
+<fields> ::= <sdecl> <fieldstail>
+<fieldstail> ::= , <fields> | ε
 
 <arrays> ::= arraydef <arrdecls> | ε
 <!--INFO: Left factored: <arrdecls> ::= <arrdecl> | <arrdecl> , <arrdecls> -->
-<arrdecls> ::= <arrdecl> <arrdeclsopt>
-<arrdeclsopt> ::= , <arrdecls> | ε
+<arrdecls> ::= <arrdecl> <arrdeclstail>
+<arrdeclstail> ::= , <arrdecls> | ε
 <arrdecl> ::= <id> : <typeid>
 
 <!--BUG: Im not sure how to factor this one-->
@@ -35,27 +35,27 @@
 <rtype> ::= <stype> | void
 <plist> ::= <params> | ε
 <!--INFO: Left factored: <params> ::= <param> | <param> , <params>-->
-<params> ::= <param> <paramsopt>
-<paramsopt> ::= , <params> | ε
+<params> ::= <param> <paramstail>
+<paramstail> ::= , <params> | ε
 <param> ::= <sdecl> | <arrdecl> | const <arrdecl>
 <funcbody> ::= <locals> begin <stats> end
 
 <locals> ::= <dlist> | ε
 <!--INFO: Left factored: <dlist> ::= <decl> | <decl> , <dlist>-->
-<dlist> ::= <decl> <dlistopt>
-<dlistopt> ::= , <dlist> | ε
+<dlist> ::= <decl> <dlisttail>
+<dlisttail> ::= , <dlist> | ε
 <decl> ::= <sdecl> | <arrdecl>
 
 <mainbody> ::= main <slist> begin <stats> end CD24 <id>
 <!--INFO: Left factored: <slist> ::= <sdecl> | <sdecl> , <slist>-->
-<slist> ::= <sdecl> <slistopt>
-<slistopt> ::= , <slist> | ε
+<slist> ::= <sdecl> <slisttail>
+<slisttail> ::= , <slist> | ε
 <sdecl> ::= <id> : <stype> | <id> : <structid>
 <stype> ::= int | float | bool
 
 <!--INFO: Left recursion - Left factored: <stats> ::= <stat> ; <stats> | <strstat> <stats> | <stat> ; | <strstat>-->
-<stats> ::= <stat> ; <statsopt> | <strstat> <statsopt>
-<statsopt> ::= <stats> | ε
+<stats> ::= <stat> ; <statstail> | <strstat> <statstail>
+<statstail> ::= <stats> | ε
 <strstat> ::= <forstat> | <ifstat> | <switchstat> | <dostat>
 <stat> ::= <reptstat> | <asgnstat> | <iostat> | <callstat> | <returnstat>
 
@@ -64,8 +64,8 @@
 <dostat> ::= do <stats> while ( <bool> ) end
 <asgnlist> ::= <alist> | ε
 <!--INFO: Left factored: <alist> ::= <asgnstat> | <asgnstat> , <alist>-->
-<alist> ::= <asgnstat> <alistopt>
-<alistopt> ::= , <alist> | ε
+<alist> ::= <asgnstat> <alisttail>
+<alisttail> ::= , <alist> | ε
 
 <ifstat> ::= if ( <bool> ) <stats> end
 <ifstat> ::= if ( <bool> ) <stats> else <stats> end
@@ -80,44 +80,44 @@
 <callstat> ::= <id> ( <elist> ) | <id> ( )
 <returnstat> ::= return void | return <expr>
 
-<vlist> ::= <var> <vlistopt>
-<vlistopt> ::= , <vlist> | ε
+<vlist> ::= <var> <vlisttail>
+<vlisttail> ::= , <vlist> | ε
 <!--INFO: Left factored twice: <var> ::= <id> | <id>\[<expr>\] | <id>\[<expr>\] . <id>-->
-<var> ::= <id> <varopt>
-<varopt> ::= \[ <expr> \] <varfield> | ε
+<var> ::= <id> <vartail>
+<vartail> ::= \[ <expr> \] <varfield> | ε
 <varfield> ::= . <id> | ε
 <!--INFO: Left factored: <elist> ::= <bool> , <elist> | <bool>-->
-<elist> ::= <bool> <elistopt>
-<elistopt> ::= , <elist> | ε
+<elist> ::= <bool> <elisttail>
+<elisttail> ::= , <elist> | ε
 
 <!--INFO: Left factored: <bool> ::= not <bool> | <bool><logop> <rel> | <rel>-->
-<bool> ::= not <bool> | <rel> <boolopt>
-<boolopt> ::= <logop> <rel> <boolopt> | ε
+<bool> ::= not <bool> | <rel> <booltail>
+<booltail> ::= <logop> <rel> <booltail> | ε
 <!--INFO: Left factored: <rel> ::= <expr> <relop><expr> | <expr>-->
-<rel> ::= <expr> <relopt>
-<relopt> ::= <relop> <expr> | ε
+<rel> ::= <expr> <reltail>
+<reltail> ::= <relop> <expr> | ε
 <logop> ::= and | or | xor
 <relop> ::= == | != | > | <= | < | >=
 
 <!--BUG: Return to this not completely factored-->
 <!--INFO: Left recursive - Left factored: <expr> ::= <expr> + <term> | <expr> - <term> | <term>-->
-<expr> ::= <term> <expropt>
-<expropt> ::= + <term> <expropt> | - <term> <expropt> | ε
+<expr> ::= <term> <exprtail>
+<exprtail> ::= + <term> <exprtail> | - <term> <exprtail> | ε
 <!--BUG: Return to this not completely factored-->
 <!--INFO: Left recursive - Left factored: <term> ::= <term> * <fact> | <term> / <fact> | <term> % <fact> | <fact>-->
-<term> ::= <fact> <termopt>
-<termopt> ::= * <fact> <termopt> | / <fact> <termopt> | % <fact> <termopt> | ε
+<term> ::= <fact> <termtail>
+<termtail> ::= * <fact> <termtail> | / <fact> <termtail> | % <fact> <termtail> | ε
 <!--BUG: Return to this not completely factored-->
 <!--INFO: Left recursive - Left factored: <fact> ::= <fact> ^ <exponent> | <exponent>-->
-<fact> ::= <exponent> <factopt>
-<factopt> ::= ^ <exponent> <factopt> | ε
+<fact> ::= <exponent> <facttail>
+<facttail> ::= ^ <exponent> <facttail> | ε
 <exponent> ::= <var> | <intlit> | <reallit> | <fncall> | true | false | ( <bool> )
 
 <fncall> ::= <id> ( <elist> ) | <id> ( )
 
 <!--INFO: Left recursive - Left factored: <prlist> ::= <printitem> , <prlist> | <printitem>-->
-<prlist> ::= <printitem> <prlistopt>
-<prlistopt> ::= , <prlist> | ε
+<prlist> ::= <printitem> <prlisttail>
+<prlisttail> ::= , <prlist> | ε
 <printitem> ::= <expr> | <string>
 
 ## Original Grammar
