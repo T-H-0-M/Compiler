@@ -1,0 +1,124 @@
+
+
+/-- Valid Delimiters
+; [ ] , ( ) = + - * / % ^ < > ! : . <= >= != == += -= *= /= 
+
+/-- Keywords - all valid
+cd24 constants typedef def arraydef main begin end array of func void const int float bool for repeat until do while if else elif switch case default break input print printline return not and or xor true false
+CD24 CONSTANTS TYPEDEF DEF ARRAYDEF MAIN BEGIN END ARRAY OF FUNC VOID CONST INT FLOAT BOOL FOR REPEAT UNTIL DO WHILE IF ELSE ELIF SWITCH CASE DEFAULT BREAK INPUT PRINT PRINTLINE RETURN NOT AND OR XOR TRUE FALSE
+CD24 CoNSTaNTS TYPeDeF DeF aRRaYDeF MaIN BeGIN eND aRRaY oF FuNC VoiD CoNST iNT FLoaT BooL FoR RePeaT uNTiL Do WHiLE iF eLSe eLIF SWiTCH CaSe DeFauLT BReaK iNPuT PRiNT PRiNTLiNe ReTuRN NoT aND oR XoR TRuE FaLSE
+
+
+
+
+Dan
+
+/-- Invalid characters
+@ # ~ ` ?@@#  ?@$@#
+?@/@#
+?@-$$@#   
+:'|==&&_ 
+
+/-- Valid strings
+"The quick brown fox jumps over the lazy dog."
+"This is our commenting glyph /-- which is in a string lit"
+"                                                       "		/-- Blank String
+
+/-- invalid strings
+"this string wraps around a line so 
+should not be right"
+
+"This SHOULD NOT"BE RIGHT either";
+124
+3244
+244565
+24.995
+654.72
+
+/-- Challenges
+123.abc				/-- TILIT 123   TDOTT TSTRG "abc"
+123.345.789			/-- TFLIT 123.456     TDOTT TILIT 789
+123.4bc				/-- test
+123,456.789
+123.O
+192.168.12.222 
+-22
+-0.124456
+Dan.COMP3290.newcastle,
+[COMP]
+(zero)
+(101+47)
+[3.14159 * 11 = x]
+<== %== *=== %/- "asdlkfj@"
+!!= =-= (/-=) >=.
+"String #@??\# Boo" 
+"#@??\# String ":/
+"#@??\#" 
+
+
+/-- Invalid challenges
+123.4@5.789			/-- two valid TFLIT and a TUNDF @
+Energi$ed
+Unenerg|sed
+00.00..00.0
+.5
+
+/-- bad comments
+
+/- comment
+-/-/--/////-------////******
+
+/**
+Trick
+Catch */
+"CAUGHT YOU"
+**/
+
+/-- talkies
+>>= >> =>=>>
+<<= << =<=<<
+
+/-- Bonus : check if numbers are within the limits
+"11111111111111111111111111111111111111111111111111111111111"
+2147483647 /-- Signed int
+4294967295 /-- Unsigned int
+
+1244567890
+1244567890124456789 0
+12445678901244567890
+12445678901244567890.abcdefg
+0000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000
+1244567890124456789012445678901244567890
+9000000000000000000
+9200000000000000000
+9999999999999999999
+9000000000000000000.9000000000000000000
+1244456778890124445244.1
+2.3333333333333333333333333
+1244456778890124445244.158588888888888865
+98988987866574746536354244524352432134213124.788788777768750
+457654567885656745676578690.467870766788959987899689543677489
+657543.898675
+
+
+$$$$$$$$ %$^#
+!! !!!=
+
+
+<<= >>=< 
+
+
+/-- invalid strings
+"this string wraps around a line so 
+should not be right"
+
+
+/-- bad comments
+
+/- comment
+
+
+Hello
+
+/-- last line comment

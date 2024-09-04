@@ -1,0 +1,54 @@
+
+
+/-- Valid Delimiters
+; [ ] , ( ) = + - * / % ^ < > : . >= == += -= *= /= <= <<>>
+
+/-- Keywords - all valid
+CD22 constants types def arrays main begin end array of func void const int float boolean for repeat until if else elif input print printline return not and or xor true false end cd22 CONSTANTS TYPES DEF ARRAYS MAIN BEGIN END ARRAY OF FUNC VOID CONST INT FLOAT BOOLEAN FOR REPEAT UNTIL IF ELSE ELIF INPUT PRINT PRINTLINE RETURN NOT AND OR XOR TRUE FALSE END Cd22 ConsTants Types Def Arrays MaiN Begin End Array Of Func Void Const Int Float BoolEAn For Repeat unTil If Else ElIf Input Print PrintLine Return NoT And Or XOr True False eNd
+
+123
+3234
+234565
+23.995
+654.72
+
+/-- Challenges
+123.abc				/-- TINTG 123   TDOTT TSTRG "abc"
+123.345.789			/-- TREAL 123.456     TDOTT TINTG 789
+123.4bc				/-- test
+123,456.789
+123.O
+192.168.12.222 
+-22
+-0.123456
+JasonDisher.COMP3290.newcastle,
+[COMP]
+(zero)
+(101+47)
+[3.14159 * 11 = x]
+<== %== *=== %/- "asdlkfj@"
+!!= =-= (/-=) >=.
+"String #@??\# Boo" 
+"#@??\# String ":/
+"#@??\#" 
+
+
+/-- Invalid challenges
+123.4@5.789			/-- two valid TREAL and a TUNDF @
+Energi$ed
+Unenerg|sed
+00.00..00.0
+.5
+
+
+/**
+Trick
+Catch */
+"CAUGHT YOU"
+**/
+
+/-- talkies
+>>= >> =>=>>
+<<= << =<=<<
+
+
