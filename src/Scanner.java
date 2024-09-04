@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 /**
- * CompilerScanner class
+ * Scanner class
  * 
  * This class is responsible for tokenising input from a file during the lexical
  * analysis phase of the compiler. It reads characters, identifies tokens, and
@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * @version 1.0
  * @since 2024-08-15
  */
-public class CompilerScanner {
+public class Scanner {
 
     private static final String[] CHAR_TYPES = new String[128];
     private FileReader fileReader;
@@ -60,17 +60,17 @@ public class CompilerScanner {
     /**
      * Default constructor
      */
-    public CompilerScanner() {
+    public Scanner() {
     }
 
     /**
-     * Constructs a CompilerScanner with a specified file path and output
+     * Constructs a Scanner with a specified file path and output
      * controller.
      *
      * @param filePath         The path to the file to be tokenised.
      * @param outputController The controller for managing output.
      */
-    public CompilerScanner(String filePath, OutputController outputController) {
+    public Scanner(String filePath, OutputController outputController) {
         try {
             fileReader = new FileReader(new File(filePath));
             this.outputController = outputController;
