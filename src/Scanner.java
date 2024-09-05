@@ -276,7 +276,6 @@ public class Scanner {
                 asciiCharList.add(currentChar);
                 currentChar = getNextChar();
             }
-            // currentChar = getNextChar();
             return true;
         }
         if (isCombinedOperator(previousChar, currentChar)) {
@@ -406,7 +405,7 @@ public class Scanner {
 
         currentChar = getNextChar();
         while (currentChar != 34) {
-            if (currentChar == 10) {
+            if (currentChar == 10 || currentChar == -1) {
                 return new Token(68, "Unterminated string: \"" + asciiArrayListToString(asciiCharList), tokenStartLine,
                         tokenStartColumn);
             }

@@ -5,7 +5,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 # java A2 ../testfiles/SimpleWorking.cd
-java A2 ./b.txt
+java A2 ../TestFiles/a.txt
 # java A1 ../testfiles/dan.cd
 # java A1 ~/Downloads/test.txt
 rm *.class
