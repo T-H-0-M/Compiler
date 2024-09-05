@@ -1,0 +1,57 @@
+/**
+ * Numeric and Operator tests
+ * just in case!!!
+ **/
+
+123
+3234
+234565
+23.995
+654.72
+
+/-- Challenges
+123.abc				/-- TINTG 123   TDOTT TSTRG "abc"
+123.345.789			/-- TREAL 123.456     TDOTT TINTG 789
+123.4bc				/-- test
+123,456.789
+123.O
+192.168.12.222 
+-22
+-0.123456
+DanBell.COMP3290.newcastle,
+[COMP]
+(zero)
+(101+47)
+[3.14159 * 11 = x]
+<== %== *=== %/- "asdlkfj@"
+!!= =-= (/-=) >=.
+"String #@??\# Boo" 
+"#@??\# String ":/
+"#@??\#" 
+
+
+/-- Invalid challenges
+123.4@5.789			/-- two valid TREAL and a TUNDF @
+Energi$ed
+Unenerg|sed
+00.00..00.0
+.5
+
+
+/**
+Trick
+Catch */
+"CAUGHT YOU"
+**/
+
+/-- overflows
+/-- 98988987866574746536354244524352432134213124
+457654567885656745676578690.467870766788959987899689543677489
+
+/-- point start
+.788788777768750
+
+/-- random tabs
+			 tab
+
+/-- blah!

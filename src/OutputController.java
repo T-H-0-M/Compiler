@@ -36,17 +36,21 @@ public class OutputController {
         initialiseWriter(outputFileName);
     }
 
+    private String sanitizeLexeme(String lexeme) {
+        return lexeme.replace("\n", "").replace("\r", "");
+    }
+
     /**
      * Adds an error token to the output.
      * 
      * @param token The token that caused the error.
      */
     public void addError(Token token) {
-        outputErrorToListing("lexical error " + token.getLexeme() + " (line: "
+        outputErrorToListing("lexical error: " + token.getLexeme() + " (line: "
                 + token.getLine() + " col: " + token.getCol() + ")\n", token.getCol());
-        String tokenString = "\n" + formatToken(token) + "\n    lexical error " + token.getLexeme() + " (line: "
+        String tokenString = "\n" + formatToken(token) + "\n lexical error: " +
+                sanitizeLexeme(token.getLexeme()) + " (line: "
                 + token.getLine() + " col: " + token.getCol() + ")";
-
         currentLine.append(tokenString);
         formattedLines.add(currentLine.toString());
         currentLine = new StringBuilder();

@@ -4,7 +4,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 /**
- * A1 class
+ * A2 class
  * 
  * This class serves as the main entry point for the compiler or lexical
  * analyser.
@@ -36,24 +36,24 @@ public class A2 {
         String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
 
         outputController = new OutputController(outputFilePath);
-        CompilerScanner compilerScanner = new CompilerScanner(sourceFilePath, outputController);
+        Scanner scanner = new Scanner(sourceFilePath, outputController);
 
-        run(compilerScanner);
+        run(scanner);
         outputController.closeOutput();
         printFormattedOutput();
     }
 
     /**
      * Runs the main processing loop of the compiler or lexical analyser.
-     * It repeatedly fetches tokens from the CompilerScanner and processes them,
+     * It repeatedly fetches tokens from the Scanner and processes them,
      * adding them to either the tokenList or errorList as appropriate.
      *
-     * @param compilerScanner The CompilerScanner object used to fetch tokens.
+     * @param scanner The Scanner object used to fetch tokens.
      */
-    private static void run(CompilerScanner compilerScanner) {
+    private static void run(Scanner scanner) {
         Token currentToken;
         do {
-            currentToken = compilerScanner.getNextToken();
+            currentToken = scanner.getNextToken();
             if (currentToken.getTokenId() == 68) {
                 errorList.add(currentToken);
                 outputController.addError(currentToken);

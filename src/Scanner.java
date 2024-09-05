@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 
 /**
- * CompilerScanner class
+ * Scanner class
  * 
  * This class is responsible for tokenising input from a file during the lexical
  * analysis phase of the compiler. It reads characters, identifies tokens, and
@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * @version 1.0
  * @since 2024-08-15
  */
-public class CompilerScanner {
+public class Scanner {
 
     private static final String[] CHAR_TYPES = new String[128];
     private FileReader fileReader;
@@ -60,17 +60,17 @@ public class CompilerScanner {
     /**
      * Default constructor
      */
-    public CompilerScanner() {
+    public Scanner() {
     }
 
     /**
-     * Constructs a CompilerScanner with a specified file path and output
+     * Constructs a Scanner with a specified file path and output
      * controller.
      *
      * @param filePath         The path to the file to be tokenised.
      * @param outputController The controller for managing output.
      */
-    public CompilerScanner(String filePath, OutputController outputController) {
+    public Scanner(String filePath, OutputController outputController) {
         try {
             fileReader = new FileReader(new File(filePath));
             this.outputController = outputController;
@@ -97,7 +97,7 @@ public class CompilerScanner {
     public int getNextChar() {
         try {
             int tempChar = fileReader.read();
-            if (tempChar < 0) {
+            if (tempChar < 0 && tempChar != -1) {
                 tempChar = fileReader.read();
                 updatePosition(tempChar);
             }
@@ -153,7 +153,7 @@ public class CompilerScanner {
             // INFO: Ensure that the held char is accounted for
             if (!isFirstIteration) {
                 if (charBuffer.size() != 0) {
-                    currentChar = charBuffer.get(0);
+                    currentChar = charBuffer.remove(0);
                     charBuffer.remove(0);
                 } else if (nextChar == 0) {
                     currentChar = this.getNextChar();
@@ -164,7 +164,6 @@ public class CompilerScanner {
             } else {
                 if (charBuffer.size() != 0) {
                     currentChar = charBuffer.remove(0);
-                    charBuffer.remove(0);
                 }
             }
             // INFO: Handle strings when " found
@@ -204,6 +203,9 @@ public class CompilerScanner {
                         currentChar = nextChar;
                         nextChar = 0;
                         isSameState = true;
+                    } else {
+                        charBuffer.add(nextChar);
+                        nextChar = 0;
                     }
                 }
                 // INFO: Handles Delimiters
@@ -238,8 +240,8 @@ public class CompilerScanner {
     }
 
     /**
-     * Handles dead characters (whitespace, line feed, carriage return) in the
-     * input.
+     * Handles dead characters (horizontal tabs, whitespace, line feed, carriage
+     * return) in the input.
      * 
      * @param asciiCharList The list of ASCII characters being processed.
      * @param isSameState   Boolean indicating if the current state is the same as
@@ -249,7 +251,7 @@ public class CompilerScanner {
      */
     private boolean handleDeadCharacters(ArrayList<Integer> asciiCharList, boolean isSameState) {
 
-        if (currentChar == 32 || currentChar == 10 || currentChar == 13) {
+        if (currentChar == 9 || currentChar == 32 || currentChar == 10 || currentChar == 13) {
             currentChar = this.getNextChar();
             tokenStartLine = currentLine;
             tokenStartColumn = currentColumn;
@@ -274,7 +276,6 @@ public class CompilerScanner {
                 asciiCharList.add(currentChar);
                 currentChar = getNextChar();
             }
-            // currentChar = getNextChar();
             return true;
         }
         if (isCombinedOperator(previousChar, currentChar)) {
@@ -336,7 +337,7 @@ public class CompilerScanner {
         }
         if (lexeme.equals("/--")) {
             int tempChar = getNextChar();
-            while (tempChar != 10) {
+            while (tempChar != 10 & tempChar != -1) {
                 tempChar = getNextChar();
             }
             nextChar = 0;
@@ -404,7 +405,7 @@ public class CompilerScanner {
 
         currentChar = getNextChar();
         while (currentChar != 34) {
-            if (currentChar == 10) {
+            if (currentChar == 10 || currentChar == -1) {
                 return new Token(68, "Unterminated string: \"" + asciiArrayListToString(asciiCharList), tokenStartLine,
                         tokenStartColumn);
             }
