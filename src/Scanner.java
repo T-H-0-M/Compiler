@@ -123,7 +123,7 @@ public class Scanner {
      *           strings, numbers, and identifiers. It also manages the state of the
      *           tokeniser and handles special cases like combined operators.
      */
-    public Token getNextToken() {
+    public Token nextToken() {
         ArrayList<Integer> asciiCharList = new ArrayList<>();
         boolean isSameState = true;
         boolean isFirstIteration = true;
@@ -234,7 +234,7 @@ public class Scanner {
 
         // INFO: Recursive goodness?
         if (tempToken.getTokenId() == -1) {
-            tempToken = getNextToken();
+            tempToken = nextToken();
         }
         return tempToken;
     }
