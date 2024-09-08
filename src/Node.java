@@ -41,4 +41,8 @@ public class Node {
     public List<String> getErrors() {
         return errors;
     }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }

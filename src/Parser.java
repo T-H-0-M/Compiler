@@ -7,14 +7,12 @@ public class Parser {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
-        this.hasError = false;
     }
 
     public Parser(Scanner scanner) {
         this.scanner = scanner;
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
-        this.hasError = false;
     }
 
     private Node consume(Tokeniser.TokenType expectedType, Node parentNode) {
@@ -25,11 +23,11 @@ public class Parser {
             parentNode.addChild(node);
             return node;
         } else {
-            hasError = true;
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
             System.out.println(errorMsg);
             parentNode.addError(errorMsg);
+            parentNode.setType(errorMsg);
             currentToken = scanner.nextToken(); // Skip the unexpected token
             return null;
         }
@@ -57,7 +55,7 @@ public class Parser {
     }
 
     private Node program() {
-        Node node = new Node("Program", "");
+        Node node = new Node("NPROG", "");
         consume(Tokeniser.TokenType.TCD24, node);
         node.addChild(new Node("Identifier", currentToken.getType().toString()));
         consume(Tokeniser.TokenType.TIDEN, node);
@@ -68,7 +66,7 @@ public class Parser {
     }
 
     private Node globals() {
-        Node node = new Node("Globals", "");
+        Node node = new Node("NGLOB", "");
         node.addChild(consts());
         node.addChild(types());
         node.addChild(arrays());
@@ -77,34 +75,35 @@ public class Parser {
 
     private Node consts() {
         if (match(Tokeniser.TokenType.TCONS)) {
-            Node node = new Node("Constants", "");
+            Node node = new Node("Special", "");
             consume(Tokeniser.TokenType.TCONS, node);
             node.addChild(initList());
             return node;
         }
-        return new Node("Constants", "");
+        return new Node("Special", "");
     }
 
+    // TODO: check the NILIST here
     private Node initList() {
-        Node node = new Node("InitList", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(init());
-        node.addChild(initListTail());
+        node.addChild(initListTail(node));
         return node;
     }
 
-    private Node initListTail() {
+    private Node initListTail(Node node) {
         if (match(Tokeniser.TokenType.TCOMA)) {
-            Node node = new Node("InitListTail", "");
+            node.setType("NILIST");
             consume(Tokeniser.TokenType.TCOMA, node);
             node.addChild(initList());
             return node;
         }
-        return new Node("InitListTail", "");
+        return node;
     }
 
     private Node init() {
-        Node node = new Node("Init", "");
-        node.addChild(new Node("Identifier", currentToken.getType().toString()));
+        Node node = new Node("NINIT", "");
+        node.addChild(new Node("TIDEN", currentToken.getLexeme()));
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TEQUL, node);
         node.addChild(expr());
@@ -113,43 +112,42 @@ public class Parser {
 
     private Node types() {
         if (match(Tokeniser.TokenType.TTYPD)) {
-            Node node = new Node("Types", "");
+            Node node = new Node("SPECIAL", "");
             consume(Tokeniser.TokenType.TTYPD, node);
             node.addChild(typeList());
             return node;
         }
-        return new Node("Types", "");
+        return new Node("SPECIAL", "");
     }
 
     private Node typeList() {
-        Node node = new Node("TypeList", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(type());
-        node.addChild(typeListTail());
+        node.addChild(typeListTail(node));
         return node;
     }
 
-    private Node typeListTail() {
+    private Node typeListTail(Node node) {
         if (match(Tokeniser.TokenType.TIDEN)) {
+            node.setType("NTYPEL");
             return typeList();
         }
-        return new Node("TypeListTail", "");
+        return node;
     }
 
     private Node type() {
-        Node node = new Node("Type", "");
-        node.addChild(new Node("Identifier", currentToken.getType().toString()));
+        Node node = new Node("NRTYPE", "");
+        node.addChild(new Node("TIDEN", currentToken.getLexeme()));
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TTDEF, node);
         if (match(Tokeniser.TokenType.TARAY)) {
-            Node arrayNode = new Node("Array", "");
             consume(Tokeniser.TokenType.TARAY, node);
             consume(Tokeniser.TokenType.TLBRK, node);
-            arrayNode.addChild(expr());
+            node.addChild(expr());
             consume(Tokeniser.TokenType.TRBRK, node);
             consume(Tokeniser.TokenType.TTTOF, node);
-            arrayNode.addChild(new Node("Identifier", currentToken.getType().toString()));
+            node.addChild(new Node("TIDEN", currentToken.getLexeme()));
             consume(Tokeniser.TokenType.TIDEN, node);
-            node.addChild(arrayNode);
         } else {
             node.addChild(fields());
         }
@@ -158,20 +156,20 @@ public class Parser {
     }
 
     private Node fields() {
-        Node node = new Node("Fields", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(sDecl());
-        node.addChild(fieldsTail());
+        node.addChild(fieldsTail(node));
         return node;
     }
 
-    private Node fieldsTail() {
+    private Node fieldsTail(Node node) {
         if (match(Tokeniser.TokenType.TCOMA)) {
-            Node node = new Node("FieldsTail", "");
+            node.setType("NFLIST");
             consume(Tokeniser.TokenType.TCOMA, node);
             node.addChild(fields());
             return node;
         }
-        return new Node("FieldsTail", "");
+        return node;
     }
 
     private Node arrays() {
@@ -185,46 +183,46 @@ public class Parser {
     }
 
     private Node arrDecls() {
-        Node node = new Node("ArrayDeclarations", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(arrDecl());
-        node.addChild(arrDeclsTail());
+        node.addChild(arrDeclsTail(node));
         return node;
     }
 
-    private Node arrDeclsTail() {
+    private Node arrDeclsTail(Node node) {
         if (match(Tokeniser.TokenType.TCOMA)) {
-            Node node = new Node("ArrayDeclarationsTail", "");
+            node.setType("NALIST");
             consume(Tokeniser.TokenType.TCOMA, node);
             node.addChild(arrDecls());
             return node;
         }
-        return new Node("ArrayDeclarationsTail", "");
+        return node;
     }
 
     private Node arrDecl() {
-        Node node = new Node("ArrayDeclaration", "");
-        node.addChild(new Node("Identifier", currentToken.getType().toString()));
+        Node node = new Node("NARRD", "");
+        node.addChild(new Node("TIDEN", currentToken.getLexeme()));
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TCOLN, node);
-        node.addChild(new Node("Type", currentToken.getType().toString()));
+        node.addChild(new Node("TIDEN", currentToken.getLexeme()));
         consume(Tokeniser.TokenType.TIDEN, node);
         return node;
     }
 
     private Node funcs() {
         if (match(Tokeniser.TokenType.TFUNC)) {
-            Node node = new Node("Functions", "");
+            Node node = new Node("NFUNCS", "");
             node.addChild(func());
             node.addChild(funcs());
             return node;
         }
-        return new Node("Functions", "");
+        return new Node("SPECIAL", "");
     }
 
     private Node func() {
-        Node node = new Node("Function", "");
+        Node node = new Node("NFUND", "");
         consume(Tokeniser.TokenType.TFUNC, node);
-        node.addChild(new Node("Identifier", currentToken.getType().toString()));
+        node.addChild(new Node("IDENT", currentToken.getLexeme()));
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TLPAR, node);
         node.addChild(pList());
@@ -237,7 +235,7 @@ public class Parser {
 
     private Node rType() {
         if (match(Tokeniser.TokenType.TVOID)) {
-            Node node = new Node("ReturnType", "TVOID");
+            Node node = new Node("Special", "TVOID");
             consume(Tokeniser.TokenType.TVOID, node);
             return node;
         } else {
@@ -249,39 +247,41 @@ public class Parser {
         if (match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TCONS)) {
             return params();
         }
-        return new Node("ParameterList", "");
+        return new Node("SPECIAL", "");
     }
 
     private Node params() {
-        Node node = new Node("Parameters", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(param());
-        node.addChild(paramsTail());
+        node.addChild(paramsTail(node));
         return node;
     }
 
-    private Node paramsTail() {
+    private Node paramsTail(Node node) {
         if (match(Tokeniser.TokenType.TCOMA)) {
-            Node node = new Node("ParametersTail", "");
+            node.setType("NPLIST");
             consume(Tokeniser.TokenType.TCOMA, node);
             node.addChild(params());
             return node;
         }
-        return new Node("ParametersTail", "");
+        return node;
     }
 
     private Node param() {
-        Node node = new Node("Parameter", "");
+        Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TCONS)) {
+            node.setType("NARRC");
             node.addChild(new Node("Constant", ""));
             consume(Tokeniser.TokenType.TCONS, node);
             node.addChild(arrDecl());
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.addChild(new Node("Identifier", currentToken.getType().toString()));
+
+            node.addChild(new Node("Identifier", currentToken.getLexeme()));
             consume(Tokeniser.TokenType.TIDEN, node);
             if (match(Tokeniser.TokenType.TCOLN)) {
                 consume(Tokeniser.TokenType.TCOLN, node);
                 if (match(Tokeniser.TokenType.TIDEN)) {
-                    node.addChild(new Node("Type", currentToken.getType().toString()));
+                    node.addChild(new Node("IDENT", currentToken.getLexeme()));
                     consume(Tokeniser.TokenType.TIDEN, node);
                 } else {
                     node.addChild(sType());
