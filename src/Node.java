@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class Node {
     private String type;
@@ -19,14 +18,24 @@ public class Node {
     }
 
     public void printTree() {
-        printTree(0);
+        List<String> lines = new ArrayList<>();
+        buildTreeString(this, lines, "", "");
+        for (String line : lines) {
+            System.out.println(line);
+        }
     }
 
-    private void printTree(int indent) {
-        String indentation = " ".repeat(indent * 2);
-        System.out.println(indentation + type + (value.isEmpty() ? "" : ": " + value));
-        for (Node child : children) {
-            child.printTree(indent + 1);
+    private void buildTreeString(Node node, List<String> lines, String prefix, String childrenPrefix) {
+        String content = node.type + (node.value.isEmpty() ? "" : " (" + node.value + ")");
+        lines.add(prefix + content);
+
+        for (Iterator<Node> it = node.children.iterator(); it.hasNext();) {
+            Node child = it.next();
+            if (it.hasNext()) {
+                buildTreeString(child, lines, childrenPrefix + "├── ", childrenPrefix + "│   ");
+            } else {
+                buildTreeString(child, lines, childrenPrefix + "└── ", childrenPrefix + "    ");
+            }
         }
     }
 
