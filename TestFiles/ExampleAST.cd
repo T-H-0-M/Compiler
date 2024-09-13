@@ -1,0 +1,9 @@
+CD24 ExampleAST
+    main
+        i:int, j:int, k:int
+    begin
+        input i;
+        input j;
+        k = i + j;
+        printline k;
+end CD24 ExampleAST

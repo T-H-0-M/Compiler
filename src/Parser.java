@@ -20,7 +20,10 @@ public class Parser {
             Token consumedToken = currentToken;
             currentToken = scanner.nextToken();
             Node node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
-            parentNode.addChild(node);
+            if (consumedToken.getType().toString().equals("TIDEN")) {
+                parentNode.setValue(consumedToken.getLexeme());
+            }
+            // parentNode.addChild(node);
             return node;
         } else {
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
@@ -28,7 +31,11 @@ public class Parser {
             System.out.println(errorMsg);
             parentNode.addError(errorMsg);
             parentNode.setType(errorMsg);
-            currentToken = scanner.nextToken(); // Skip the unexpected token
+            // TODO: Improve this with scope
+            currentToken = scanner.nextToken();
+            while (currentToken.getType().toString().equals("TSEMI")) {
+                currentToken = scanner.nextToken(); // Skip to next ;
+            }
             return null;
         }
     }
@@ -38,20 +45,20 @@ public class Parser {
     }
 
     public Node parse() {
-        try {
-            rootNode = program();
-            return rootNode;
-        } catch (ParseException e) {
-            System.err.println("Parse error: " + e.getMessage());
-            if (rootNode != null) {
-                System.out.println("Partial parse tree:");
-                rootNode.printTree();
-            } else {
-                System.out.println("no tree");
-            }
-
-            throw e;
-        }
+        // try {
+        rootNode = program();
+        return rootNode;
+        // } catch (ParseException e) {
+        // System.err.println("Parse error: " + e.getMessage());
+        // if (rootNode != null) {
+        // rootNode.printPreOrderTraversal();
+        // rootNode.printTree();
+        // } else {
+        // System.out.println("no tree");
+        // }
+        //
+        // throw e;
+        // }
     }
 
     private Node program() {
@@ -71,6 +78,16 @@ public class Parser {
         node.addChild(arrays());
         return node;
     }
+
+    // private Node consts() {
+    // Node node = new Node("SPECIAL", "");
+    // if (match(Tokeniser.TokenType.TCONS)) {
+    // consume(Tokeniser.TokenType.TCONS, node);
+    // node.addChild(initList());
+    // return node;
+    // }
+    // return node;
+    // }
 
     private Node consts() {
         Node node = new Node("SPECIAL", "");
@@ -172,13 +189,13 @@ public class Parser {
     }
 
     private Node arrays() {
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TARRD)) {
-            Node node = new Node("Arrays", "");
             consume(Tokeniser.TokenType.TARRD, node);
             node.addChild(arrDecls());
             return node;
         }
-        return new Node("Arrays", "");
+        return node;
     }
 
     private Node arrDecls() {
@@ -353,6 +370,7 @@ public class Parser {
     }
 
     private Node mainBody() {
+        System.out.println("TMAIN HIT");
         Node node = new Node("NMAIN", "");
         consume(Tokeniser.TokenType.TMAIN, node);
         node.addChild(sList());
@@ -513,13 +531,13 @@ public class Parser {
     }
 
     private Node aListTail() {
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
-            Node node = new Node("AssignmentListTail", "");
+            node.setType("NASGNS");
             consume(Tokeniser.TokenType.TCOMA, node);
             node.addChild(aList());
-            return node;
         }
-        return new Node("NASGNS", "");
+        return node;
     }
 
     private Node ifStat() {
@@ -561,12 +579,12 @@ public class Parser {
     private Node caseList() {
         Node node = new Node("NCASLT", "");
         if (match(Tokeniser.TokenType.TCASE)) {
-            Node caseNode = new Node("Case", "");
             consume(Tokeniser.TokenType.TCASE, node);
-            caseNode.addChild(expr());
+            node.addChild(expr());
             consume(Tokeniser.TokenType.TCOLN, node);
-            caseNode.addChild(stats());
-            node.addChild(caseNode);
+            node.addChild(stats());
+            consume(Tokeniser.TokenType.TBREK, node);
+            consume(Tokeniser.TokenType.TSEMI, node);
             node.addChild(caseList());
         } else {
             node.setType("SPECIAL");
@@ -578,7 +596,7 @@ public class Parser {
     }
 
     private Node asgnStat() {
-        Node node = new Node("AssignmentStatement", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(var());
         node.addChild(asgnOp());
         node.addChild(bool());
@@ -589,23 +607,18 @@ public class Parser {
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TPLEQ)) {
             node.setType("NPLEQ");
-            node.addChild(new Node("PlusEqual", currentToken.getType().toString()));
             consume(Tokeniser.TokenType.TPLEQ, node);
         } else if (match(Tokeniser.TokenType.TMNEQ)) {
             node.setType("NMNEQ");
-            node.addChild(new Node("MinusEqual", currentToken.getType().toString()));
             consume(Tokeniser.TokenType.TMNEQ, node);
         } else if (match(Tokeniser.TokenType.TSTEQ)) {
             node.setType("NSTEA");
-            node.addChild(new Node("StarEqual", currentToken.getType().toString()));
             consume(Tokeniser.TokenType.TSTEQ, node);
         } else if (match(Tokeniser.TokenType.TDVEQ)) {
             node.setType("NDVEQ");
-            node.addChild(new Node("DivideEqual", currentToken.getType().toString()));
             consume(Tokeniser.TokenType.TDVEQ, node);
         } else {
             node.setType("NASGN");
-            node.addChild(new Node("Equal", currentToken.getType().toString()));
             consume(Tokeniser.TokenType.TEQUL, node);
         }
         return node;
@@ -792,14 +805,14 @@ public class Parser {
     }
 
     private Node expr() {
-        Node node = new Node("", "");
+        Node node = new Node("SPECIAL", "");
         node.addChild(term());
         node.addChild(exprTail());
         return node;
     }
 
     private Node exprTail() {
-        Node node = new Node("", "");
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TPLUS)) {
             node.setType("NADD");
             consume(Tokeniser.TokenType.TPLUS, node);
@@ -824,7 +837,7 @@ public class Parser {
     }
 
     private Node termTail() {
-        Node node = new Node("", "");
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TSTAR)) {
             node.setType("NMUL");
             consume(Tokeniser.TokenType.TSTAR, node);
@@ -852,7 +865,7 @@ public class Parser {
     }
 
     private Node factTail() {
-        Node node = new Node("", "");
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCART)) {
             node.setType("NPOW");
             consume(Tokeniser.TokenType.TCART, node);
@@ -864,7 +877,7 @@ public class Parser {
 
     private Node exponent() {
         // TODO: remove exponent
-        Node node = new Node("EXPONENT", "");
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTRUE)) {
             node.setType("NTRUE");
             consume(Tokeniser.TokenType.TTRUE, node);
@@ -882,6 +895,8 @@ public class Parser {
             consume(Tokeniser.TokenType.TFLIT, node);
         } else if (match(Tokeniser.TokenType.TLBRK)) {
             node.setType("SPECIAL");
+            consume(Tokeniser.TokenType.TLBRK, node);
+            System.out.println("bool called");
             node.addChild(bool());
             consume(Tokeniser.TokenType.TRBRK, node);
         } else {

@@ -56,6 +56,8 @@ public class A2 {
         Node parseTree = parser.parse();
         if (parseTree != null) {
             System.out.println("Parse tree (may be partial if errors occurred):");
+            // TODO: uncomment this for submission
+            // parseTree.printPreOrderTraversal();
             parseTree.printTree();
         } else {
             System.out.println("No parse tree generated.");
