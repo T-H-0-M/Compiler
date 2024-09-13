@@ -15,36 +15,54 @@ public class Parser {
         this.rootNode = null;
     }
 
-    private Node consume(Tokeniser.TokenType expectedType, Node parentNode) {
+    private Node consume(Tokeniser.TokenType expectedType, Node parentNode) throws ParseException {
         if (currentToken.getType() == expectedType) {
             Token consumedToken = currentToken;
             currentToken = scanner.nextToken();
             Node node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
-            if (consumedToken.getType().toString().equals("TIDEN")) {
+            if (consumedToken.getType() == Tokeniser.TokenType.TIDEN) {
                 parentNode.setValue(consumedToken.getLexeme());
             }
-            // parentNode.addChild(node);
             return node;
         } else {
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
-            System.out.println(errorMsg);
-            parentNode.addError(errorMsg);
-            parentNode.setType(errorMsg);
-            // TODO: Improve this with scope
-            currentToken = scanner.nextToken();
-            while (currentToken.getType().toString().equals("TSEMI")) {
-                currentToken = scanner.nextToken(); // Skip to next ;
-            }
-            return null;
+            throw new ParseException(errorMsg);
         }
     }
 
-    private boolean match(Tokeniser.TokenType expectedType) {
+    // private Node consume(Tokeniser.TokenType expectedType, Node parentNode) {
+    // if (currentToken.getType() == expectedType) {
+    // Token consumedToken = currentToken;
+    // currentToken = scanner.nextToken();
+    // Node node = new Node(consumedToken.getType().toString(),
+    // consumedToken.getLexeme());
+    // if (consumedToken.getType().toString().equals("TIDEN")) {
+    // parentNode.setValue(consumedToken.getLexeme());
+    // }
+    // // parentNode.addChild(node);
+    // return node;
+    // } else {
+    // String errorMsg = "Expected " + expectedType + ", but found " +
+    // currentToken.getType() +
+    // " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
+    // System.out.println(errorMsg);
+    // parentNode.addError(errorMsg);
+    // parentNode.setType(errorMsg);
+    // // TODO: Improve this with scope
+    // currentToken = scanner.nextToken();
+    // while (currentToken.getType().toString().equals("TSEMI")) {
+    // currentToken = scanner.nextToken(); // Skip to next ;
+    // }
+    // return null;
+    // }
+    // }
+
+    private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
         return currentToken.getType() == expectedType;
     }
 
-    public Node parse() {
+    public Node parse() throws ParseException {
         // try {
         rootNode = program();
         return rootNode;
@@ -61,7 +79,7 @@ public class Parser {
         // }
     }
 
-    private Node program() {
+    private Node program() throws ParseException {
         Node node = new Node("NPROG", "");
         consume(Tokeniser.TokenType.TCD24, node);
         consume(Tokeniser.TokenType.TIDEN, node);
@@ -71,7 +89,7 @@ public class Parser {
         return node;
     }
 
-    private Node globals() {
+    private Node globals() throws ParseException {
         Node node = new Node("NGLOB", "");
         node.addChild(consts());
         node.addChild(types());
@@ -79,7 +97,7 @@ public class Parser {
         return node;
     }
 
-    // private Node consts() {
+    // private Node consts() throws ParseException {
     // Node node = new Node("SPECIAL", "");
     // if (match(Tokeniser.TokenType.TCONS)) {
     // consume(Tokeniser.TokenType.TCONS, node);
@@ -89,7 +107,7 @@ public class Parser {
     // return node;
     // }
 
-    private Node consts() {
+    private Node consts() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCONS)) {
             consume(Tokeniser.TokenType.TCONS, node);
@@ -100,14 +118,14 @@ public class Parser {
     }
 
     // TODO: check the NILIST here
-    private Node initList() {
+    private Node initList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(init());
         node.addChild(initListTail());
         return node;
     }
 
-    private Node initListTail() {
+    private Node initListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NILIST");
@@ -118,7 +136,8 @@ public class Parser {
         return node;
     }
 
-    private Node init() {
+    private Node init() throws ParseException {
+        System.out.println("NINIT hit");
         Node node = new Node("NINIT", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TEQUL, node);
@@ -126,7 +145,7 @@ public class Parser {
         return node;
     }
 
-    private Node types() {
+    private Node types() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTYPD)) {
             consume(Tokeniser.TokenType.TTYPD, node);
@@ -136,14 +155,14 @@ public class Parser {
         return node;
     }
 
-    private Node typeList() {
+    private Node typeList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(type());
         node.addChild(typeListTail());
         return node;
     }
 
-    private Node typeListTail() {
+    private Node typeListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TIDEN)) {
             node.setType("NTYPEL");
@@ -152,7 +171,7 @@ public class Parser {
         return node;
     }
 
-    private Node type() {
+    private Node type() throws ParseException {
         Node node = new Node("NRTYPE", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TTDEF, node);
@@ -170,14 +189,14 @@ public class Parser {
         return node;
     }
 
-    private Node fields() {
+    private Node fields() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(sDecl());
         node.addChild(fieldsTail());
         return node;
     }
 
-    private Node fieldsTail() {
+    private Node fieldsTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NFLIST");
@@ -188,7 +207,7 @@ public class Parser {
         return node;
     }
 
-    private Node arrays() {
+    private Node arrays() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TARRD)) {
             consume(Tokeniser.TokenType.TARRD, node);
@@ -198,14 +217,14 @@ public class Parser {
         return node;
     }
 
-    private Node arrDecls() {
+    private Node arrDecls() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(arrDecl());
         node.addChild(arrDeclsTail());
         return node;
     }
 
-    private Node arrDeclsTail() {
+    private Node arrDeclsTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NALIST");
@@ -216,7 +235,7 @@ public class Parser {
         return node;
     }
 
-    private Node arrDecl() {
+    private Node arrDecl() throws ParseException {
         Node node = new Node("NARRD", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TCOLN, node);
@@ -224,7 +243,7 @@ public class Parser {
         return node;
     }
 
-    private Node funcs() {
+    private Node funcs() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TFUNC)) {
             node.setType("NFUNCS");
@@ -235,7 +254,8 @@ public class Parser {
         return node;
     }
 
-    private Node func() {
+    private Node func() throws ParseException {
+        System.out.println("NFUND Hit");
         Node node = new Node("NFUND", "");
         consume(Tokeniser.TokenType.TFUNC, node);
         consume(Tokeniser.TokenType.TIDEN, node);
@@ -248,7 +268,7 @@ public class Parser {
         return node;
     }
 
-    private Node rType() {
+    private Node rType() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TVOID)) {
             consume(Tokeniser.TokenType.TVOID, node);
@@ -258,7 +278,7 @@ public class Parser {
         }
     }
 
-    private Node pList() {
+    private Node pList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TCONS)) {
             return params();
@@ -266,14 +286,14 @@ public class Parser {
         return node;
     }
 
-    private Node params() {
+    private Node params() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(param());
         node.addChild(paramsTail());
         return node;
     }
 
-    private Node paramsTail() {
+    private Node paramsTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NPLIST");
@@ -285,7 +305,7 @@ public class Parser {
     }
 
     // TODO: find out what to do with array decl
-    private Node param() {
+    private Node param() throws ParseException {
         Node node = new Node("NSIMP", "");
         if (match(Tokeniser.TokenType.TCONS)) {
             node.setType("NARRC");
@@ -299,7 +319,7 @@ public class Parser {
         return node;
     }
 
-    // private Node param() {
+    // private Node param() throws ParseException {
     // Node node = new Node("", "");
     // if (match(Tokeniser.TokenType.TCONS)) {
     // node.setType("NARRC");
@@ -329,7 +349,7 @@ public class Parser {
     // return node;
     // }
 
-    private Node funcBody() {
+    private Node funcBody() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(locals());
         consume(Tokeniser.TokenType.TBEGN, node);
@@ -338,7 +358,7 @@ public class Parser {
         return node;
     }
 
-    private Node locals() {
+    private Node locals() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TIDEN)) {
             return dList();
@@ -346,14 +366,14 @@ public class Parser {
         return node;
     }
 
-    private Node dList() {
+    private Node dList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(decl());
         node.addChild(dListTail());
         return node;
     }
 
-    private Node dListTail() {
+    private Node dListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NDLIST");
@@ -365,12 +385,11 @@ public class Parser {
     }
 
     // TODO: Complete this, the grammar is currently ambiguous
-    private Node decl() {
+    private Node decl() throws ParseException {
         return new Node("SPECIAL", "");
     }
 
-    private Node mainBody() {
-        System.out.println("TMAIN HIT");
+    private Node mainBody() throws ParseException {
         Node node = new Node("NMAIN", "");
         consume(Tokeniser.TokenType.TMAIN, node);
         node.addChild(sList());
@@ -382,14 +401,14 @@ public class Parser {
         return node;
     }
 
-    private Node sList() {
+    private Node sList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(sDecl());
         node.addChild(sListTail());
         return node;
     }
 
-    private Node sListTail() {
+    private Node sListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NSDLST");
@@ -400,7 +419,7 @@ public class Parser {
         return node;
     }
 
-    private Node sDecl() {
+    private Node sDecl() throws ParseException {
         Node node = new Node("NSDECL", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TCOLN, node);
@@ -412,7 +431,7 @@ public class Parser {
         return node;
     }
 
-    private Node sType() {
+    private Node sType() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TINTG)) {
             consume(Tokeniser.TokenType.TINTG, node);
@@ -424,7 +443,7 @@ public class Parser {
         return node;
     }
 
-    private Node stats() {
+    private Node stats() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO)) {
@@ -437,19 +456,20 @@ public class Parser {
         return node;
     }
 
-    private Node statsTail() {
+    private Node statsTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO) || match(Tokeniser.TokenType.TREPT)
                 || match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TINPT)
-                || match(Tokeniser.TokenType.TRETN)) {
+                || match(Tokeniser.TokenType.TRETN) || match(Tokeniser.TokenType.TPRLN)
+                || match(Tokeniser.TokenType.TPRNT)) {
             node.setType("NSTATS");
             return stats();
         }
         return node;
     }
 
-    private Node strStat() {
+    private Node strStat() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR)) {
             node.addChild(forStat());
@@ -463,23 +483,28 @@ public class Parser {
         return node;
     }
 
-    private Node stat() {
+    private Node stat() throws ParseException {
+        // TODO: This is wrong, tf was i smoking
         Node node = new Node("SPECIAL", "");
-        if (match(Tokeniser.TokenType.TTTDO)) {
+        if (match(Tokeniser.TokenType.TREPT)) {
             node.addChild(repStat());
-        } else if (match(Tokeniser.TokenType.TREPT)) {
+            // TODO: fix this with symbol table - asgnstat and callstatt both start with
+            // TIDEN
+        } else if (match(Tokeniser.TokenType.TIDEN)) {
             node.addChild(asgnStat());
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.addChild(ioStat());
-        } else if (match(Tokeniser.TokenType.TINPT)) {
             node.addChild(callStat());
+        } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
+                || match(Tokeniser.TokenType.TPRNT)) {
+            node.addChild(ioStat());
         } else {
             node.addChild(returnStat());
         }
         return node;
     }
 
-    private Node forStat() {
+    private Node forStat() throws ParseException {
+        System.out.println("nfor hit");
         Node node = new Node("NFOR", "");
         consume(Tokeniser.TokenType.TTFOR, node);
         consume(Tokeniser.TokenType.TLPAR, node);
@@ -492,7 +517,8 @@ public class Parser {
         return node;
     }
 
-    private Node repStat() {
+    private Node repStat() throws ParseException {
+        System.out.println("nrept hit");
         Node node = new Node("NREPT", "");
         consume(Tokeniser.TokenType.TREPT, node);
         consume(Tokeniser.TokenType.TLPAR, node);
@@ -504,7 +530,8 @@ public class Parser {
         return node;
     }
 
-    private Node doStat() {
+    private Node doStat() throws ParseException {
+
         Node node = new Node("NDOWL", "");
         consume(Tokeniser.TokenType.TTTDO, node);
         node.addChild(stats());
@@ -516,21 +543,21 @@ public class Parser {
         return node;
     }
 
-    private Node asgnList() {
+    private Node asgnList() throws ParseException {
         if (match(Tokeniser.TokenType.TIDEN)) {
             return aList();
         }
         return new Node("SPECIAL", "");
     }
 
-    private Node aList() {
+    private Node aList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(asgnStat());
         node.addChild(aListTail());
         return node;
     }
 
-    private Node aListTail() {
+    private Node aListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NASGNS");
@@ -540,7 +567,8 @@ public class Parser {
         return node;
     }
 
-    private Node ifStat() {
+    private Node ifStat() throws ParseException {
+        System.out.println("NIFITH hit");
         Node node = new Node("NIFITH", "");
         consume(Tokeniser.TokenType.TIFTH, node);
         consume(Tokeniser.TokenType.TLPAR, node);
@@ -564,7 +592,7 @@ public class Parser {
         return node;
     }
 
-    private Node switchStat() {
+    private Node switchStat() throws ParseException {
         Node node = new Node("NSWTCH", "");
         consume(Tokeniser.TokenType.TSWTH, node);
         consume(Tokeniser.TokenType.TLPAR, node);
@@ -576,7 +604,7 @@ public class Parser {
         return node;
     }
 
-    private Node caseList() {
+    private Node caseList() throws ParseException {
         Node node = new Node("NCASLT", "");
         if (match(Tokeniser.TokenType.TCASE)) {
             consume(Tokeniser.TokenType.TCASE, node);
@@ -595,7 +623,8 @@ public class Parser {
         return node;
     }
 
-    private Node asgnStat() {
+    private Node asgnStat() throws ParseException {
+        System.out.println("asgnStat hit");
         Node node = new Node("SPECIAL", "");
         node.addChild(var());
         node.addChild(asgnOp());
@@ -603,7 +632,8 @@ public class Parser {
         return node;
     }
 
-    private Node asgnOp() {
+    private Node asgnOp() throws ParseException {
+        System.out.println("asgnop hit");
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TPLEQ)) {
             node.setType("NPLEQ");
@@ -624,7 +654,8 @@ public class Parser {
         return node;
     }
 
-    private Node ioStat() {
+    private Node ioStat() throws ParseException {
+        System.out.println("iostat hist");
         Node node = new Node("NINPUT", "");
         if (match(Tokeniser.TokenType.TINPT)) {
             consume(Tokeniser.TokenType.TINPT, node);
@@ -639,7 +670,8 @@ public class Parser {
         return node;
     }
 
-    private Node callStat() {
+    private Node callStat() throws ParseException {
+        System.out.println("NCALL hit");
         Node node = new Node("NCALL", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TLPAR, node);
@@ -650,7 +682,7 @@ public class Parser {
         return node;
     }
 
-    private Node returnStat() {
+    private Node returnStat() throws ParseException {
         Node node = new Node("NRETN", "");
         consume(Tokeniser.TokenType.TRETN, node);
         if (match(Tokeniser.TokenType.TVOID)) {
@@ -661,14 +693,14 @@ public class Parser {
         return node;
     }
 
-    private Node vList() {
+    private Node vList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(var());
         node.addChild(vListTail());
         return node;
     }
 
-    private Node vListTail() {
+    private Node vListTail() throws ParseException {
         Node node = new Node("NVLIST", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             consume(Tokeniser.TokenType.TCOMA, node);
@@ -678,14 +710,14 @@ public class Parser {
         return node;
     }
 
-    private Node var() {
+    private Node var() throws ParseException {
         Node node = new Node("NSIMV", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         node.addChild(varTail());
         return node;
     }
 
-    private Node varTail() {
+    private Node varTail() throws ParseException {
         Node node = new Node("NVLIST", "");
         if (match(Tokeniser.TokenType.TLBRK)) {
             consume(Tokeniser.TokenType.TLBRK, node);
@@ -697,7 +729,7 @@ public class Parser {
         return node;
     }
 
-    private Node varField() {
+    private Node varField() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TDOTT)) {
             consume(Tokeniser.TokenType.TDOTT, node);
@@ -708,14 +740,14 @@ public class Parser {
         return node;
     }
 
-    private Node eList() {
+    private Node eList() throws ParseException {
         Node node = new Node("NEXPL", "");
         node.addChild(bool());
         node.addChild(eListTail());
         return node;
     }
 
-    private Node eListTail() {
+    private Node eListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             consume(Tokeniser.TokenType.TCOMA, node);
@@ -725,7 +757,7 @@ public class Parser {
         return node;
     }
 
-    private Node bool() {
+    private Node bool() throws ParseException {
         Node node = new Node("NBOOL", "");
         if (match(Tokeniser.TokenType.TNOTT)) {
             consume(Tokeniser.TokenType.TNOTT, node);
@@ -737,7 +769,7 @@ public class Parser {
         return node;
     }
 
-    private Node boolTail() {
+    private Node boolTail() throws ParseException {
         Node node = new Node("NBOOL", "");
         if (match(Tokeniser.TokenType.TTAND) || match(Tokeniser.TokenType.TTTOR) || match(Tokeniser.TokenType.TTXOR)) {
             node.addChild(logOp());
@@ -747,14 +779,14 @@ public class Parser {
         return node;
     }
 
-    private Node rel() {
+    private Node rel() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(expr());
         node.addChild(relTail());
         return node;
     }
 
-    private Node relTail() {
+    private Node relTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TEQEQ) || match(Tokeniser.TokenType.TNEQL) || match(Tokeniser.TokenType.TGRTR)
                 || match(Tokeniser.TokenType.TLEQL) || match(Tokeniser.TokenType.TLESS)
@@ -765,7 +797,7 @@ public class Parser {
         return node;
     }
 
-    private Node logOp() {
+    private Node logOp() throws ParseException {
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TTAND)) {
             node.setType("NAND");
@@ -780,7 +812,7 @@ public class Parser {
         return node;
     }
 
-    private Node relOp() {
+    private Node relOp() throws ParseException {
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TEQEQ)) {
             node.setType("NEQL");
@@ -804,14 +836,14 @@ public class Parser {
         return node;
     }
 
-    private Node expr() {
+    private Node expr() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(term());
         node.addChild(exprTail());
         return node;
     }
 
-    private Node exprTail() {
+    private Node exprTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TPLUS)) {
             node.setType("NADD");
@@ -829,14 +861,14 @@ public class Parser {
         return node;
     }
 
-    private Node term() {
+    private Node term() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(fact());
         node.addChild(termTail());
         return node;
     }
 
-    private Node termTail() {
+    private Node termTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TSTAR)) {
             node.setType("NMUL");
@@ -854,17 +886,18 @@ public class Parser {
             node.addChild(fact());
             node.addChild(termTail());
         }
+        // ε
         return node;
     }
 
-    private Node fact() {
+    private Node fact() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(exponent());
         node.addChild(factTail());
         return node;
     }
 
-    private Node factTail() {
+    private Node factTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCART)) {
             node.setType("NPOW");
@@ -875,7 +908,7 @@ public class Parser {
         return node;
     }
 
-    private Node exponent() {
+    private Node exponent() throws ParseException {
         // TODO: remove exponent
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTRUE)) {
@@ -896,7 +929,6 @@ public class Parser {
         } else if (match(Tokeniser.TokenType.TLBRK)) {
             node.setType("SPECIAL");
             consume(Tokeniser.TokenType.TLBRK, node);
-            System.out.println("bool called");
             node.addChild(bool());
             consume(Tokeniser.TokenType.TRBRK, node);
         } else {
@@ -905,7 +937,8 @@ public class Parser {
         return node;
     }
 
-    private Node fnCall() {
+    private Node fnCall() throws ParseException {
+        System.out.println("FNCALL hit");
         Node node = new Node("NFCALL", "");
         consume(Tokeniser.TokenType.TIDEN, node);
         consume(Tokeniser.TokenType.TLBRK, node);
@@ -916,14 +949,14 @@ public class Parser {
         return node;
     }
 
-    private Node prList() {
+    private Node prList() throws ParseException {
         Node node = new Node("SPECIAL", "");
         node.addChild(printItem());
         node.addChild(prListTail());
         return node;
     }
 
-    private Node prListTail() {
+    private Node prListTail() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NPRLST");
@@ -933,7 +966,7 @@ public class Parser {
         return node;
     }
 
-    private Node printItem() {
+    private Node printItem() throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TSTRG)) {
             node.setType("NSTRG");
