@@ -56,6 +56,15 @@ public class Token {
                 tokenId, resolveTokenName(tokenId), lexeme, line, col);
     }
 
+    public Tokeniser.TokenType getType() {
+        for (Tokeniser.TokenType type : Tokeniser.TokenType.values()) {
+            if (Tokeniser.getTokenCode(type) == this.tokenId) {
+                return type;
+            }
+        }
+        return null;
+    }
+
     // ------------------------- Getters and Setters ------------------------- //
     public int getTokenId() {
         return tokenId;

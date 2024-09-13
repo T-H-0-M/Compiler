@@ -44,6 +44,7 @@
 <!--INFO: Left factored: <dlist> ::= <decl> | <decl> , <dlist>-->
 <dlist> ::= <decl> <dlisttail>
 <dlisttail> ::= , <dlist> | ε
+<!--INFO: This is ambiguous-->
 <decl> ::= <sdecl> | <arrdecl>
 
 <mainbody> ::= main <slist> begin <stats> end CD24 <id>
@@ -57,7 +58,7 @@
 <stats> ::= <stat> ; <statstail> | <strstat> <statstail>
 <statstail> ::= <stats> | ε
 <strstat> ::= <forstat> | <ifstat> | <switchstat> | <dostat>
-<stat> ::= <reptstat> | <asgnstat> | <iostat> | <callstat> | <returnstat>
+<stat> ::= <repstat> | <asgnstat> | <iostat> | <callstat> | <returnstat>
 
 <forstat> ::= for ( <asgnlist> ; <bool> ) <stats> end
 <repstat> ::= repeat ( <asgnlist> ) <stats> until <bool>
@@ -84,7 +85,7 @@
 <vlisttail> ::= , <vlist> | ε
 <!--INFO: Left factored twice: <var> ::= <id> | <id>\[<expr>\] | <id>\[<expr>\] . <id>-->
 <var> ::= <id> <vartail>
-<vartail> ::= \[ <expr> \] <varfield> | ε
+<vartail> ::= [ <expr> ] <varfield> | ε
 <varfield> ::= . <id> | ε
 <!--INFO: Left factored: <elist> ::= <bool> , <elist> | <bool>-->
 <elist> ::= <bool> <elisttail>
@@ -133,7 +134,7 @@
 <types> ::= typedef <typelist> | ε
 <typelist> ::= <type> <typelist> | <type>
 <type> ::= <structid> def <fields> end
-<type> ::= <typeid> def array \[ <expr> \] of <structid> end
+<type> ::= <typeid> def array [ <expr> ] of <structid> end
 <fields> ::= <sdecl> | <sdecl> , <fields>
 
 <arrays> ::= arraydef <arrdecls> | ε

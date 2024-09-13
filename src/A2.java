@@ -37,8 +37,10 @@ public class A2 {
 
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
+        Parser parser = new Parser(scanner);
 
-        run(scanner);
+        run(parser);
+        // runScanner(scanner);
         outputController.closeOutput();
         printFormattedOutput();
     }
@@ -50,10 +52,20 @@ public class A2 {
      *
      * @param scanner The Scanner object used to fetch tokens.
      */
-    private static void run(Scanner scanner) {
+    private static void run(Parser parser) {
+        Node parseTree = parser.parse();
+        if (parseTree != null) {
+            System.out.println("Parse tree (may be partial if errors occurred):");
+            parseTree.printTree();
+        } else {
+            System.out.println("No parse tree generated.");
+        }
+    }
+
+    private static void runScanner(Scanner scanner) {
         Token currentToken;
         do {
-            currentToken = scanner.getNextToken();
+            currentToken = scanner.nextToken();
             if (currentToken.getTokenId() == 68) {
                 errorList.add(currentToken);
                 outputController.addError(currentToken);

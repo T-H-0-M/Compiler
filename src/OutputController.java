@@ -18,7 +18,6 @@ import java.util.List;
  */
 public class OutputController {
     private static final int LINE_LENGTH = 60;
-    private static final int MAX_LINE_LENGTH = 66;
     private StringBuilder currentLine;
     private List<String> formattedLines;
     private PrintWriter writer;
