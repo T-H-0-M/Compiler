@@ -4,8 +4,9 @@ if [ $? -ne 0 ]; then
     echo "Compilation failed."
     exit 1
 fi
-# java A2 ../testfiles/SimpleWorking.cd
-java A2 ../TestFiles/a.txt
+java A2 ../testfiles/SimpleWorking.cd
+# java A2 ../testfiles/Simplest_Program_Ben.cd
+# java A2 ../TestFiles/a.txt
 # java A1 ../testfiles/dan.cd
 # java A1 ~/Downloads/test.txt
 rm *.class

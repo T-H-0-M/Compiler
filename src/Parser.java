@@ -863,7 +863,8 @@ public class Parser {
     }
 
     private Node exponent() {
-        Node node = new Node("", "");
+        // TODO: remove exponent
+        Node node = new Node("EXPONENT", "");
         if (match(Tokeniser.TokenType.TTRUE)) {
             node.setType("NTRUE");
             consume(Tokeniser.TokenType.TTRUE, node);

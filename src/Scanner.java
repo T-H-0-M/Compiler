@@ -231,7 +231,7 @@ public class Scanner {
         }
 
         Token tempToken = findToken(asciiArrayListToString(asciiCharList));
-
+        System.out.println(tempToken.getType());
         // INFO: Recursive goodness?
         if (tempToken.getTokenId() == -1) {
             tempToken = nextToken();

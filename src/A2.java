@@ -40,6 +40,7 @@ public class A2 {
         Parser parser = new Parser(scanner);
 
         run(parser);
+        // runScanner(scanner);
         outputController.closeOutput();
         printFormattedOutput();
     }
@@ -59,6 +60,20 @@ public class A2 {
         } else {
             System.out.println("No parse tree generated.");
         }
+    }
+
+    private static void runScanner(Scanner scanner) {
+        Token currentToken;
+        do {
+            currentToken = scanner.nextToken();
+            if (currentToken.getTokenId() == 68) {
+                errorList.add(currentToken);
+                outputController.addError(currentToken);
+            } else {
+                tokenList.add(currentToken);
+                outputController.addToken(currentToken);
+            }
+        } while (currentToken.getTokenId() != 0);
     }
 
     /**
