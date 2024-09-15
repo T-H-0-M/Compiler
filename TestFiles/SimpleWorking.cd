@@ -14,11 +14,7 @@ CD24 SimpleWorking
 main
 i: int
 
+
 begin
-test#("hello")
-++
-==
-$##$$#==
->==
-    i = 1;
-end CD24 SimpleWorking a
+    i =  1;
+end CD24 SimpleWorking

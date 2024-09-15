@@ -20,7 +20,7 @@ public class A2 {
     private static ArrayList<Token> errorList = new ArrayList<>();
     private static OutputController outputController;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ParseException {
         if (args.length < 1) {
             System.out.println("Please provide a file path as an argument.");
             return;
@@ -52,10 +52,12 @@ public class A2 {
      *
      * @param scanner The Scanner object used to fetch tokens.
      */
-    private static void run(Parser parser) {
+    private static void run(Parser parser) throws ParseException {
         Node parseTree = parser.parse();
         if (parseTree != null) {
             System.out.println("Parse tree (may be partial if errors occurred):");
+            // TODO: uncomment this for submission
+            parseTree.printPreOrderTraversal();
             parseTree.printTree();
         } else {
             System.out.println("No parse tree generated.");
