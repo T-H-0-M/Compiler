@@ -16,24 +16,24 @@ public class Parser {
         this.rootNode = null;
     }
 
-    private Node consume(Tokeniser.TokenType expectedType, Node parentNode) throws ParseException {
+    private void consume(Tokeniser.TokenType expectedType, Node parentNode) throws ParseException {
         if (currentToken.getType() == expectedType) {
             Token consumedToken = currentToken;
             // System.out.print(consumedToken.getType() + " " +
             // consumedToken.getLexeme());
-            currentToken = scanner.nextToken();
             Node node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
             if (parentNode != null && consumedToken.getType() == Tokeniser.TokenType.TIDEN) {
                 System.out.println("setting " + parentNode.getType() + " to " + node.getValue());
                 parentNode.setValue(consumedToken.getLexeme());
             }
-            return node;
         } else {
-            // TODO: add NUNDEF as child to parent node
+            parentNode.addChild(new Node("NUNDEF", ""));
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
-            throw new ParseException(errorMsg);
+            System.out.println(new ParseException(errorMsg));
         }
+        currentToken = scanner.nextToken();
+
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {

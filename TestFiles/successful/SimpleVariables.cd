@@ -13,8 +13,7 @@ CD24 Success
  * Version: 1.0
  **/
 main
-num1: int
-num2: int
+num1: int, num2: int
 num3: int
 
 begin
