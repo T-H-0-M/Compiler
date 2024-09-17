@@ -1,18 +1,26 @@
+import java.util.Stack;
+
 public class Parser {
     private final Scanner scanner;
     private Token currentToken;
     private Node rootNode;
+    private Stack<SymbolTable> symbolTableStack;
+    public Stack<SymbolTable> removedSymbolTableStack;
 
     public Parser() {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
+        this.symbolTableStack = new Stack<SymbolTable>();
+        this.removedSymbolTableStack = new Stack<SymbolTable>();
     }
 
     public Parser(Scanner scanner) {
         this.scanner = scanner;
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
+        this.symbolTableStack = new Stack<SymbolTable>();
+        this.removedSymbolTableStack = new Stack<SymbolTable>();
     }
 
     private Node consume(Tokeniser.TokenType expectedType, Node parentNode) throws ParseException {
@@ -23,12 +31,41 @@ public class Parser {
             if (consumedToken.getType() == Tokeniser.TokenType.TIDEN) {
                 parentNode.setValue(consumedToken.getLexeme());
             }
+            addTokenToCurrentScope(currentToken.getLexeme(), currentToken.getType(), currentToken.getLine(), currentToken.getCol());
             return node;
         } else {
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
             throw new ParseException(errorMsg);
         }
+    }
+
+    private void incrementScope() {
+        SymbolTable symbolTable = new SymbolTable();
+        this.symbolTableStack.push(symbolTable);
+        System.out.println("New scope added, Symbol table size:" + this.symbolTableStack.size());
+    }
+
+    private void decrementScope() {
+        if (this.symbolTableStack.size() < 1) {
+            System.out.println("No scope to remove");
+            return;
+        }
+        this.removedSymbolTableStack.push(this.symbolTableStack.peek());
+        System.out.println("Removed Symbol table size:" + this.removedSymbolTableStack.size());
+        this.symbolTableStack.peek().destroy();
+        this.symbolTableStack.pop();
+        System.out.println("Removed Symbol table:" + this.removedSymbolTableStack.peek().toString());
+    }
+
+    private void addTokenToCurrentScope(String tokenId, Tokeniser.TokenType type, int line, int col) {
+        if (this.symbolTableStack.size() < 1) {
+            System.out.println("No scope to add token to");
+            return;
+        }
+        this.symbolTableStack.peek().enter(tokenId, type, line, col);
+        System.out.println(this.symbolTableStack.peek().toString());
+        System.out.println("Token added to current scope: " + type.toString());
     }
 
     // private Node consume(Tokeniser.TokenType expectedType, Node parentNode) {
@@ -255,6 +292,7 @@ public class Parser {
     }
 
     private Node func() throws ParseException {
+        incrementScope();
         System.out.println("NFUND Hit");
         Node node = new Node("NFUND", "");
         consume(Tokeniser.TokenType.TFUNC, node);
@@ -265,6 +303,7 @@ public class Parser {
         consume(Tokeniser.TokenType.TCOLN, node);
         node.addChild(rType());
         node.addChild(funcBody());
+        decrementScope();
         return node;
     }
 
@@ -390,6 +429,7 @@ public class Parser {
     }
 
     private Node mainBody() throws ParseException {
+        incrementScope();
         Node node = new Node("NMAIN", "");
         consume(Tokeniser.TokenType.TMAIN, node);
         node.addChild(sList());
@@ -398,6 +438,7 @@ public class Parser {
         consume(Tokeniser.TokenType.TTEND, node);
         consume(Tokeniser.TokenType.TCD24, node);
         consume(Tokeniser.TokenType.TIDEN, node);
+        decrementScope();
         return node;
     }
 
@@ -457,6 +498,7 @@ public class Parser {
     }
 
     private Node statsTail() throws ParseException {
+        incrementScope();
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO) || match(Tokeniser.TokenType.TREPT)
@@ -466,6 +508,7 @@ public class Parser {
             node.setType("NSTATS");
             return stats();
         }
+        decrementScope();
         return node;
     }
 

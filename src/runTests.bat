@@ -1,8 +1,10 @@
 @echo on
 
+del /s /q *.class
+del /s /q *.lst
 set "folder=../TestFiles"
-javac A1.java
+javac A2.java
 
 for %%F in ("%folder%\*") do (
-    java A1 %%F
+    java A2 %%F
 )
