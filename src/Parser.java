@@ -1,8 +1,21 @@
-// TODO: Change error node to NUNDEF
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 public class Parser {
     private final Scanner scanner;
     private Token currentToken;
     private Node rootNode;
+    private static final Set<Tokeniser.TokenType> GLOBAL_SYNC_TOKENS = new HashSet<>(Arrays.asList(
+            Tokeniser.TokenType.TCD24,
+            Tokeniser.TokenType.TFUNC,
+            Tokeniser.TokenType.TTYPD,
+            Tokeniser.TokenType.TARRD,
+            Tokeniser.TokenType.TCONS,
+            Tokeniser.TokenType.TBEGN,
+            Tokeniser.TokenType.TTEND,
+            Tokeniser.TokenType.TSEMI,
+            Tokeniser.TokenType.TCOMA));
 
     public Parser() {
         this.scanner = null;
@@ -19,21 +32,24 @@ public class Parser {
     private void consume(Tokeniser.TokenType expectedType, Node parentNode) throws ParseException {
         if (currentToken.getType() == expectedType) {
             Token consumedToken = currentToken;
-            // System.out.print(consumedToken.getType() + " " +
-            // consumedToken.getLexeme());
             Node node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
             if (parentNode != null && consumedToken.getType() == Tokeniser.TokenType.TIDEN) {
                 System.out.println("setting " + parentNode.getType() + " to " + node.getValue());
                 parentNode.setValue(consumedToken.getLexeme());
             }
+            currentToken = scanner.nextToken();
         } else {
-            parentNode.addChild(new Node("NUNDEF", ""));
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
             System.out.println(new ParseException(errorMsg));
+            if (parentNode != null) {
+                parentNode.addChild(new Node("NUNDEF", ""));
+            }
+            while (!GLOBAL_SYNC_TOKENS.contains(currentToken.getType()) &&
+                    currentToken.getType() != Tokeniser.TokenType.TTEOF) {
+                currentToken = scanner.nextToken();
+            }
         }
-        currentToken = scanner.nextToken();
-
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {

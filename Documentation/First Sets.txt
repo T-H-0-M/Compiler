@@ -1,0 +1,105 @@
+
+<program>
+    FIRST(<program>) = { CD24 }
+
+<globals>
+    FIRST(<globals>) = FIRST(<consts>) ∪ FIRST(<types>) ∪ FIRST(<arrays>) ∪ { ε }
+    FIRST(<consts>) = { constants, ε }
+    FIRST(<types>) = { typedef, ε }
+    FIRST(<arrays>) = { arraydef, ε }
+    So, FIRST(<globals>) = { constants, typedef, arraydef, ε }
+
+<funcs>
+    FIRST(<funcs>) = FIRST(<func>) ∪ { ε }
+    FIRST(<func>) = { func }
+    So, FIRST(<funcs>) = { func, ε }
+
+<mainbody>
+    FIRST(<mainbody>) = { main }
+
+<initlisttail>
+    FIRST(<initlisttail>) = { ,, ε }
+
+<typelisttail>
+    FIRST(<typelisttail>) = FIRST(<typelist>) ∪ { ε }
+        FIRST(<type>) = { <structid>, <typeid> }
+    So, FIRST(<typelist>) = FIRST(<type>) = { <structid>, <typeid> }
+    FIRST(<typelisttail>) = { <structid>, <typeid>, ε }
+
+<fieldstail>
+    FIRST(<fieldstail>) = { ,, ε }
+
+<arrdeclstail>
+    FIRST(<arrdeclstail>) = { ,, ε }
+
+<plist>
+    FIRST(<plist>) = FIRST(<params>) ∪ { ε }
+    FIRST(<params>) = FIRST(<param>)
+    FIRST(<param>) = { const, <sdecl>, <arrdecl> }
+    FIRST(<sdecl>) and FIRST(<arrdecl>) start with <id>
+    So, FIRST(<params>) = { const, <id> }
+    FIRST(<plist>) = { const, <id>, ε }
+
+<paramstail>
+    FIRST(<paramstail>) = { ,, ε }
+
+<locals>
+    FIRST(<locals>) = FIRST(<dlist>) ∪ { ε }
+    FIRST(<dlist>) = FIRST(<decl>)
+    FIRST(<decl>) = FIRST(<sdecl>) ∪ FIRST(<arrdecl>)
+    Both start with <id>
+    So, FIRST(<locals>) = { <id>, ε }
+
+<dlisttail>
+    FIRST(<dlisttail>) = { ,, ε }
+
+<slisttail>
+    FIRST(<slisttail>) = { ,, ε }
+
+<statstail>
+    FIRST(<statstail>) = FIRST(<stats>) ∪ { ε }
+    FIRST(<stats>) = FIRST(<stat> ;) ∪ FIRST(<strstat>)
+
+<alist>
+
+    FIRST(<alist>) = FIRST(<asgnstat>)
+    FIRST(<asgnstat>) = FIRST(<var>)
+    FIRST(<var>) = { <id> }
+    So, FIRST(<alist>) = { <id> }
+
+<alisttail>
+    FIRST(<alisttail>) = { ,, ε }
+
+<booltail>
+    FIRST(<booltail>) = FIRST(<logop>) ∪ { ε }
+    FIRST(<logop>) = { and, or, xor }
+    So, FIRST(<booltail>) = { and, or, xor, ε }
+
+<reltail>
+    FIRST(<reltail>) = FIRST(<relop>) ∪ { ε }
+    FIRST(<relop>) = { ==, !=, >, <, >=, <= }
+    So, FIRST(<reltail>) = { ==, !=, >, <, >=, <=, ε }
+
+<exprtail>
+    FIRST(<exprtail>) = { +, -, ε }
+
+<termtail>
+    FIRST(<termtail>) = { *, /, %, ε }
+
+<facttail>
+    FIRST(<facttail>) = { ^, ε }
+
+<prlisttail>
+    FIRST(<prlisttail>) = { ,, ε }
+
+<varfield>
+    FIRST(<varfield>) = { ., ε }
+
+<vartail>
+    FIRST(<vartail>) = { [, ε }
+
+<elisttail>
+    FIRST(<elisttail>) = { ,, ε }
+
+<vlisttail>
+    FIRST(<vlisttail>) = { ,, ε }
