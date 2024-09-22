@@ -29,13 +29,12 @@ public class Parser {
             Node node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
             if (parentNode != null && consumedToken.getType() == Tokeniser.TokenType.TIDEN
                     || consumedToken.getType() == Tokeniser.TokenType.TILIT) {
-                System.out.println("setting " + parentNode.getType() + " to " + node.getValue());
+                // System.out.println("setting " + parentNode.getType() + " to " +
+                // node.getValue());
                 parentNode.setValue(consumedToken.getLexeme());
             }
             currentToken = scanner.nextToken();
         } else {
-            // Error handling
-
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
             System.out.println(new ParseException(errorMsg));
@@ -50,6 +49,7 @@ public class Parser {
                     System.out.println("throwing token " + currentToken.getType().toString());
                     currentToken = scanner.nextToken();
                 }
+                consume(expectedType, parentNode, syncSet);
             }
         }
     }
@@ -65,296 +65,308 @@ public class Parser {
 
     private Node program() throws ParseException {
         Node node = new Node("NPROG", "");
-        consume(Tokeniser.TokenType.TCD24, node, null);
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        node.addChild(globals());
-        node.addChild(funcs());
-        node.addChild(mainBody());
+
+        Set<Tokeniser.TokenType> programSyncSet = new HashSet<>(Arrays.asList(
+                Tokeniser.TokenType.TCONS,
+                Tokeniser.TokenType.TTYPD,
+                Tokeniser.TokenType.TARRD,
+                Tokeniser.TokenType.TMAIN,
+                Tokeniser.TokenType.TBEGN));
+
+        consume(Tokeniser.TokenType.TCD24, node, programSyncSet);
+        consume(Tokeniser.TokenType.TIDEN, node, programSyncSet);
+        node.addChild(globals(programSyncSet));
+        node.addChild(funcs(programSyncSet));
+        node.addChild(mainBody(programSyncSet));
+
         return node;
     }
 
-    private Node globals() throws ParseException {
+    private Node globals(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NGLOB", "");
-        Set<Tokeniser.TokenType> globalsSyncTokens = new HashSet<>(Arrays.asList(
-                Tokeniser.TokenType.TFUNC, Tokeniser.TokenType.TMAIN));
-        node.addChild(consts());
-        node.addChild(types());
-        node.addChild(arrays());
+        node.addChild(consts(syncSet));
+        node.addChild(types(syncSet));
+        node.addChild(arrays(syncSet));
         return node;
     }
 
-    private Node consts() throws ParseException {
+    private Node consts(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
+        Set<Tokeniser.TokenType> constsSyncSet = new HashSet<>(Arrays.asList(
+                Tokeniser.TokenType.TTYPD,
+                Tokeniser.TokenType.TARRD,
+                Tokeniser.TokenType.TMAIN));
+
         if (match(Tokeniser.TokenType.TCONS)) {
-            consume(Tokeniser.TokenType.TCONS, node, null);
-            node.addChild(initList());
-            return node;
+            consume(Tokeniser.TokenType.TCONS, node, constsSyncSet);
+            node.addChild(initList(constsSyncSet));
         }
         return node;
     }
 
-    // TODO: check the NILIST here
-    private Node initList() throws ParseException {
-        Node node = new Node("SPECIAL", "");
-        node.addChild(init());
-        if (match(Tokeniser.TokenType.TCOMA)) {
-            node.setType("NILIST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(initList());
+    private Node initList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        Node node = new Node("NILIST", "");
+
+        Set<Tokeniser.TokenType> initListSyncSet = new HashSet<>(Arrays.asList(
+                Tokeniser.TokenType.TCOMA,
+                Tokeniser.TokenType.TTYPD,
+                Tokeniser.TokenType.TARRD,
+                Tokeniser.TokenType.TMAIN));
+
+        node.addChild(init(initListSyncSet));
+        while (match(Tokeniser.TokenType.TCOMA)) {
+            consume(Tokeniser.TokenType.TCOMA, node, initListSyncSet);
+            node.addChild(init(initListSyncSet));
         }
         return node;
     }
 
-    private Node init() throws ParseException {
-        // System.out.println("NINIT hit");
+    private Node init(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NINIT", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TEQUL, node, null);
-        node.addChild(expr(true));
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TEQUL, node, syncSet);
+        node.addChild(expr(true, syncSet));
         return node;
     }
 
-    private Node types() throws ParseException {
+    private Node types(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTYPD)) {
-            consume(Tokeniser.TokenType.TTYPD, node, null);
-            node.addChild(typeList());
+            consume(Tokeniser.TokenType.TTYPD, node, syncSet);
+            node.addChild(typeList(syncSet));
         }
         return node;
     }
 
-    private Node typeList() throws ParseException {
+    private Node typeList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(type());
-        // node.addChild(typeListTail());
+        node.addChild(type(syncSet));
         if (match(Tokeniser.TokenType.TIDEN)) {
             node.setType("NTYPEL");
-            return typeList();
+            return typeList(syncSet);
         }
         return node;
     }
 
-    private Node type() throws ParseException {
+    private Node type(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NRTYPE", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TTDEF, node, null);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TTDEF, node, syncSet);
         if (match(Tokeniser.TokenType.TARAY)) {
-            consume(Tokeniser.TokenType.TARAY, node, null);
-            consume(Tokeniser.TokenType.TLBRK, node, null);
-            node.addChild(expr(true));
-            consume(Tokeniser.TokenType.TRBRK, node, null);
-            consume(Tokeniser.TokenType.TTTOF, node, null);
-            consume(Tokeniser.TokenType.TIDEN, node, null);
+            consume(Tokeniser.TokenType.TARAY, node, syncSet);
+            consume(Tokeniser.TokenType.TLBRK, node, syncSet);
+            node.addChild(expr(true, syncSet));
+            consume(Tokeniser.TokenType.TRBRK, node, syncSet);
+            consume(Tokeniser.TokenType.TTTOF, node, syncSet);
+            consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         } else {
-            node.addChild(fields());
+            node.addChild(fields(syncSet));
         }
-        consume(Tokeniser.TokenType.TTEND, node, null);
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
         return node;
     }
 
-    private Node fields() throws ParseException {
+    private Node fields(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(sDecl());
+        node.addChild(sDecl(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NFLIST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(fields());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(fields(syncSet));
         }
         return node;
     }
 
-    private Node arrays() throws ParseException {
+    private Node arrays(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TARRD)) {
-            consume(Tokeniser.TokenType.TARRD, node, null);
-            node.addChild(arrDecls());
+            consume(Tokeniser.TokenType.TARRD, node, syncSet);
+            node.addChild(arrDecls(syncSet));
             return node;
         }
         return node;
     }
 
-    private Node arrDecls() throws ParseException {
+    private Node arrDecls(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(arrDecl());
+        node.addChild(arrDecl(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NALIST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(arrDecls());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(arrDecls(syncSet));
         }
         return node;
     }
 
-    private Node arrDecl() throws ParseException {
+    private Node arrDecl(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NARRD", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TCOLN, node, null);
-        consume(Tokeniser.TokenType.TIDEN, node, null);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TCOLN, node, syncSet);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         return node;
     }
 
-    private Node funcs() throws ParseException {
+    private Node funcs(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        Set<Tokeniser.TokenType> syncTokens = new HashSet<>(Arrays.asList(
-                Tokeniser.TokenType.TFUNC, Tokeniser.TokenType.TMAIN));
         if (match(Tokeniser.TokenType.TFUNC)) {
             node.setType("NFUNCS");
-            node.addChild(func());
-            node.addChild(funcs());
+            node.addChild(func(syncSet));
+            node.addChild(funcs(syncSet));
             return node;
         }
         return node;
     }
 
-    private Node func() throws ParseException {
-        // System.out.println("NFUND Hit");
+    private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("NFUND Hit");
         Node node = new Node("NFUND", "");
-        consume(Tokeniser.TokenType.TFUNC, node, null);
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(pList());
-        consume(Tokeniser.TokenType.TRPAR, node, null);
-        consume(Tokeniser.TokenType.TCOLN, node, null);
-        node.addChild(rType());
-        node.addChild(funcBody());
+        consume(Tokeniser.TokenType.TFUNC, node, syncSet);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(pList(syncSet));
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+        consume(Tokeniser.TokenType.TCOLN, node, syncSet);
+        node.addChild(rType(syncSet));
+        node.addChild(funcBody(syncSet));
         return node;
     }
 
-    private Node rType() throws ParseException {
+    private Node rType(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TVOID)) {
-            consume(Tokeniser.TokenType.TVOID, node, null);
+            consume(Tokeniser.TokenType.TVOID, node, syncSet);
             return node;
         } else {
-            return sType();
+            return sType(syncSet);
         }
     }
 
-    private Node pList() throws ParseException {
+    private Node pList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TCONS)) {
-            return params();
+            return params(syncSet);
         }
         return node;
     }
 
-    private Node params() throws ParseException {
+    private Node params(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(param());
+        node.addChild(param(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NPLIST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(params());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(params(syncSet));
         }
         return node;
     }
 
     // TODO: find out what to do with array decl
-    private Node param() throws ParseException {
+    private Node param(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NSIMP", "");
         if (match(Tokeniser.TokenType.TCONS)) {
             node.setType("NARRC");
-            node.addChild(new Node("TCONS", currentToken.getLexeme()));
-            consume(Tokeniser.TokenType.TCONS, node, null);
-            node.addChild(arrDecl());
-            arrDecl();
+            consume(Tokeniser.TokenType.TCONS, node, syncSet);
+            node.addChild(arrDecl(syncSet));
+            arrDecl(syncSet);
         } else {
-            node.addChild(sDecl());
+            node.addChild(sDecl(syncSet));
         }
         return node;
     }
 
-    private Node funcBody() throws ParseException {
+    private Node funcBody(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(locals());
-        consume(Tokeniser.TokenType.TBEGN, node, null);
-        node.addChild(stats());
-        consume(Tokeniser.TokenType.TTEND, node, null);
+        node.addChild(locals(syncSet));
+        consume(Tokeniser.TokenType.TBEGN, node, syncSet);
+        node.addChild(stats(syncSet));
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
         return node;
     }
 
-    private Node locals() throws ParseException {
+    private Node locals(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TIDEN)) {
-            return dList();
+            return dList(syncSet);
         }
         return node;
     }
 
-    private Node dList() throws ParseException {
+    private Node dList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(decl());
+        node.addChild(decl(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NDLIST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(dList());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(dList(syncSet));
         }
         return node;
     }
 
     // TODO: Complete this, the grammar is currently ambiguous
-    private Node decl() throws ParseException {
+    private Node decl(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         return new Node("SPECIAL", "");
     }
 
-    private Node mainBody() throws ParseException {
+    private Node mainBody(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NMAIN", "");
-        Set<Tokeniser.TokenType> syncTokens = new HashSet<>(Arrays.asList(
-                Tokeniser.TokenType.TBEGN));
-        consume(Tokeniser.TokenType.TMAIN, node, null);
-        node.addChild(sList());
-        consume(Tokeniser.TokenType.TBEGN, node, syncTokens);
-        node.addChild(stats());
-        consume(Tokeniser.TokenType.TTEND, node, null);
-        consume(Tokeniser.TokenType.TCD24, node, null);
+
+        consume(Tokeniser.TokenType.TMAIN, node, syncSet);
+        node.addChild(sList(syncSet));
+        consume(Tokeniser.TokenType.TBEGN, node, syncSet);
+        node.addChild(stats(syncSet));
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
+        consume(Tokeniser.TokenType.TCD24, node, syncSet);
         // INFO: pass node null as is at the end of the program (otherwise main node
         // will be name set to the identifier)
-        consume(Tokeniser.TokenType.TIDEN, null, null);
+        consume(Tokeniser.TokenType.TIDEN, null, syncSet);
         return node;
     }
 
-    private Node sList() throws ParseException {
+    private Node sList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("SLIST hit");
         Node node = new Node("SPECIAL", "");
-        node.addChild(sDecl());
+        node.addChild(sDecl(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NSDLST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(sList());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(sList(syncSet));
         }
         return node;
     }
 
-    private Node sDecl() throws ParseException {
+    private Node sDecl(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("sDecl hit");
         Node node = new Node("NSDECL", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TCOLN, node, null);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TCOLN, node, syncSet);
         if (match(Tokeniser.TokenType.TIDEN)) {
-            consume(Tokeniser.TokenType.TIDEN, node, null);
+            consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         } else {
-            node.addChild(sType());
+            node.addChild(sType(syncSet));
         }
         return node;
     }
 
-    private Node sType() throws ParseException {
+    private Node sType(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TINTG)) {
-            consume(Tokeniser.TokenType.TINTG, node, null);
+            consume(Tokeniser.TokenType.TINTG, node, syncSet);
         } else if (match(Tokeniser.TokenType.TFLOT)) {
-            consume(Tokeniser.TokenType.TFLOT, node, null);
+            consume(Tokeniser.TokenType.TFLOT, node, syncSet);
         } else {
-            consume(Tokeniser.TokenType.TBOOL, node, null);
+            consume(Tokeniser.TokenType.TBOOL, node, syncSet);
         }
         return node;
     }
 
-    private Node stats() throws ParseException {
+    private Node stats(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO)) {
-            node.addChild(strStat());
+            node.addChild(strStat(syncSet));
         } else {
-            node.addChild(stat());
-            consume(Tokeniser.TokenType.TSEMI, node, null);
+            node.addChild(stat(syncSet));
+            consume(Tokeniser.TokenType.TSEMI, node, syncSet);
         }
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO) || match(Tokeniser.TokenType.TREPT)
@@ -362,29 +374,29 @@ public class Parser {
                 || match(Tokeniser.TokenType.TRETN) || match(Tokeniser.TokenType.TPRLN)
                 || match(Tokeniser.TokenType.TPRNT)) {
             node.setType("NSTATS");
-            node.addChild(stats());
+            node.addChild(stats(syncSet));
         }
         return node;
     }
 
-    private Node strStat() throws ParseException {
+    private Node strStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR)) {
-            node.addChild(forStat());
+            node.addChild(forStat(syncSet));
         } else if (match(Tokeniser.TokenType.TIFTH)) {
-            node.addChild(ifStat());
+            node.addChild(ifStat(syncSet));
         } else if (match(Tokeniser.TokenType.TSWTH)) {
-            node.addChild(switchStat());
+            node.addChild(switchStat(syncSet));
         } else {
-            node.addChild(doStat());
+            node.addChild(doStat(syncSet));
         }
         return node;
     }
 
     // TODO: Check this
-    private Node stat() throws ParseException {
+    private Node stat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        Set<Tokeniser.TokenType> statSyncTokens = new HashSet<>(Arrays.asList(
+        syncSet = new HashSet<>(Arrays.asList(
                 Tokeniser.TokenType.TSEMI, Tokeniser.TokenType.TTEND, Tokeniser.TokenType.TELSE,
                 Tokeniser.TokenType.TELIF,
                 Tokeniser.TokenType.TIDEN, Tokeniser.TokenType.TTFOR, Tokeniser.TokenType.TIFTH,
@@ -392,454 +404,449 @@ public class Parser {
                 Tokeniser.TokenType.TTTDO, Tokeniser.TokenType.TREPT, Tokeniser.TokenType.TINPT,
                 Tokeniser.TokenType.TPRNT,
                 Tokeniser.TokenType.TPRLN, Tokeniser.TokenType.TRETN));
+
         if (match(Tokeniser.TokenType.TREPT)) {
-            node.addChild(repStat());
+            node.addChild(repStat(syncSet));
             // TODO: fix this with symbol table - asgnstat and callstatt both start with
             // TIDEN
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.addChild(asgnStat());
+            node.addChild(asgnStat(syncSet));
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.addChild(callStat());
+            node.addChild(callStat(syncSet));
         } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
                 || match(Tokeniser.TokenType.TPRNT)) {
-            node.addChild(ioStat());
+            node.addChild(ioStat(syncSet));
         } else if (match(Tokeniser.TokenType.TRETN)) {
-            node.addChild(returnStat());
+            node.addChild(returnStat(syncSet));
         }
         return node;
     }
 
-    private Node forStat() throws ParseException {
+    private Node forStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         // TODO: increase scope
         // System.out.println("nfor hit");
         Node node = new Node("NFOR", "");
-        consume(Tokeniser.TokenType.TTFOR, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(asgnList());
-        consume(Tokeniser.TokenType.TSEMI, node, null);
-        node.addChild(bool());
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(stats());
-        consume(Tokeniser.TokenType.TTEND, node, null);
+        consume(Tokeniser.TokenType.TTFOR, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(asgnList(syncSet));
+        consume(Tokeniser.TokenType.TSEMI, node, syncSet);
+        node.addChild(bool(syncSet));
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(stats(syncSet));
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
         // TODO: decrease scope
         return node;
     }
 
-    private Node repStat() throws ParseException {
-        // System.out.println("nrept hit");
+    private Node repStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("nrept hit");
         Node node = new Node("NREPT", "");
-        consume(Tokeniser.TokenType.TREPT, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(asgnList());
-        consume(Tokeniser.TokenType.TRPAR, node, null);
-        node.addChild(stats());
+        consume(Tokeniser.TokenType.TREPT, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(asgnList(syncSet));
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+        node.addChild(stats(syncSet));
         consume(Tokeniser.TokenType.TUNTL, node, null);
-        node.addChild(bool());
+        node.addChild(bool(syncSet));
         return node;
     }
 
-    private Node doStat() throws ParseException {
-
+    private Node doStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NDOWL", "");
-        consume(Tokeniser.TokenType.TTTDO, node, null);
-        node.addChild(stats());
-        consume(Tokeniser.TokenType.TWHIL, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(bool());
-        consume(Tokeniser.TokenType.TRPAR, node, null);
-        consume(Tokeniser.TokenType.TTEND, node, null);
+        consume(Tokeniser.TokenType.TTTDO, node, syncSet);
+        node.addChild(stats(syncSet));
+        consume(Tokeniser.TokenType.TWHIL, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(bool(syncSet));
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
         return node;
     }
 
-    private Node asgnList() throws ParseException {
+    private Node asgnList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TIDEN)) {
-            return aList();
+            return aList(syncSet);
         }
         return node;
     }
 
-    private Node aList() throws ParseException {
+    private Node aList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(asgnStat());
-        // node.addChild(aListTail());
+        node.addChild(asgnStat(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NASGNS");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(aList());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(aList(syncSet));
         }
         return node;
     }
 
-    private Node ifStat() throws ParseException {
-        // System.out.println("NIFITH hit");
+    private Node ifStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NIFITH", "");
-        consume(Tokeniser.TokenType.TIFTH, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(bool());
-        consume(Tokeniser.TokenType.TRPAR, node, null);
-        node.addChild(stats());
+        consume(Tokeniser.TokenType.TIFTH, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(bool(syncSet));
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+        node.addChild(stats(syncSet));
         if (match(Tokeniser.TokenType.TELSE)) {
             node.setType("NIFTE");
-            consume(Tokeniser.TokenType.TELSE, node, null);
-            node.addChild(stats());
+            consume(Tokeniser.TokenType.TELSE, node, syncSet);
+            node.addChild(stats(syncSet));
         } else if (match(Tokeniser.TokenType.TELIF)) {
             node.setType("NIFEF");
-            Node elifNode = new Node("ElseIf", "");
-            consume(Tokeniser.TokenType.TLPAR, node, null);
-            elifNode.addChild(bool());
-            consume(Tokeniser.TokenType.TRPAR, node, null);
-            elifNode.addChild(stats());
-            node.addChild(elifNode);
+            consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+            node.addChild(bool(syncSet));
+            consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+            node.addChild(stats(syncSet));
         }
-        consume(Tokeniser.TokenType.TTEND, node, null);
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
         return node;
     }
 
-    private Node switchStat() throws ParseException {
+    private Node switchStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NSWTCH", "");
-        consume(Tokeniser.TokenType.TSWTH, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
-        node.addChild(expr(true));
-        consume(Tokeniser.TokenType.TRPAR, node, null);
-        consume(Tokeniser.TokenType.TBEGN, node, null);
-        node.addChild(caseList());
-        consume(Tokeniser.TokenType.TTEND, node, null);
+        consume(Tokeniser.TokenType.TSWTH, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        node.addChild(expr(true, syncSet));
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+        consume(Tokeniser.TokenType.TBEGN, node, syncSet);
+        node.addChild(caseList(syncSet));
+        consume(Tokeniser.TokenType.TTEND, node, syncSet);
         return node;
     }
 
-    private Node caseList() throws ParseException {
+    private Node caseList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NCASLT", "");
         if (match(Tokeniser.TokenType.TCASE)) {
-            consume(Tokeniser.TokenType.TCASE, node, null);
-            node.addChild(expr(true));
-            consume(Tokeniser.TokenType.TCOLN, node, null);
-            node.addChild(stats());
-            consume(Tokeniser.TokenType.TBREK, node, null);
-            consume(Tokeniser.TokenType.TSEMI, node, null);
-            node.addChild(caseList());
+            consume(Tokeniser.TokenType.TCASE, node, syncSet);
+            node.addChild(expr(true, syncSet));
+            consume(Tokeniser.TokenType.TCOLN, node, syncSet);
+            node.addChild(stats(syncSet));
+            consume(Tokeniser.TokenType.TBREK, node, syncSet);
+            consume(Tokeniser.TokenType.TSEMI, node, syncSet);
+            node.addChild(caseList(syncSet));
         } else {
             node.setType("SPECIAL");
-            consume(Tokeniser.TokenType.TDFLT, node, null);
-            consume(Tokeniser.TokenType.TCOLN, node, null);
-            node.addChild(stats());
+            consume(Tokeniser.TokenType.TDFLT, node, syncSet);
+            consume(Tokeniser.TokenType.TCOLN, node, syncSet);
+            node.addChild(stats(syncSet));
         }
         return node;
     }
 
-    private Node asgnStat() throws ParseException {
-        // System.out.println("asgnStat hit");
-        Node tempNode = var();
-        Node node = asgnOp();
+    private Node asgnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("asgnStat hit");
+        Node tempNode = var(syncSet);
+        Node node = asgnOp(syncSet);
         node.addChild(tempNode);
-        node.addChild(bool());
+        node.addChild(bool(syncSet));
         return node;
     }
 
-    private Node asgnOp() throws ParseException {
-        // System.out.println("asgnop hit");
+    private Node asgnOp(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("asgnop hit");
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TPLEQ)) {
             node.setType("NPLEQ");
-            consume(Tokeniser.TokenType.TPLEQ, node, null);
+            consume(Tokeniser.TokenType.TPLEQ, node, syncSet);
         } else if (match(Tokeniser.TokenType.TMNEQ)) {
             node.setType("NMNEQ");
-            consume(Tokeniser.TokenType.TMNEQ, node, null);
+            consume(Tokeniser.TokenType.TMNEQ, node, syncSet);
         } else if (match(Tokeniser.TokenType.TSTEQ)) {
             node.setType("NSTEA");
-            consume(Tokeniser.TokenType.TSTEQ, node, null);
+            consume(Tokeniser.TokenType.TSTEQ, node, syncSet);
         } else if (match(Tokeniser.TokenType.TDVEQ)) {
             node.setType("NDVEQ");
-            consume(Tokeniser.TokenType.TDVEQ, node, null);
+            consume(Tokeniser.TokenType.TDVEQ, node, syncSet);
         } else {
             node.setType("NASGN");
-            consume(Tokeniser.TokenType.TEQUL, node, null);
+            consume(Tokeniser.TokenType.TEQUL, node, syncSet);
         }
         return node;
     }
 
-    private Node ioStat() throws ParseException {
-        // System.out.println("iostat hit");
+    private Node ioStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("iostat hit");
         Node node = new Node("NINPUT", "");
         if (match(Tokeniser.TokenType.TINPT)) {
-            consume(Tokeniser.TokenType.TINPT, node, null);
-            node.addChild(vList());
+            consume(Tokeniser.TokenType.TINPT, node, syncSet);
+            node.addChild(vList(syncSet));
         } else if (match(Tokeniser.TokenType.TPRNT)) {
-            consume(Tokeniser.TokenType.TPRNT, node, null);
+            consume(Tokeniser.TokenType.TPRNT, node, syncSet);
             node.setType("NPRINT");
-            node.addChild(prList());
+            node.addChild(prList(syncSet));
         } else {
-            consume(Tokeniser.TokenType.TPRLN, node, null);
+            consume(Tokeniser.TokenType.TPRLN, node, syncSet);
             node.setType("NPRLN");
-            node.addChild(prList());
+            node.addChild(prList(syncSet));
         }
         return node;
     }
 
-    private Node callStat() throws ParseException {
-        // System.out.println("NCALL hit");
+    private Node callStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("NCALL hit");
         Node node = new Node("NCALL", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
         if (match(Tokeniser.TokenType.TNOTT)) {
-            node.addChild(eList());
+            node.addChild(eList(syncSet));
         }
-        consume(Tokeniser.TokenType.TRPAR, node, null);
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
         return node;
     }
 
-    private Node returnStat() throws ParseException {
-        // System.out.println("return hit");
+    private Node returnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("return hit");
         Node node = new Node("NRETN", "");
-        consume(Tokeniser.TokenType.TRETN, node, null);
+        consume(Tokeniser.TokenType.TRETN, node, syncSet);
         if (match(Tokeniser.TokenType.TVOID)) {
-            consume(Tokeniser.TokenType.TVOID, node, null);
+            consume(Tokeniser.TokenType.TVOID, node, syncSet);
         } else {
-            node.addChild(expr(true));
+            node.addChild(expr(true, syncSet));
         }
         return node;
     }
 
-    private Node vList() throws ParseException {
+    private Node vList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(var());
+        node.addChild(var(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NVLIST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(vList());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(vList(syncSet));
         }
         return node;
     }
 
-    private Node var() throws ParseException {
-        // System.out.println("var hit");
+    private Node var(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("var hit");
         Node node = new Node("NSIMV", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         if (match(Tokeniser.TokenType.TLBRK)) {
             node.setType("NAELT");
-            consume(Tokeniser.TokenType.TLBRK, node, null);
-            node.addChild(expr(true));
-            consume(Tokeniser.TokenType.TRBRK, node, null);
+            consume(Tokeniser.TokenType.TLBRK, node, syncSet);
+            node.addChild(expr(true, syncSet));
+            consume(Tokeniser.TokenType.TRBRK, node, syncSet);
             if (match(Tokeniser.TokenType.TDOTT)) {
                 node.setType("NARRV");
-                consume(Tokeniser.TokenType.TDOTT, node, null);
-                consume(Tokeniser.TokenType.TIDEN, node, null);
+                consume(Tokeniser.TokenType.TDOTT, node, syncSet);
+                consume(Tokeniser.TokenType.TIDEN, node, syncSet);
             }
         }
         return node;
     }
 
-    private Node eList() throws ParseException {
+    private Node eList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(bool());
+        node.addChild(bool(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NEXPL");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(eList());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(eList(syncSet));
         }
         return node;
     }
 
-    private Node bool() throws ParseException {
-        // System.out.println("bool hit");
+    private Node bool(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("bool hit");
         Node node = new Node("NBOOL", "");
         if (match(Tokeniser.TokenType.TNOTT)) {
-            consume(Tokeniser.TokenType.TNOTT, node, null);
-            node.addChild(bool());
+            consume(Tokeniser.TokenType.TNOTT, node, syncSet);
+            node.addChild(bool(syncSet));
         } else if (match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TILIT)
                 || match(Tokeniser.TokenType.TFLIT) || match(Tokeniser.TokenType.TTRUE)
                 || match(Tokeniser.TokenType.TFALS)) {
             node.setType("SPECIAL");
-            node.addChild(rel());
+            node.addChild(rel(syncSet));
 
             if (match(Tokeniser.TokenType.TTAND) || match(Tokeniser.TokenType.TTTOR)
                     || match(Tokeniser.TokenType.TTXOR)) {
                 node.setType("NBOOL");
-                node.addChild(logOp());
-                node.addChild(rel());
+                node.addChild(logOp(syncSet));
+                node.addChild(rel(syncSet));
             }
         } else {
-            node.addChild(bool());
-            node.addChild(logOp());
-            node.addChild(rel());
+            node.addChild(bool(syncSet));
+            node.addChild(logOp(syncSet));
+            node.addChild(rel(syncSet));
         }
         return node;
     }
 
-    private Node rel() throws ParseException {
-        // System.out.println("Rel hit");
+    private Node rel(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("Rel hit");
         Node node = new Node("SPECIAL", "");
-        node.addChild(expr(true));
+        node.addChild(expr(true, syncSet));
         if (match(Tokeniser.TokenType.TEQEQ) || match(Tokeniser.TokenType.TNEQL) || match(Tokeniser.TokenType.TGRTR)
                 || match(Tokeniser.TokenType.TLEQL) || match(Tokeniser.TokenType.TLESS)
                 || match(Tokeniser.TokenType.TGEQL)) {
-            node.addChild(relOp());
-            node.addChild(expr(true));
+            node.addChild(relOp(syncSet));
+            node.addChild(expr(true, syncSet));
         }
         return node;
     }
 
-    private Node logOp() throws ParseException {
+    private Node logOp(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TTAND)) {
             node.setType("NAND");
-            consume(Tokeniser.TokenType.TTAND, node, null);
+            consume(Tokeniser.TokenType.TTAND, node, syncSet);
         } else if (match(Tokeniser.TokenType.TTTOR)) {
             node.setType("NOR");
-            consume(Tokeniser.TokenType.TTTOR, node, null);
+            consume(Tokeniser.TokenType.TTTOR, node, syncSet);
         } else {
             node.setType("NXOR");
-            consume(Tokeniser.TokenType.TTXOR, node, null);
+            consume(Tokeniser.TokenType.TTXOR, node, syncSet);
         }
         return node;
     }
 
-    private Node relOp() throws ParseException {
-        Node node = new Node("", "");
+    private Node relOp(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TEQEQ)) {
             node.setType("NEQL");
-            consume(Tokeniser.TokenType.TEQEQ, node, null);
+            consume(Tokeniser.TokenType.TEQEQ, node, syncSet);
         } else if (match(Tokeniser.TokenType.TNEQL)) {
             node.setType("NNEQ");
-            consume(Tokeniser.TokenType.TNEQL, node, null);
+            consume(Tokeniser.TokenType.TNEQL, node, syncSet);
         } else if (match(Tokeniser.TokenType.TGRTR)) {
             node.setType("NGRT");
-            consume(Tokeniser.TokenType.TGRTR, node, null);
+            consume(Tokeniser.TokenType.TGRTR, node, syncSet);
         } else if (match(Tokeniser.TokenType.TLEQL)) {
             node.setType("NLEQ");
-            consume(Tokeniser.TokenType.TLEQL, node, null);
+            consume(Tokeniser.TokenType.TLEQL, node, syncSet);
         } else if (match(Tokeniser.TokenType.TLESS)) {
             node.setType("NLSS");
-            consume(Tokeniser.TokenType.TLESS, node, null);
+            consume(Tokeniser.TokenType.TLESS, node, syncSet);
         } else {
             node.setType("NGEQ");
-            consume(Tokeniser.TokenType.TGEQL, node, null);
+            consume(Tokeniser.TokenType.TGEQL, node, syncSet);
         }
         return node;
     }
 
-    private Node expr(boolean termNeeded) throws ParseException {
-        // System.out.println("expr hit");
+    private Node expr(boolean termNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("expr hit");
         Node node = new Node("SPECIAL", "");
         if (termNeeded) {
-            node.addChild(term(true));
+            node.addChild(term(true, syncSet));
         }
 
         if (match(Tokeniser.TokenType.TPLUS)) {
             node.setType("NADD");
-            consume(Tokeniser.TokenType.TPLUS, node, null);
-            node.addChild(term(true));
-            node.addChild(expr(false));
+            consume(Tokeniser.TokenType.TPLUS, node, syncSet);
+            node.addChild(term(true, syncSet));
+            node.addChild(expr(false, syncSet));
         } else if (match(Tokeniser.TokenType.TMINS)) {
             node.setType("NSUB");
-            consume(Tokeniser.TokenType.TMINS, node, null);
-            node.addChild(term(true));
-            node.addChild(expr(false));
+            consume(Tokeniser.TokenType.TMINS, node, syncSet);
+            node.addChild(term(true, syncSet));
+            node.addChild(expr(false, syncSet));
         }
         return node;
     }
 
-    private Node term(Boolean factNeeded) throws ParseException {
-        // System.out.println("Term hit");
+    private Node term(Boolean factNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("Term hit");
         Node node = new Node("SPECIAL", "");
         if (factNeeded) {
-            node.addChild(fact(true));
+            node.addChild(fact(true, syncSet));
         }
         if (match(Tokeniser.TokenType.TSTAR)) {
             node.setType("NMUL");
-            consume(Tokeniser.TokenType.TSTAR, node, null);
-            node.addChild(fact(true));
-            node.addChild(term(false));
+            consume(Tokeniser.TokenType.TSTAR, node, syncSet);
+            node.addChild(fact(true, syncSet));
+            node.addChild(term(false, syncSet));
         } else if (match(Tokeniser.TokenType.TDIVD)) {
             node.setType("NDIV");
-            consume(Tokeniser.TokenType.TDIVD, node, null);
-            node.addChild(fact(true));
-            node.addChild(term(false));
+            consume(Tokeniser.TokenType.TDIVD, node, syncSet);
+            node.addChild(fact(true, syncSet));
+            node.addChild(term(false, syncSet));
         } else if (match(Tokeniser.TokenType.TPERC)) {
             node.setType("NMOD");
             consume(Tokeniser.TokenType.TPERC, node, null);
-            node.addChild(fact(true));
-            node.addChild(term(false));
+            node.addChild(fact(true, syncSet));
+            node.addChild(term(false, syncSet));
         }
         // ε
         return node;
     }
 
-    private Node fact(Boolean exponentNeeded) throws ParseException {
-        // System.out.println("fact hit");
+    private Node fact(Boolean exponentNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("fact hit");
         Node node = new Node("SPECIAL", "");
         if (exponentNeeded) {
-            node.addChild(exponent());
+            node.addChild(exponent(syncSet));
         }
         if (match(Tokeniser.TokenType.TCART)) {
             node.setType("NPOW");
-            consume(Tokeniser.TokenType.TCART, node, null);
-            node.addChild(exponent());
-            node.addChild(fact(false));
+            consume(Tokeniser.TokenType.TCART, node, syncSet);
+            node.addChild(exponent(syncSet));
+            node.addChild(fact(false, syncSet));
         }
         return node;
     }
 
-    private Node exponent() throws ParseException {
-        // System.out.println("exponent hit " + currentToken.getType().toString());
+    private Node exponent(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("exponent hit " + currentToken.getType().toString());
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTRUE)) {
             node.setType("NTRUE");
-            consume(Tokeniser.TokenType.TTRUE, node, null);
+            consume(Tokeniser.TokenType.TTRUE, node, syncSet);
         } else if (match(Tokeniser.TokenType.TFALS)) {
             node.setType("NFALS");
-            consume(Tokeniser.TokenType.TFALS, node, null);
+            consume(Tokeniser.TokenType.TFALS, node, syncSet);
         } else if (match(Tokeniser.TokenType.TIDEN)) {
             node.setType("SPECIAL");
-            // consume(Tokeniser.TokenType.TIDEN, node,null);
-            node.addChild(var());
+            node.addChild(var(syncSet));
         } else if (match(Tokeniser.TokenType.TILIT)) {
             node.setType("NILIT");
-            consume(Tokeniser.TokenType.TILIT, node, null);
+            consume(Tokeniser.TokenType.TILIT, node, syncSet);
         } else if (match(Tokeniser.TokenType.TFLIT)) {
             node.setType("NFLIT");
-            consume(Tokeniser.TokenType.TFLIT, node, null);
+            consume(Tokeniser.TokenType.TFLIT, node, syncSet);
         } else if (match(Tokeniser.TokenType.TLPAR)) {
             node.setType("SPECIAL");
-            consume(Tokeniser.TokenType.TLPAR, node, null);
-            node.addChild(bool());
-            consume(Tokeniser.TokenType.TRPAR, node, null);
+            consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+            node.addChild(bool(syncSet));
+            consume(Tokeniser.TokenType.TRPAR, node, syncSet);
         } else {
-            node.addChild(fnCall());
+            node.addChild(fnCall(syncSet));
         }
         return node;
     }
 
-    private Node fnCall() throws ParseException {
-        // System.out.println("fncall hit");
+    private Node fnCall(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        System.out.println("fncall hit");
         Node node = new Node("NFCALL", "");
-        consume(Tokeniser.TokenType.TIDEN, node, null);
-        consume(Tokeniser.TokenType.TLPAR, node, null);
+        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
         if (match(Tokeniser.TokenType.TNOTT)) {
-            node.addChild(eList());
+            node.addChild(eList(syncSet));
         }
-        consume(Tokeniser.TokenType.TLPAR, node, null);
+        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
         return node;
     }
 
-    private Node prList() throws ParseException {
+    private Node prList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(printItem());
+        node.addChild(printItem(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NPRLST");
-            consume(Tokeniser.TokenType.TCOMA, node, null);
-            node.addChild(prList());
+            consume(Tokeniser.TokenType.TCOMA, node, syncSet);
+            node.addChild(prList(syncSet));
         }
         return node;
     }
 
-    private Node printItem() throws ParseException {
+    private Node printItem(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TSTRG)) {
             node.setType("NSTRG");
-            consume(Tokeniser.TokenType.TSTRG, node, null);
+            consume(Tokeniser.TokenType.TSTRG, node, syncSet);
         } else {
-            node.addChild(expr(true));
+            node.addChild(expr(true, syncSet));
         }
         return node;
     }
