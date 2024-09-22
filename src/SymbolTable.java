@@ -12,6 +12,14 @@ public class SymbolTable {
         table.clear();
     }
 
+    public SymbolTable copy() {
+        SymbolTable copy = new SymbolTable();
+        for (Map.Entry<String, SymbolTableEntry> entry : table.entrySet()) {
+            copy.enter(entry.getKey(), entry.getValue().getType(), entry.getValue().getLine(), entry.getValue().getCol());
+        }
+        return copy;
+    }
+
     public void enter (String name) {
         SymbolTableEntry entry = new SymbolTableEntry(name);
         table.put(name, entry);
