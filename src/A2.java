@@ -57,7 +57,7 @@ public class A2 {
         if (parseTree != null) {
             System.out.println("Parse tree (may be partial if errors occurred):");
             // TODO: uncomment this for submission
-            // parseTree.printPreOrderTraversal();
+            parseTree.printPreOrderTraversal();
             parseTree.printTree();
             System.out.println("Symbol tables:");
             if (parser.removedSymbolTableStack.empty()) {

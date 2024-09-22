@@ -105,7 +105,7 @@ public class Scanner {
                 System.out.println("Error: Non Ascii character");
             }
             updatePosition(tempChar);
-            outputController.outputToListing((char) tempChar, currentColumn);
+            // outputController.outputToListing((char) tempChar, currentColumn);
             return tempChar;
         } catch (IOException e) {
             System.out.println("Exception " + e);
@@ -231,7 +231,7 @@ public class Scanner {
         }
 
         Token tempToken = findToken(asciiArrayListToString(asciiCharList));
-        System.out.println(tempToken.getType());
+        // System.out.println(tempToken.getType());
         // INFO: Recursive goodness?
         if (tempToken.getTokenId() == -1) {
             tempToken = nextToken();
