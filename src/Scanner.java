@@ -635,5 +635,6 @@ public class Scanner {
         } else {
             currentColumn++;
         }
+        outputController.outputToListing((char) tempChar, currentColumn);
     }
 }

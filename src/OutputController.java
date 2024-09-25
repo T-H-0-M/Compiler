@@ -37,6 +37,20 @@ public class OutputController {
         initialiseWriter(outputFileName);
     }
 
+    private String getReadableNonTerminal(String nodeType) {
+        switch (nodeType) {
+            case "NFUND":
+                return "Function Definition";
+            case "NPROG":
+                return "Program";
+            case "NMAIN":
+                return "Main Body";
+            // Add cases for other node types...
+            default:
+                return nodeType;
+        }
+    }
+
     private String sanitizeLexeme(String lexeme) {
         return lexeme.replace("\n", "").replace("\r", "");
     }
@@ -57,13 +71,15 @@ public class OutputController {
         currentLine = new StringBuilder();
     }
 
-    public void addParseError(Token token) {
-        outputErrorToListing("syntax error: " + token.getLexeme() + " (line: "
-                + token.getLine() + " col: " + token.getCol() + ")\n", token.getCol());
-        String tokenString = "\n" + formatToken(token) + "\n lexical error: " +
-                sanitizeLexeme(token.getLexeme()) + " (line: "
-                + token.getLine() + " col: " + token.getCol() + ")";
-        currentLine.append(tokenString);
+    public void addParseError(Tokeniser.TokenType expectedType, Token currentToken, Node parentNode) {
+        String nonTerminal = (parentNode != null) ? getReadableNonTerminal(parentNode.getType()) : "Unknown";
+        String errorMsg = "Syntax Error in " + nonTerminal + ": Expected " + expectedType + ", but found "
+                + currentToken.getType() +
+                " on line " + currentToken.getLine() + ", col " + currentToken.getCol();
+        // TODO: Remove this
+        System.out.println(errorMsg);
+        outputErrorToListing(errorMsg, currentToken.getCol());
+        currentLine.append(errorMsg);
         formattedLines.add(currentLine.toString());
         currentLine = new StringBuilder();
     }

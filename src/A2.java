@@ -37,7 +37,7 @@ public class A2 {
 
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
-        Parser parser = new Parser(scanner);
+        Parser parser = new Parser(scanner, outputController);
 
         run(parser);
         // runScanner(scanner);

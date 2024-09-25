@@ -1,6 +1,3 @@
-
-// TODO: if special assign child nodes as that node
-// Think about it
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -9,17 +6,20 @@ public class Parser {
     private final Scanner scanner;
     private Token currentToken;
     private Node rootNode;
+    private OutputController outputController;
 
     public Parser() {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
+        this.outputController = null;
     }
 
-    public Parser(Scanner scanner) {
+    public Parser(Scanner scanner, OutputController outputController) {
         this.scanner = scanner;
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
+        this.outputController = outputController;
     }
 
     private Node consume(Tokeniser.TokenType expectedType, Node parentNode, Set<Tokeniser.TokenType> syncSet)
@@ -28,32 +28,32 @@ public class Parser {
         if (currentToken.getType() == expectedType) {
             Token consumedToken = currentToken;
             node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
-            if (parentNode != null && consumedToken.getType() == Tokeniser.TokenType.TIDEN
-                    || consumedToken.getType() == Tokeniser.TokenType.TILIT) {
+            if (parentNode != null && (consumedToken.getType() == Tokeniser.TokenType.TIDEN
+                    || consumedToken.getType() == Tokeniser.TokenType.TILIT)) {
                 parentNode.setValue(consumedToken.getLexeme());
             }
             currentToken = scanner.nextToken();
             return node;
         } else {
-            String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
-                    " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
-            System.out.println(new ParseException(errorMsg));
+            outputController.addParseError(expectedType, currentToken, parentNode);
             node = new Node("NUNDEF", "");
             if (parentNode != null) {
                 parentNode.addChild(node);
             }
-            // if (syncSet == null) {
-            throw new ParseException("Fatal Error");
-            // } else {
-            // while (!syncSet.contains(currentToken.getType()) &&
-            // currentToken.getType() != Tokeniser.TokenType.TTEOF) {
-            // System.out.println("throwing token " + currentToken.getType().toString());
-            // currentToken = scanner.nextToken();
-            // }
-            // consume(expectedType, parentNode, syncSet);
-            // }
+            if (syncSet == null || syncSet.isEmpty()) {
+                throw new ParseException("Fatal Error: Unable to synchronize.");
+            } else {
+                while (!syncSet.contains(currentToken.getType()) &&
+                        currentToken.getType() != Tokeniser.TokenType.TTEOF) {
+                    System.out.println("Skipping token " + currentToken.getType().toString());
+                    currentToken = scanner.nextToken();
+                }
+                if (currentToken.getType() == Tokeniser.TokenType.TTEOF) {
+                    throw new ParseException("Fatal Error: Reached EOF while synchronizing.");
+                }
+            }
         }
-        // return node;
+        return node;
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
@@ -107,8 +107,6 @@ public class Parser {
         if (match(Tokeniser.TokenType.TCONS)) {
             consume(Tokeniser.TokenType.TCONS, node, constsSyncSet);
             node = initList(constsSyncSet);
-            // node.addChild(initList(constsSyncSet));
-            // node.addChild(node);
         }
         return node;
     }
@@ -233,15 +231,28 @@ public class Parser {
 
     private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         System.out.println("NFUND Hit");
+        // INFO: I did this to create a deep copy of the syncset, to avoid it impacting
+        // other statements
+        syncSet = new HashSet<>(syncSet);
+        syncSet.addAll(Arrays.asList(
+                Tokeniser.TokenType.TFUNC,
+                Tokeniser.TokenType.TMAIN,
+                Tokeniser.TokenType.TTEOF));
         Node node = new Node("NFUND", "");
-        consume(Tokeniser.TokenType.TFUNC, node, syncSet);
-        consume(Tokeniser.TokenType.TIDEN, node, syncSet);
-        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
-        node.addChild(pList(syncSet));
-        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
-        consume(Tokeniser.TokenType.TCOLN, node, syncSet);
-        node.addChild(rType(syncSet));
-        node.addChild(funcBody(syncSet));
+        try {
+            consume(Tokeniser.TokenType.TFUNC, node, syncSet);
+            consume(Tokeniser.TokenType.TIDEN, node, syncSet);
+            consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+            node.addChild(pList(syncSet));
+            consume(Tokeniser.TokenType.TRPAR, node, syncSet);
+            consume(Tokeniser.TokenType.TCOLN, node, syncSet);
+            node.addChild(rType(syncSet));
+            node.addChild(funcBody(syncSet));
+        } catch (ParseException e) {
+            // TODO: idk what do do with this yet
+            System.out.println("ehhehehehe");
+            System.err.println(e.getMessage());
+        }
         return node;
     }
 
