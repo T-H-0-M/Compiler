@@ -22,36 +22,38 @@ public class Parser {
         this.rootNode = null;
     }
 
-    private void consume(Tokeniser.TokenType expectedType, Node parentNode, Set<Tokeniser.TokenType> syncSet)
+    private Node consume(Tokeniser.TokenType expectedType, Node parentNode, Set<Tokeniser.TokenType> syncSet)
             throws ParseException {
+        Node node = null;
         if (currentToken.getType() == expectedType) {
             Token consumedToken = currentToken;
-            Node node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
+            node = new Node(consumedToken.getType().toString(), consumedToken.getLexeme());
             if (parentNode != null && consumedToken.getType() == Tokeniser.TokenType.TIDEN
                     || consumedToken.getType() == Tokeniser.TokenType.TILIT) {
-                // System.out.println("setting " + parentNode.getType() + " to " +
-                // node.getValue());
                 parentNode.setValue(consumedToken.getLexeme());
             }
             currentToken = scanner.nextToken();
+            return node;
         } else {
             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
             System.out.println(new ParseException(errorMsg));
+            node = new Node("NUNDEF", "");
             if (parentNode != null) {
-                parentNode.addChild(new Node("NUNDEF", ""));
+                parentNode.addChild(node);
             }
-            if (syncSet == null) {
-                throw new ParseException("Fatal Error");
-            } else {
-                while (!syncSet.contains(currentToken.getType()) &&
-                        currentToken.getType() != Tokeniser.TokenType.TTEOF) {
-                    System.out.println("throwing token " + currentToken.getType().toString());
-                    currentToken = scanner.nextToken();
-                }
-                consume(expectedType, parentNode, syncSet);
-            }
+            // if (syncSet == null) {
+            throw new ParseException("Fatal Error");
+            // } else {
+            // while (!syncSet.contains(currentToken.getType()) &&
+            // currentToken.getType() != Tokeniser.TokenType.TTEOF) {
+            // System.out.println("throwing token " + currentToken.getType().toString());
+            // currentToken = scanner.nextToken();
+            // }
+            // consume(expectedType, parentNode, syncSet);
+            // }
         }
+        // return node;
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
@@ -84,9 +86,14 @@ public class Parser {
 
     private Node globals(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NGLOB", "");
+        syncSet.add(Tokeniser.TokenType.TFUNC);
+        syncSet.add(Tokeniser.TokenType.TMAIN);
         node.addChild(consts(syncSet));
         node.addChild(types(syncSet));
-        node.addChild(arrays(syncSet));
+        Node arraysNode = arrays(syncSet);
+        if (!arraysNode.isSpecial()) {
+            node.addChild(arrays(syncSet));
+        }
         return node;
     }
 
@@ -99,7 +106,9 @@ public class Parser {
 
         if (match(Tokeniser.TokenType.TCONS)) {
             consume(Tokeniser.TokenType.TCONS, node, constsSyncSet);
-            node.addChild(initList(constsSyncSet));
+            node = initList(constsSyncSet);
+            // node.addChild(initList(constsSyncSet));
+            // node.addChild(node);
         }
         return node;
     }
@@ -133,17 +142,21 @@ public class Parser {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTYPD)) {
             consume(Tokeniser.TokenType.TTYPD, node, syncSet);
-            node.addChild(typeList(syncSet));
+            node = typeList(syncSet);
         }
         return node;
     }
 
     private Node typeList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(type(syncSet));
+        Node typeNode = type(syncSet);
+        // node.addChild(type(syncSet));
         if (match(Tokeniser.TokenType.TIDEN)) {
             node.setType("NTYPEL");
-            return typeList(syncSet);
+            node.addChild(typeNode);
+            node.addChild(typeList(syncSet));
+        } else {
+            node = typeNode;
         }
         return node;
     }
@@ -168,11 +181,14 @@ public class Parser {
 
     private Node fields(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(sDecl(syncSet));
+        Node sDeclNode = sDecl(syncSet);
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NFLIST");
+            node.addChild(sDeclNode);
             consume(Tokeniser.TokenType.TCOMA, node, syncSet);
             node.addChild(fields(syncSet));
+        } else {
+            node = sDeclNode;
         }
         return node;
     }
@@ -181,8 +197,7 @@ public class Parser {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TARRD)) {
             consume(Tokeniser.TokenType.TARRD, node, syncSet);
-            node.addChild(arrDecls(syncSet));
-            return node;
+            node = arrDecls(syncSet);
         }
         return node;
     }
@@ -212,7 +227,6 @@ public class Parser {
             node.setType("NFUNCS");
             node.addChild(func(syncSet));
             node.addChild(funcs(syncSet));
-            return node;
         }
         return node;
     }
@@ -431,7 +445,7 @@ public class Parser {
         node.addChild(asgnList(syncSet));
         consume(Tokeniser.TokenType.TSEMI, node, syncSet);
         node.addChild(bool(syncSet));
-        consume(Tokeniser.TokenType.TLPAR, node, syncSet);
+        consume(Tokeniser.TokenType.TRPAR, node, syncSet);
         node.addChild(stats(syncSet));
         consume(Tokeniser.TokenType.TTEND, node, syncSet);
         // TODO: decrease scope

@@ -5,6 +5,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+// TODO: Update this 
+// TODO: create flag for scanner output and parser output
 /**
  * OutputController class
  * 
@@ -44,8 +46,19 @@ public class OutputController {
      * 
      * @param token The token that caused the error.
      */
-    public void addError(Token token) {
+    public void addLexicalError(Token token) {
         outputErrorToListing("lexical error: " + token.getLexeme() + " (line: "
+                + token.getLine() + " col: " + token.getCol() + ")\n", token.getCol());
+        String tokenString = "\n" + formatToken(token) + "\n lexical error: " +
+                sanitizeLexeme(token.getLexeme()) + " (line: "
+                + token.getLine() + " col: " + token.getCol() + ")";
+        currentLine.append(tokenString);
+        formattedLines.add(currentLine.toString());
+        currentLine = new StringBuilder();
+    }
+
+    public void addParseError(Token token) {
+        outputErrorToListing("syntax error: " + token.getLexeme() + " (line: "
                 + token.getLine() + " col: " + token.getCol() + ")\n", token.getCol());
         String tokenString = "\n" + formatToken(token) + "\n lexical error: " +
                 sanitizeLexeme(token.getLexeme()) + " (line: "

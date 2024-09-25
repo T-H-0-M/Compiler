@@ -70,7 +70,7 @@ public class A2 {
             currentToken = scanner.nextToken();
             if (currentToken.getTokenId() == 68) {
                 errorList.add(currentToken);
-                outputController.addError(currentToken);
+                outputController.addLexicalError(currentToken);
             } else {
                 tokenList.add(currentToken);
                 outputController.addToken(currentToken);
