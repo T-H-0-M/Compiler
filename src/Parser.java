@@ -230,7 +230,6 @@ public class Parser {
     }
 
     private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("NFUND Hit");
         // INFO: I did this to create a deep copy of the syncset, to avoid it impacting
         // other statements
         syncSet = new HashSet<>(syncSet);
@@ -348,7 +347,6 @@ public class Parser {
     }
 
     private Node sList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("SLIST hit");
         Node node = new Node("SPECIAL", "");
         node.addChild(sDecl(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
@@ -360,7 +358,6 @@ public class Parser {
     }
 
     private Node sDecl(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("sDecl hit");
         Node node = new Node("NSDECL", "");
         consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         consume(Tokeniser.TokenType.TCOLN, node, syncSet);
@@ -449,7 +446,6 @@ public class Parser {
 
     private Node forStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         // TODO: increase scope
-        // System.out.println("nfor hit");
         Node node = new Node("NFOR", "");
         consume(Tokeniser.TokenType.TTFOR, node, syncSet);
         consume(Tokeniser.TokenType.TLPAR, node, syncSet);
@@ -464,7 +460,6 @@ public class Parser {
     }
 
     private Node repStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("nrept hit");
         Node node = new Node("NREPT", "");
         consume(Tokeniser.TokenType.TREPT, node, syncSet);
         consume(Tokeniser.TokenType.TLPAR, node, syncSet);
@@ -561,7 +556,6 @@ public class Parser {
     }
 
     private Node asgnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("asgnStat hit");
         Node tempNode = var(syncSet);
         Node node = asgnOp(syncSet);
         node.addChild(tempNode);
@@ -570,7 +564,6 @@ public class Parser {
     }
 
     private Node asgnOp(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("asgnop hit");
         Node node = new Node("", "");
         if (match(Tokeniser.TokenType.TPLEQ)) {
             node.setType("NPLEQ");
@@ -592,7 +585,6 @@ public class Parser {
     }
 
     private Node ioStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("iostat hit");
         Node node = new Node("NINPUT", "");
         if (match(Tokeniser.TokenType.TINPT)) {
             consume(Tokeniser.TokenType.TINPT, node, syncSet);
@@ -610,7 +602,6 @@ public class Parser {
     }
 
     private Node callStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("NCALL hit");
         Node node = new Node("NCALL", "");
         consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         consume(Tokeniser.TokenType.TLPAR, node, syncSet);
@@ -622,7 +613,6 @@ public class Parser {
     }
 
     private Node returnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("return hit");
         Node node = new Node("NRETN", "");
         consume(Tokeniser.TokenType.TRETN, node, syncSet);
         if (match(Tokeniser.TokenType.TVOID)) {
@@ -645,7 +635,6 @@ public class Parser {
     }
 
     private Node var(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("var hit");
         Node node = new Node("NSIMV", "");
         consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         if (match(Tokeniser.TokenType.TLBRK)) {
@@ -674,7 +663,6 @@ public class Parser {
     }
 
     private Node bool(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("bool hit");
         Node node = new Node("NBOOL", "");
         if (match(Tokeniser.TokenType.TNOTT)) {
             consume(Tokeniser.TokenType.TNOTT, node, syncSet);
@@ -700,7 +688,6 @@ public class Parser {
     }
 
     private Node rel(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("Rel hit");
         Node node = new Node("SPECIAL", "");
         node.addChild(expr(true, syncSet));
         if (match(Tokeniser.TokenType.TEQEQ) || match(Tokeniser.TokenType.TNEQL) || match(Tokeniser.TokenType.TGRTR)
@@ -752,7 +739,6 @@ public class Parser {
     }
 
     private Node expr(boolean termNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("expr hit");
         Node node = new Node("SPECIAL", "");
         if (termNeeded) {
             node.addChild(term(true, syncSet));
@@ -773,7 +759,6 @@ public class Parser {
     }
 
     private Node term(Boolean factNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("Term hit");
         Node node = new Node("SPECIAL", "");
         if (factNeeded) {
             node.addChild(fact(true, syncSet));
@@ -799,7 +784,6 @@ public class Parser {
     }
 
     private Node fact(Boolean exponentNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("fact hit");
         Node node = new Node("SPECIAL", "");
         if (exponentNeeded) {
             node.addChild(exponent(syncSet));
@@ -814,7 +798,6 @@ public class Parser {
     }
 
     private Node exponent(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("exponent hit " + currentToken.getType().toString());
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTRUE)) {
             node.setType("NTRUE");
@@ -843,7 +826,6 @@ public class Parser {
     }
 
     private Node fnCall(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("fncall hit");
         Node node = new Node("NFCALL", "");
         consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         consume(Tokeniser.TokenType.TLPAR, node, syncSet);

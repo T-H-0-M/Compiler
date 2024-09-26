@@ -39,13 +39,144 @@ public class OutputController {
 
     private String getReadableNonTerminal(String nodeType) {
         switch (nodeType) {
-            case "NFUND":
-                return "Function Definition";
             case "NPROG":
                 return "Program";
+            case "NGLOB":
+                return "Globals";
+            case "NILIST":
+                return "Initialization List";
+            case "NINIT":
+                return "Initialization";
+            case "NTYPEL":
+                return "Type List";
+            case "NRTYPE":
+                return "Record Type Definition";
+            case "NATYPE":
+                return "Array Type Definition";
+            case "NFLIST":
+                return "Field List";
+            case "NALIST":
+                return "Array Declaration List";
+            case "NARRD":
+                return "Array Declaration";
+            case "NFUNCS":
+                return "Functions";
+            case "NFUND":
+                return "Function Definition";
+            case "NPLIST":
+                return "Parameter List";
+            case "NSIMP":
+                return "Simple Parameter";
+            case "NARRP":
+                return "Array Parameter";
+            case "NARRC":
+                return "Constant Array Parameter";
+            case "NDLIST":
+                return "Declaration List";
             case "NMAIN":
                 return "Main Body";
-            // Add cases for other node types...
+            case "NSDLST":
+                return "Simple Declaration List";
+            case "NSDECL":
+                return "Simple Declaration";
+            case "NTDECL":
+                return "Type Declaration";
+            case "NSTATS":
+                return "Statements";
+            case "NFORL":
+                return "For Loop";
+            case "NREPT":
+                return "Repeat Statement";
+            case "NDOWL":
+                return "Do While Loop";
+            case "NASGNS":
+                return "Assignment List";
+            case "NIFTH":
+                return "If Then Statement";
+            case "NIFTE":
+                return "If Then Else Statement";
+            case "NIFEF":
+                return "If Else If Statement";
+            case "NSWTCH":
+                return "Switch Statement";
+            case "NCASLT":
+                return "Case List";
+            case "NASGN":
+                return "Assignment Operator '='";
+            case "NPLEQ":
+                return "Plus Equals Operator '+='";
+            case "NMNEQ":
+                return "Minus Equals Operator '-='";
+            case "NSTEA":
+                return "Times Equals Operator '*='";
+            case "NDVEQ":
+                return "Divide Equals Operator '/='";
+            case "NINPUT":
+                return "Input Statement";
+            case "NPRINT":
+                return "Print Statement";
+            case "NPRLN":
+                return "Print Line Statement";
+            case "NCALL":
+                return "Function Call";
+            case "NRETN":
+                return "Return Statement";
+            case "NVLIST":
+                return "Variable List";
+            case "NSIMV":
+                return "Simple Variable";
+            case "NAELT":
+                return "Array Element";
+            case "NARRV":
+                return "Record Element";
+            case "NEXPL":
+                return "Expression List";
+            case "NBOOL":
+                return "Boolean Expression";
+            case "NAND":
+                return "Logical AND Operator";
+            case "NOR":
+                return "Logical OR Operator";
+            case "NXOR":
+                return "Logical XOR Operator";
+            case "NEQL":
+                return "Equality Operator '=='";
+            case "NNEQ":
+                return "Not Equal Operator '!='";
+            case "NGRT":
+                return "Greater Than Operator '>'";
+            case "NLSS":
+                return "Less Than Operator '<'";
+            case "NLEQ":
+                return "Less Than or Equal Operator '<='";
+            case "NGEQ":
+                return "Greater Than or Equal Operator '>='";
+            case "NADD":
+                return "Addition";
+            case "NSUB":
+                return "Subtraction";
+            case "NMUL":
+                return "Multiplication";
+            case "NDIV":
+                return "Division";
+            case "NMOD":
+                return "Modulus";
+            case "NPOW":
+                return "Power Operator";
+            case "NILIT":
+                return "Integer Literal";
+            case "NFLIT":
+                return "Floating Point Literal";
+            case "NTRUE":
+                return "Boolean True";
+            case "NFALS":
+                return "Boolean False";
+            case "NFCALL":
+                return "Function Call";
+            case "NPRLST":
+                return "Print List";
+            case "NSTRG":
+                return "String Literal";
             default:
                 return nodeType;
         }
@@ -77,7 +208,6 @@ public class OutputController {
                 + currentToken.getType() +
                 " on line " + currentToken.getLine() + ", col " + currentToken.getCol();
         // TODO: Remove this
-        System.out.println(errorMsg);
         outputErrorToListing(errorMsg, currentToken.getCol());
         currentLine.append(errorMsg);
         formattedLines.add(currentLine.toString());
