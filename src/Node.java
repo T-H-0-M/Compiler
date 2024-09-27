@@ -31,23 +31,45 @@ public class Node {
         }
     }
 
-    // INFO: Removed SPECIAL Nodes
+    // // INFO: Removed SPECIAL Nodes
+    // private void buildTreeString(Node node, List<String> lines, String prefix,
+    // String childrenPrefix) {
+    // if (!node.type.equals("SPECIAL")) {
+    // String content = node.type + (node.value.isEmpty() ? "" : " (" + node.value +
+    // ")");
+    // lines.add(prefix + content);
+    // }
+    //
+    // for (Iterator<Node> it = node.children.iterator(); it.hasNext();) {
+    // Node child = it.next();
+    // if (it.hasNext()) {
+    // buildTreeString(child, lines,
+    // node.type.equals("SPECIAL") ? prefix : childrenPrefix + "├── ",
+    // node.type.equals("SPECIAL") ? childrenPrefix : childrenPrefix + "│ ");
+    // } else {
+    // buildTreeString(child, lines,
+    // node.type.equals("SPECIAL") ? prefix : childrenPrefix + "└── ",
+    // node.type.equals("SPECIAL") ? childrenPrefix : childrenPrefix + " ");
+    // }
+    // }
+    // }
+
+    // INFO: Prints all nodes
     private void buildTreeString(Node node, List<String> lines, String prefix, String childrenPrefix) {
-        if (!node.type.equals("SPECIAL")) {
-            String content = node.type + (node.value.isEmpty() ? "" : " (" + node.value + ")");
-            lines.add(prefix + content);
-        }
+        // Always include the node, even if it is a "SPECIAL" type
+        String content = node.type + (node.value.isEmpty() ? "" : " (" + node.value + ")");
+        lines.add(prefix + content);
 
         for (Iterator<Node> it = node.children.iterator(); it.hasNext();) {
             Node child = it.next();
             if (it.hasNext()) {
                 buildTreeString(child, lines,
-                        node.type.equals("SPECIAL") ? prefix : childrenPrefix + "├── ",
-                        node.type.equals("SPECIAL") ? childrenPrefix : childrenPrefix + "│   ");
+                        childrenPrefix + "├── ",
+                        childrenPrefix + "│   ");
             } else {
                 buildTreeString(child, lines,
-                        node.type.equals("SPECIAL") ? prefix : childrenPrefix + "└── ",
-                        node.type.equals("SPECIAL") ? childrenPrefix : childrenPrefix + "    ");
+                        childrenPrefix + "└── ",
+                        childrenPrefix + "    ");
             }
         }
     }

@@ -1,0 +1,280 @@
+<program> → CD24 <id> <globals> <funcs> <mainbody>
+    After <id>:
+        FIRST(<globals>) = { constants, typedef, arraydef, ε }
+        Since <globals> is nullable, consider FIRST of <funcs> and <mainbody>
+        FIRST(<funcs>) = { func, ε }
+        FIRST(<mainbody>) = { main }
+        So, FOLLOW(<id>) = { constants, typedef, arraydef, func, main }
+
+    After <globals>:
+        Since <globals> can be ε, and <funcs> can be ε, FOLLOW(<globals>) includes FIRST(<funcs>) and FIRST(<mainbody>) and FOLLOW(<program>)
+        FOLLOW(<globals>) = { func, main, $ }
+
+    After <funcs>:
+        FIRST(<mainbody>) = { main }
+        FOLLOW(<funcs>) = { main }
+        Since <funcs> is nullable, FOLLOW(<funcs>) includes FOLLOW(<globals>)
+        So, FOLLOW(<funcs>) = { main, func, $ }
+
+    After <mainbody>:
+        FOLLOW(<mainbody>) = FOLLOW(<program>) = { $ }
+
+<globals> → <consts> <types> <arrays>
+    After <consts>:
+        FIRST(<types>) = { typedef, ε }
+        FIRST(<arrays>) = { arraydef, ε }
+        So, FOLLOW(<consts>) = { typedef, arraydef, func, main, $ } (since both <types> and <arrays> can be nullable, include FOLLOW(<globals>))
+
+    After <types>:
+        FIRST(<arrays>) = { arraydef, ε }
+        Since <arrays> can be ε, FOLLOW(<types>) = { arraydef, func, main, $ }
+
+    After <arrays>:
+        FOLLOW(<arrays>) = FOLLOW(<globals>) = { func, main, $ }
+
+<consts> → constants <initlist> | ε
+    After <initlist>:
+        FOLLOW(<initlist>) = FOLLOW(<consts>) = { typedef, arraydef, func, main, $ }
+
+<initlist> → <init> <initlisttail>
+    After <init>:
+        FIRST(<initlisttail>) = { ,, ε }
+        So, FOLLOW(<init>) = { ,, typedef, arraydef, func, main, $ }
+
+<initlisttail> → , <initlist> | ε
+    No action needed for FOLLOW sets here since <initlisttail> doesn't have non-terminals after it.
+
+<init> → <id> = <expr>
+    After <id>:
+        FOLLOW(<id>) includes { = } in this context.
+
+    After <expr>:
+        FOLLOW(<expr>) = FOLLOW(<init>) = { ,, typedef, arraydef, func, main, $ }
+
+<types> → typedef <typelist> | ε
+    After <typelist>:
+        FOLLOW(<typelist>) = FOLLOW(<types>) = { arraydef, func, main, $ }
+
+<typelist> → <type> <typelisttail>
+    After <type>:
+        FIRST(<typelisttail>) = FIRST(<typelist>) ∪ { ε } = { <structid>, <typeid>, ε }
+        FOLLOW(<type>) = { <structid>, <typeid>, arraydef, func, main, $ }
+
+<typelisttail> → <typelist> | ε
+    No action needed.
+
+<type> → <structid> def <fields> end | <typeid> def array [ <expr> ] of <structid> end
+    After <structid> in both productions:
+        FOLLOW(<structid>) includes { def }
+
+    After <fields>:
+        FOLLOW(<fields>) = { end }
+
+    After <expr>:
+        FOLLOW(<expr>) = { ] }
+
+<fields> → <sdecl> <fieldstail>
+    After <sdecl>:
+        FIRST(<fieldstail>) = { ,, ε }
+        FOLLOW(<sdecl>) = { ,, end }
+
+<fieldstail> → , <fields> | ε
+    No action needed.
+
+<arrays> → arraydef <arrdecls> | ε
+    After <arrdecls>:
+        FOLLOW(<arrdecls>) = FOLLOW(<arrays>) = { func, main, $ }
+
+<arrdecls> → <arrdecl> <arrdeclstail>
+    After <arrdecl>:
+        FIRST(<arrdeclstail>) = { ,, ε }
+        FOLLOW(<arrdecl>) = { ,, func, main, $ }
+
+<arrdeclstail> → , <arrdecls> | ε
+    No action needed.
+
+<arrdecl> → <id> : <typeid>
+    After <id>:
+        FOLLOW(<id>) includes { : }
+
+    After <typeid>:
+        FOLLOW(<typeid>) = FOLLOW(<arrdecl>) = { ,, func, main, $ }
+
+<funcs> → <func> <funcs> | ε
+    After <func>:
+        FIRST(<funcs>) = { func, ε }
+        FOLLOW(<func>) = { func, main, $ }
+
+<func> → func <id> ( <plist> ) : <rtype> <funcbody>
+    After <id>:
+        FOLLOW(<id>) includes { ( }
+
+    After <plist>:
+        FOLLOW(<plist>) = { ) }
+
+    After <rtype>:
+        FOLLOW(<rtype>) = FIRST(<funcbody>) = { <locals>, begin }
+
+    After <funcbody>:
+        FOLLOW(<funcbody>) = FOLLOW(<func>) = { func, main, $ }
+
+<plist> → <params> | ε
+    FOLLOW(<plist>) = { ) }
+
+<params> → <param> <paramstail>
+    After <param>:
+        FIRST(<paramstail>) = { ,, ε }
+        FOLLOW(<param>): { ,, ) }
+
+<paramstail> → , <params> | ε
+    No action needed.
+
+<param> → <sdecl> | <arrdecl> | const <arrdecl>
+    After <sdecl> and <arrdecl>:
+        FOLLOW both includes { ,, ) }
+
+<funcbody> → <locals> begin <stats> end
+    After <locals>:
+        FIRST(begin) = { begin }
+        FOLLOW(<locals>) = { begin }
+
+<locals> → <dlist> | ε
+    FOLLOW(<locals>) = { begin }
+
+<dlist> → <decl> <dlisttail>
+    After <decl>:
+        FIRST(<dlisttail>) = { ,, ε }
+        FOLLOW(<decl>) = { ,, begin }
+
+<dlisttail> → , <dlist> | ε
+    No action needed.
+
+<decl> → <sdecl> | <arrdecl>
+    After <sdecl> and <arrdecl>:
+        FOLLOW both includes { ,, begin }
+
+<mainbody> → main <slist> begin <stats> end CD24 <id>
+    After <slist>:
+        FIRST(begin) = { begin }
+        FOLLOW(<slist>) = { begin }
+
+    After <stats>:
+        FIRST(end) = { end }
+        FOLLOW(<stats>) = { end }
+
+<slist> → <sdecl> <slisttail>
+    After <sdecl>:
+        FIRST(<slisttail>) = { ,, ε }
+        FOLLOW(<sdecl>) = { ,, begin }
+
+<slisttail> → , <slist> | ε
+    No action needed.
+
+<sdecl> → <id> : <stype> | <id> : <structid>
+    After <id>:
+        FOLLOW(<id>) includes { : }
+
+    After <stype> and <structid>:
+        FOLLOW both includes { ,, begin }
+
+<stats> → <stat> ; <statstail> | <strstat> <statstail>
+    After <stat> and <strstat>:
+        FOLLOW both includes { ; }
+
+    After <statstail>:
+        FOLLOW(<statstail>) = FOLLOW(<stats>) = { end }
+
+<statstail> → <stats> | ε
+    No action needed.
+
+<strstat> → <forstat> | <ifstat> | <switchstat> | <dostat>
+    No action needed.
+
+<stat> → <repstat> | <asgnstat> | <iostat> | <callstat> | <returnstat>
+    No action needed.
+
+<forstat> → for ( <asgnlist> ; <bool> ) <stats> end
+    After <asgnlist>:
+        FOLLOW(<asgnlist>) = { ; }
+
+    After <bool>:
+        FOLLOW(<bool>) = { ) }
+
+    After <stats>:
+        FOLLOW(<stats>) = { end }
+
+<asgnlist> → <alist> | ε
+    FOLLOW(<asgnlist>) = { ; }
+
+<alist> → <asgnstat> <alisttail>
+    After <asgnstat>:
+        FIRST(<alisttail>) = { ,, ε }
+        FOLLOW(<asgnstat>) = { ,, ; }
+
+<alisttail> → , <alist> | ε
+    No action needed.
+
+<ifstat> →
+    Multiple productions; handle similarly.
+
+<switchstat> → switch ( <expr> ) begin <caselist> end
+
+    After <expr>:
+        FOLLOW(<expr>) = { ) }
+
+    After <caselist>:
+        FOLLOW(<caselist>) = { end }
+
+<asgnstat> → <var> <asgnop> <bool>
+
+    After <var>:
+        FOLLOW(<var>) includes FIRST(<asgnop>) = { =, +=, -=, *=, /= }
+
+<bool> → not <bool> | <rel> <booltail>
+
+    After <rel>:
+        FIRST(<booltail>) = { and, or, xor, ε }
+        FOLLOW(<rel>) = { and, or, xor, ), ; } (depends on context)
+
+<rel> → <expr> <reltail>
+
+    After <expr>:
+        FIRST(<reltail>) = { ==, !=, >, <, >=, <=, ε }
+        FOLLOW(<expr>) includes { ==, !=, >, <, >=, <=, and, or, xor, ), ; }
+
+<expr> → <term> <exprtail>
+
+    After <term>:
+        FIRST(<exprtail>) = { +, -, ε }
+        FOLLOW(<term>) includes { +, -, ==, !=, >, <, >=, <=, and, or, xor, ), ; }
+
+<term> → <fact> <termtail>
+
+    After <fact>:
+        FIRST(<termtail>) = { *, /, %, ε }
+        FOLLOW(<fact>) includes { *, /, %, +, -, ==, !=, >, <, >=, <=, and, or, xor, ), ; }
+
+<fact> → <exponent> <facttail>
+
+    After <exponent>:
+        FIRST(<facttail>) = { ^, ε }
+        FOLLOW(<exponent>) includes { ^, *, /, %, +, -, ==, !=, >, <, >=, <=, and, or, xor, ), ; }
+
+<exponent> →
+
+    Starts with terminals and <var>, no action needed for FOLLOW.
+
+<fncall> → <id> ( <elist> ) | <id> ( )
+
+    After <elist>:
+        FOLLOW(<elist>) = { ) }
+
+<elist> → <bool> <elisttail>
+
+    After <bool>:
+        FIRST(<elisttail>) = { ,, ε }
+        FOLLOW(<bool>) = { ,, ) }
+
+<elisttail> → , <elist> | ε
+
+    No action needed.
