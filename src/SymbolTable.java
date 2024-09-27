@@ -15,23 +15,10 @@ public class SymbolTable {
     public SymbolTable copy() {
         SymbolTable copy = new SymbolTable();
         for (Map.Entry<String, SymbolTableEntry> entry : table.entrySet()) {
-            // copy.enter(entry.getKey(), entry.getValue().getType(),
-            // entry.getValue().getLine(),
-            // entry.getValue().getCol());
             copy.enter(entry.getValue());
         }
         return copy;
     }
-
-    // public void enter(String name) {
-    // SymbolTableEntry entry = new SymbolTableEntry(name);
-    // table.put(name, entry);
-    // }
-    //
-    // public void enter(String name, Tokeniser.TokenType type, int line, int col) {
-    // SymbolTableEntry entry = new SymbolTableEntry(name, type, line, col);
-    // table.put(name, entry);
-    // }
 
     public void enter(SymbolTableEntry symbolTableEntry) {
         table.put(symbolTableEntry.getName(), symbolTableEntry);

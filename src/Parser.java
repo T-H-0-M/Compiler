@@ -855,7 +855,6 @@ public class Parser {
         SymbolTable currentSymbolTable = symbolTableStack.peek();
         SymbolTableEntry entry = currentSymbolTable.find(varName);
         String value = boolNode.getValue();
-        String type = boolNode.getType();
 
         if (entry == null) {
             entry = new SymbolTableEntry(varName, value);
