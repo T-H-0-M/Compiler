@@ -37,7 +37,7 @@ public class A2 {
 
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
-        Parser parser = new Parser(scanner);
+        Parser parser = new Parser(scanner, outputController);
 
         run(parser);
         // runScanner(scanner);
@@ -70,7 +70,7 @@ public class A2 {
             currentToken = scanner.nextToken();
             if (currentToken.getTokenId() == 68) {
                 errorList.add(currentToken);
-                outputController.addError(currentToken);
+                outputController.addLexicalError(currentToken);
             } else {
                 tokenList.add(currentToken);
                 outputController.addToken(currentToken);
