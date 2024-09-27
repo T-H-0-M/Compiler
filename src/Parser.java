@@ -15,12 +15,9 @@ public class Parser {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
-
         this.symbolTableStack = new Stack<SymbolTable>();
         this.removedSymbolTableStack = new Stack<SymbolTable>();
-
         this.symbolTableStack.push(new SymbolTable());
-
         this.outputController = null;
 
     }
@@ -29,11 +26,9 @@ public class Parser {
         this.scanner = scanner;
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
-
         this.symbolTableStack = new Stack<SymbolTable>();
         this.removedSymbolTableStack = new Stack<SymbolTable>();
         this.symbolTableStack.push(new SymbolTable());
-
         this.outputController = outputController;
     }
 
@@ -58,8 +53,6 @@ public class Parser {
                 parentNode.setValue(consumedToken.getLexeme());
             }
             currentToken = scanner.nextToken();
-            // addTokenToCurrentScope(currentToken.getLexeme(), currentToken.getType(),
-            // currentToken.getLine(), currentToken.getCol());
             return false;
         } else {
             outputController.addParseError(expectedType, currentToken, parentNode);
@@ -853,7 +846,6 @@ public class Parser {
     private Node asgnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         // TODO: Add type checking and math here
         Node varNode = var(syncSet);
-
         Node node = asgnOp(syncSet);
         node.addChild(varNode);
         Node boolNode = bool(syncSet);
@@ -863,9 +855,13 @@ public class Parser {
         SymbolTable currentSymbolTable = symbolTableStack.peek();
         SymbolTableEntry entry = currentSymbolTable.find(varName);
         String value = boolNode.getValue();
+        String type = boolNode.getType();
 
         if (entry == null) {
             entry = new SymbolTableEntry(varName, value);
+            if (boolNode.getType() != null) {
+                entry.setType(boolNode.getType());
+            }
             entry.setInitialized(true);
             currentSymbolTable.enter(entry);
         } else {
@@ -875,6 +871,8 @@ public class Parser {
             entry.setInitialized(true);
             entry.setValue(value);
         }
+
+        System.out.println("Adding " + entry.toString());
         return node;
     }
 

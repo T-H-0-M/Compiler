@@ -42,7 +42,7 @@ public class SymbolTable {
     }
 
     // returns the completed object for validation
-    public SymbolTableEntry set_attributes(String name, Tokeniser.TokenType type, int line, int col) {
+    public SymbolTableEntry set_attributes(String name, String type, int line, int col) {
         SymbolTableEntry entry = table.get(name);
         entry.setType(type);
         entry.setLine(line);

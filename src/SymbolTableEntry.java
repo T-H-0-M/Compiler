@@ -1,18 +1,18 @@
 public class SymbolTableEntry {
     private String name;
-    private Tokeniser.TokenType type;
+    private String type;
+    private String value;
     private int line;
     private int col;
     private boolean isInitialized;
     private boolean isFunction;
     private boolean isConstant;
     private boolean isArray;
-    private String value;
 
     /* -------------- Constructors -------------- */
     public SymbolTableEntry(String name, String value) {
         this.name = name;
-        this.type = Tokeniser.TokenType.TUNDF;
+        this.type = null;
         this.line = -1;
         this.col = -1;
         this.isInitialized = false;
@@ -52,11 +52,12 @@ public class SymbolTableEntry {
         return name;
     }
 
-    public Tokeniser.TokenType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(Tokeniser.TokenType type) {
+    public void setType(String type) {
+        System.out.println("setting node - " + type);
         this.type = type;
     }
 
@@ -126,8 +127,10 @@ public class SymbolTableEntry {
 
     @Override
     public String toString() {
+        System.out.println(
+                this.type);
         return String.format(
-                "[name: %s, value: %s]",
-                name, value);
+                "[name: %s, value: %s, type: %s]",
+                name, value, type.toString());
     }
 }
