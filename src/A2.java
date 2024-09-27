@@ -11,9 +11,10 @@ import java.nio.file.Paths;
  * It handles the processing of input files, manages token and error lists,
  * and coordinates the output of results.
  * 
+ * Date: 15-08-2024
+ * 
  * @author Thomas Bandy, Benjamin Rogers
  * @version 1.0
- * @since 2024-08-15
  */
 public class A2 {
     private static ArrayList<Token> tokenList = new ArrayList<>();
@@ -40,7 +41,6 @@ public class A2 {
         Parser parser = new Parser(scanner, outputController);
 
         run(parser);
-        // runScanner(scanner);
         outputController.closeOutput();
         printFormattedOutput();
     }
@@ -56,17 +56,8 @@ public class A2 {
         Node parseTree = parser.parse();
         if (parseTree != null) {
             System.out.println("Parse tree (may be partial if errors occurred):");
-            // TODO: uncomment this for submission
             parseTree.printPreOrderTraversal();
-            parseTree.printTree();
-            System.out.println("Symbol tables:");
-            if (parser.removedSymbolTableStack.empty()) {
-                System.out.println("No scopes were captured.");
-            }
-            while (parser.removedSymbolTableStack.empty() == false) {
-                System.out.println(parser.removedSymbolTableStack.size() + ": " + parser.removedSymbolTableStack.peek().toString()); 
-                parser.removedSymbolTableStack.pop();
-            }
+            // parseTree.printTree();
         } else {
             System.out.println("No parse tree generated.");
         }

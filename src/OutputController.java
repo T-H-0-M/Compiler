@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Update this 
 // TODO: create flag for scanner output and parser output
 /**
  * OutputController class
@@ -14,9 +13,10 @@ import java.util.List;
  * the lexical analysis phase. It handles formatting, line management, and
  * writing to an output file.
  * 
+ * Date: 27-09-2024
+ *
  * @author Thomas Bandy, Benjamin Rogers
- * @version 1.0
- * @since 2024-08-15
+ * @version 1.1
  */
 public class OutputController {
     private static final int LINE_LENGTH = 60;
@@ -207,7 +207,6 @@ public class OutputController {
         String errorMsg = "Syntax Error in " + nonTerminal + ": Expected " + expectedType + ", but found "
                 + currentToken.getType() +
                 " on line " + currentToken.getLine() + ", col " + currentToken.getCol();
-        // TODO: Remove this
         outputErrorToListing(errorMsg, currentToken.getCol());
         currentLine.append(errorMsg);
         formattedLines.add(currentLine.toString());

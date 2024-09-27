@@ -1,8 +1,22 @@
+
 import java.util.Stack;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Parser class
+ * 
+ * A recursive descent parser for compiling a custom programming language.
+ * It takes tokens from a Scanner and produces an abstract syntax tree (AST).
+ * The Parser handles syntactic analysis, builds the AST, and performs error
+ * handling and recovery.
+ * 
+ * Date: 2024-09-27
+ *
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ */
 public class Parser {
     private final Scanner scanner;
     private Token currentToken;
@@ -86,17 +100,6 @@ public class Parser {
         this.symbolTableStack.peek().destroy();
         this.symbolTableStack.pop();
         System.out.println("removing table");
-    }
-
-    private void addTokenToCurrentScope(String tokenId, Tokeniser.TokenType type,
-            int line, int col) {
-        if (this.symbolTableStack.size() < 1) {
-            System.out.println("No scope to add token to");
-            return;
-        }
-        // this.symbolTableStack.peek().enter(tokenId, type, line, col);
-        System.out.println(this.symbolTableStack.peek().toString());
-        System.out.println("Token added to current scope: " + type.toString());
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
@@ -426,8 +429,8 @@ public class Parser {
         return node;
     }
 
-    // TODO: find out what to do with array decl
     private Node param(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        // TODO: use symbol table to differentiate
         Node node = new Node("NSIMP", "");
         if (match(Tokeniser.TokenType.TCONS)) {
             node.setType("NARRC");
@@ -621,7 +624,6 @@ public class Parser {
         return node;
     }
 
-    // TODO: Check this
     private Node stat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         syncSet = new HashSet<>(Arrays.asList(
@@ -635,8 +637,6 @@ public class Parser {
 
         if (match(Tokeniser.TokenType.TREPT)) {
             node.addChild(repStat(syncSet));
-            // TODO: fix this with symbol table - asgnstat and callstatt both start with
-            // TIDEN
         } else if (match(Tokeniser.TokenType.TIDEN)) {
             String varName = currentToken.getLexeme();
             SymbolTable currentSymbolTable = symbolTableStack.peek();
@@ -1113,7 +1113,6 @@ public class Parser {
         Node termNode = null;
         if (termNeeded) {
             termNode = term(true, syncSet);
-            // node.addChild(term(true, syncSet));
         }
 
         if (match(Tokeniser.TokenType.TPLUS)) {
@@ -1227,7 +1226,6 @@ public class Parser {
             node.addChild(bool(syncSet));
             consume(Tokeniser.TokenType.TRPAR, node, syncSet);
         } else {
-            // node.addChild(fnCall(syncSet));
             node = fnCall(syncSet);
         }
         return node;

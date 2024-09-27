@@ -1,3 +1,18 @@
+
+/**
+ * SymbolTableEntry class
+ * 
+ * A child class of SymbolTable.
+ * Each entry stores the information of a parsed node.
+ * An entry may have incomplete fields at time of construction.
+ * Fields will be filled in as the parser progresses.
+ * 
+ * Date: 2024-09-27
+ *
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ */
+
 public class SymbolTableEntry {
     private String name;
     private String type;
@@ -33,32 +48,6 @@ public class SymbolTableEntry {
         this.isArray = false;
         this.value = null;
     }
-
-    // public SymbolTableEntry(String name, Tokeniser.TokenType type, int line, int
-    // col) {
-    // this.name = name;
-    // this.type = type;
-    // this.line = line;
-    // this.col = col;
-    // this.isInitialized = false;
-    // this.isFunction = false;
-    // this.isConstant = false;
-    // this.isArray = false;
-    // this.value = null;
-    // }
-    //
-    // public SymbolTableEntry(String name, Tokeniser.TokenType type, int line, int
-    // col, boolean isFunction,
-    // boolean isConstant, boolean isArray) {
-    // this.name = name;
-    // this.type = type;
-    // this.line = line;
-    // this.col = col;
-    // this.isInitialized = false;
-    // this.isFunction = isFunction;
-    // this.isConstant = isConstant;
-    // this.isArray = isArray;
-    // }
 
     public String getName() {
         return name;
@@ -128,14 +117,6 @@ public class SymbolTableEntry {
     public void setValue(String value) {
         this.value = value;
     }
-
-    // @Override
-    // public String toString() {
-    // return String.format(
-    // "[name: %s, type: %s, line: %d, col: %d, isInitialized: %b, isFunction: %b,
-    // isConstant: %b, isArray: %b]",
-    // name, type, line, col, isInitialized, isFunction, isConstant, isArray);
-    // }
 
     @Override
     public String toString() {

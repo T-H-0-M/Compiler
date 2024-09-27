@@ -14,10 +14,11 @@ import java.util.ArrayList;
  * types of literals. The class maintains state information about the current
  * position in the input and provides methods for token identification and
  * processing.
+ *
+ * Date: 2024-09-27
  * 
  * @author Thomas Bandy, Benjamin Rogers
  * @version 1.0
- * @since 2024-08-15
  */
 public class Scanner {
 
@@ -571,7 +572,6 @@ public class Scanner {
     private Token handleIntegerLiteral(String lexeme) {
         try {
             long value = Long.parseLong(lexeme);
-            // TODO: Modify the output to remove undef for integer overflows
             if (value > Integer.MAX_VALUE) {
                 return new Token(Tokeniser.getTokenCode(Tokeniser.TokenType.TUNDF),
                         "Integer Literal Overflow", tokenStartLine,
