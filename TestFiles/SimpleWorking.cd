@@ -10,11 +10,13 @@ CD24 SimpleWorking
  * Date: 04/08/2024
  * Version: 1.0
 **/
+constants
+num = 10
 
 main
 i: int
 
 
 begin
-    i =  1;
+    i = 1;
 end CD24 SimpleWorking

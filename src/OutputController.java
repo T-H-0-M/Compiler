@@ -5,7 +5,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-// TODO: Update this 
 // TODO: create flag for scanner output and parser output
 /**
  * OutputController class
@@ -14,9 +13,10 @@ import java.util.List;
  * the lexical analysis phase. It handles formatting, line management, and
  * writing to an output file.
  * 
+ * Date: 27-09-2024
+ *
  * @author Thomas Bandy, Benjamin Rogers
- * @version 1.0
- * @since 2024-08-15
+ * @version 1.1
  */
 public class OutputController {
     private static final int LINE_LENGTH = 60;
@@ -202,16 +202,21 @@ public class OutputController {
         currentLine = new StringBuilder();
     }
 
-    public void addParseError(Tokeniser.TokenType expectedType, Token currentToken, Node parentNode) {
+    public void addParseError(String errorDescription, Token currentToken, Node parentNode) {
         String nonTerminal = (parentNode != null) ? getReadableNonTerminal(parentNode.getType()) : "Unknown";
-        String errorMsg = "Syntax Error in " + nonTerminal + ": Expected " + expectedType + ", but found "
-                + currentToken.getType() +
-                " on line " + currentToken.getLine() + ", col " + currentToken.getCol();
-        // TODO: Remove this
-        outputErrorToListing(errorMsg, currentToken.getCol());
-        currentLine.append(errorMsg);
-        formattedLines.add(currentLine.toString());
-        currentLine = new StringBuilder();
+        int line = currentToken.getLine();
+        int col = currentToken.getCol();
+
+        String errorMsg = String.format("syntax error – improperly formed %s on (line %d, column %d)\n",
+                nonTerminal, line, col);
+        if (nonTerminal.equals("SPECIAL")) {
+            errorMsg = String.format("syntax error – Undefined Error on (line %d, column %d)\n",
+                    line, col);
+
+        }
+
+        outputErrorToListing(errorMsg, col);
+        formattedLines.add(errorMsg);
     }
 
     /**
@@ -334,16 +339,27 @@ public class OutputController {
      * @param error The error message to output.
      * @param col   The column where the error occurred.
      */
+    // public void outputErrorToListing(String error, int col) {
+    // if (writer == null) {
+    // System.err.println("Writer is not initialised. Cannot output to listing.");
+    // return;
+    // }
+    // // String indentation = " ".repeat(Math.max(0, col + 4));
+    // // String formattedError = String.format("\n%s^%s", indentation, error);
+    // writer.print(formattedError);
+    // currentCol = 0;
+    // writer.flush();
+    // }
+
     public void outputErrorToListing(String error, int col) {
         if (writer == null) {
             System.err.println("Writer is not initialised. Cannot output to listing.");
             return;
         }
-        String indentation = " ".repeat(Math.max(0, col + 4));
-        String formattedError = String.format("\n%s^%s", indentation, error);
-        writer.print(formattedError);
-        currentCol = 0;
+        writer.print("\n");
+        writer.print(error);
         writer.flush();
+        currentCol = 0;
     }
 
     /**

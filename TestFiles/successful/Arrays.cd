@@ -11,20 +11,24 @@ CD24 Arrays
  * Date: 04/08/2024
  * Version: 1.0
  **/
-main
-i: int
-finalResult: int
 
 constants
-    COUNT = 10
+    COUNT = 10.0909
 
 typedef
-    numbers def 
-        array [COUNT] of int 
+    number def
+        test: int
+    end
+
+    numbersArray def 
+        array [COUNT] of number 
     end
 
 arraydef
-    programNumbers: numbers
+    programNumbers: numbersArray
+
+main
+i: int, finalResult: int
 
 begin 
     programNumbers[0] = 1;
@@ -38,6 +42,7 @@ begin
     programNumbers[8] = 7;
     programNumbers[9] = 4;
     finalResult = 0;
+    finalResult = finalResult > programNumber;
 
     for (i = 0; i < COUNT-1)
         finalResult = finalResult + programNumbers[i] - programNumbers[i-1];

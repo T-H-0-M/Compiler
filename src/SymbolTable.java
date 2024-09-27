@@ -1,3 +1,19 @@
+
+/**
+ * SymbolTable class
+ * 
+ * This class defines the underlying data structure and methods to be
+ * used by the symbol table. This data structure resides within a stack
+ * and represents a scope within the source program.
+ * A single symbol table represents a scope with all contained entries
+ * therefore attributed to that scope.
+ * 
+ * Date: 2024-09-27
+ *
+ * @author Thomas Bandy, Benjamin Rogers
+ * @version 1.0
+ */
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +44,6 @@ public class SymbolTable {
         return table.get(name);
     }
 
-    // returns the completed object for validation
     public SymbolTableEntry set_attributes(String name, String type, int line, int col) {
         SymbolTableEntry entry = table.get(name);
         entry.setType(type);

@@ -14,21 +14,19 @@ CD24 Vet
  * Date: 04/08/2024
  * Version: 1.0
  **/
-main
 
-counter: int
 
 constants
     ASSIGNMENTLENGTH = 10
 
 typedef
     doctor def
-        docId: int,
+        docId: int
     end
 
     pet def
        petId: int, 
-       ownerId: int,
+       ownerId: int
     end
 
     doctorArray def 
@@ -39,75 +37,81 @@ typedef
         array [3] of pet 
     end 
 
+    arrayNumber def 
+        number: int
+    end
+
     assignmentArray def 
-        array [ASSIGNMENTLENGTH] of int 
+        array [ASSIGNMENTLENGTH] of arrayNumber
     end
 
 
 
 arraydef
-    assignments: assignmentArray
-
-begin
-
-    pets: petsArray
+    assignments: assignmentArray,
+    pets: petsArray,
     doctors: doctorArray
-    counter = 0;
 
-    /**
-    Initialises all doctors in the doctors array
-    Pass by descriptor copy/array achieved
-    **/
-    func createDocs(doctors: doctorArray): void
-        begin 
-        doctors[0].docId = 0;
-        doctors[1].docId = 1;
-        doctors[2].docId = 2;
-        end
+/**
+Initialises all doctors in the doctors array
+Pass by descriptor copy/array achieved
+**/
+func createDocs(doctors: doctorArray): void
+    begin 
+    doctors[0].docId = 0;
+    doctors[1].docId = 1;
+    doctors[2].docId = 2;
     end
 
-    /**
-    Initialises all pets in the pets array
-    Pass by descriptor copy/array achieved
-    **/
-    func createPets(pets: petsArray): void
-        begin
-        pets[0].petId = 0;
-        pets[0].ownerId = 0;
-        
-        pets[1].petId = 1;
-        pets[1].ownerId = 1;
+/**
+Initialises all pets in the pets array
+Pass by descriptor copy/array achieved
+**/
+func createPets(pets: petsArray): void
+    begin
+    pets[0].petId = 0;
+    pets[0].ownerId = 0;
+    
+    pets[1].petId = 1;
+    pets[1].ownerId = 1;
 
-        pets[2].petId = 2;
-        pets[2].ownerId = 2;
-        end
+    pets[2].petId = 2;
+    pets[2].ownerId = 2;
     end
 
 
-    /** 
-    Assigns doctors to different pets (hardcoded)
-    pass by value achieved
-    **/
-    func assignDoc(docId: int, petId: int): bool
-        begin
-            if(counter < 6)
-                return false;
-            else
-               assignments[counter] = docId; 
-               assignments[counter + 1] = petId;
-               counter = counter + 1;
-            end
-            return true;
+/** 
+Assigns doctors to different pets (hardcoded)
+pass by value achieved
+**/
+func assignDoc(docId: int, petId: int): bool
+    begin
+        if(counter < 6)
+            return false;
+        else
+           assignments[counter] = docId; 
+           assignments[counter + 1] = petId;
+           counter = counter + 1;
         end
+        return true;
     end
 
-    /**
-    Prints all assignments
-    void pass achieved
-    **/
-    func printAssignments()
+/**
+Prints all assignments
+void pass achieved
+**/
+func printAssignments(): void
+    begin
         printline assignments;
     end
+
+main
+counter: int
+
+begin
+    counter  0;
+
+
 
 
     /-- Main program
