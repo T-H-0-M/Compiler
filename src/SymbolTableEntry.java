@@ -1,5 +1,3 @@
-import java.lang.reflect.Field;
-
 public class SymbolTableEntry {
     private String name;
     private Tokeniser.TokenType type;
@@ -8,8 +6,11 @@ public class SymbolTableEntry {
     private boolean isInitialized;
     private boolean isFunction;
     private boolean isConstant;
+    private boolean isArray;
+    private String value;
 
-    public SymbolTableEntry(String name) {
+    /* -------------- Constructors -------------- */
+    public SymbolTableEntry(String name, String value) {
         this.name = name;
         this.type = Tokeniser.TokenType.TUNDF;
         this.line = -1;
@@ -17,17 +18,35 @@ public class SymbolTableEntry {
         this.isInitialized = false;
         this.isFunction = false;
         this.isConstant = false;
+        this.isArray = false;
+        this.value = value;
     }
 
-    public SymbolTableEntry(String name, Tokeniser.TokenType type, int line, int col) {
-        this.name = name;
-        this.type = type;
-        this.line = line;
-        this.col = col;
-        this.isInitialized = false;
-        this.isFunction = false;
-        this.isConstant = false;
-    }
+    // public SymbolTableEntry(String name, Tokeniser.TokenType type, int line, int
+    // col) {
+    // this.name = name;
+    // this.type = type;
+    // this.line = line;
+    // this.col = col;
+    // this.isInitialized = false;
+    // this.isFunction = false;
+    // this.isConstant = false;
+    // this.isArray = false;
+    // this.value = null;
+    // }
+    //
+    // public SymbolTableEntry(String name, Tokeniser.TokenType type, int line, int
+    // col, boolean isFunction,
+    // boolean isConstant, boolean isArray) {
+    // this.name = name;
+    // this.type = type;
+    // this.line = line;
+    // this.col = col;
+    // this.isInitialized = false;
+    // this.isFunction = isFunction;
+    // this.isConstant = isConstant;
+    // this.isArray = isArray;
+    // }
 
     public String getName() {
         return name;
@@ -53,9 +72,9 @@ public class SymbolTableEntry {
         return col;
     }
 
-   public void setCol(int col) {
-       this.col = col;
-   }
+    public void setCol(int col) {
+        this.col = col;
+    }
 
     public boolean isInitialized() {
         return isInitialized;
@@ -73,20 +92,42 @@ public class SymbolTableEntry {
         return isConstant;
     }
 
+    public void setFunction(boolean isFunction) {
+        this.isFunction = isFunction;
+    }
+
+    public void setConstant(boolean isConstant) {
+        this.isConstant = isConstant;
+    }
+
+    public boolean isArray() {
+        return isArray;
+    }
+
+    public void setIsArray(boolean isArray) {
+        this.isArray = isArray;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    // @Override
+    // public String toString() {
+    // return String.format(
+    // "[name: %s, type: %s, line: %d, col: %d, isInitialized: %b, isFunction: %b,
+    // isConstant: %b, isArray: %b]",
+    // name, type, line, col, isInitialized, isFunction, isConstant, isArray);
+    // }
+
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        result.append("[");
-        for (Field field : getClass().getDeclaredFields()) {
-            field.setAccessible(true);
-            try {
-                result.append(field.getName()).append(": ").append(field.get(this)).append(", ");
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        result.delete(result.length() - 2, result.length());
-        result.append("]");
-        return result.toString();
+        return String.format(
+                "[name: %s, value: %s]",
+                name, value);
     }
 }

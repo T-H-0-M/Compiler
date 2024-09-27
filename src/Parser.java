@@ -1,11 +1,7 @@
-
 import java.util.Stack;
-// TODO: Change error node to NUNDEF
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 
 public class Parser {
     private final Scanner scanner;
@@ -36,6 +32,7 @@ public class Parser {
 
         this.symbolTableStack = new Stack<SymbolTable>();
         this.removedSymbolTableStack = new Stack<SymbolTable>();
+        this.symbolTableStack.push(new SymbolTable());
 
         this.outputController = outputController;
     }
@@ -60,7 +57,9 @@ public class Parser {
                     || consumedToken.getType() == Tokeniser.TokenType.TFLIT)) {
                 parentNode.setValue(consumedToken.getLexeme());
             }
-                   currentToken = scanner.nextToken();
+            currentToken = scanner.nextToken();
+            // addTokenToCurrentScope(currentToken.getLexeme(), currentToken.getType(),
+            // currentToken.getLine(), currentToken.getCol());
             return false;
         } else {
             outputController.addParseError(expectedType, currentToken, parentNode);
@@ -75,74 +74,37 @@ public class Parser {
         }
         return parentNode.getType().equals("NUNDEF");
     }
-          
-          
-          
-// TODO: Include this
-//             addTokenToCurrentScope(currentToken.getLexeme(), currentToken.getType(), currentToken.getLine(), currentToken.getCol());
-//             return node;
-//         } else {
-//             parentNode.addChild(new Node("NUNDEF", ""));
-//             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
-//                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
-//             throw new ParseException(errorMsg);
-//         }
-//     }
 
-//     private void incrementScope() {
-//         SymbolTable symbolTable = new SymbolTable();
-//         this.symbolTableStack.push(symbolTable);
-//         System.out.println("New scope added, Symbol table size:" + this.symbolTableStack.size());
-//     }
+    private void incrementScope() {
+        SymbolTable symbolTable = new SymbolTable();
+        this.symbolTableStack.push(symbolTable);
+        System.out.println("New scope added, Symbol table size:" +
+                this.symbolTableStack.size());
+    }
 
-//     private void decrementScope() {
-//         if (this.symbolTableStack.size() < 1) {
-//             System.out.println("No scope to remove");
-//             return;
-//         }
-//         this.removedSymbolTableStack.push(this.symbolTableStack.peek().copy());
-//         System.out.println("Removed Symbol table size:" + this.removedSymbolTableStack.size());
-//         this.symbolTableStack.peek().destroy();
-//         this.symbolTableStack.pop();
-//         System.out.println("Removed Symbol table:" + this.removedSymbolTableStack.peek().toString());
-//     }
+    private void decrementScope() {
+        if (this.symbolTableStack.size() < 1) {
+            System.out.println("No scope to remove");
+            return;
+        }
+        this.removedSymbolTableStack.push(this.symbolTableStack.peek().copy());
+        System.out.println("Removed Symbol table size:" +
+                this.removedSymbolTableStack.size());
+        this.symbolTableStack.peek().destroy();
+        this.symbolTableStack.pop();
+        System.out.println("removing table");
+    }
 
-//     private void addTokenToCurrentScope(String tokenId, Tokeniser.TokenType type, int line, int col) {
-//         if (this.symbolTableStack.size() < 1) {
-//             System.out.println("No scope to add token to");
-//             return;
-//         }
-//         this.symbolTableStack.peek().enter(tokenId, type, line, col);
-//         System.out.println(this.symbolTableStack.peek().toString());
-//         System.out.println("Token added to current scope: " + type.toString());
-//     }
-
-    // private Node consume(Tokeniser.TokenType expectedType, Node parentNode) {
-    // if (currentToken.getType() == expectedType) {
-    // Token consumedToken = currentToken;
-    // currentToken = scanner.nextToken();
-    // Node node = new Node(consumedToken.getType().toString(),
-    // consumedToken.getLexeme());
-    // if (consumedToken.getType().toString().equals("TIDEN")) {
-    // parentNode.setValue(consumedToken.getLexeme());
-    // }
-    // // parentNode.addChild(node);
-    // return node;
-    // } else {
-    // String errorMsg = "Expected " + expectedType + ", but found " +
-    // currentToken.getType() +
-    // " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
-    // System.out.println(errorMsg);
-    // parentNode.addError(errorMsg);
-    // parentNode.setType(errorMsg);
-    // // TODO: Improve this with scope
-    // currentToken = scanner.nextToken();
-    // while (currentToken.getType().toString().equals("TSEMI")) {
-    // currentToken = scanner.nextToken(); // Skip to next ;
-    // }
-    // return null;
-    // }
-    // }
+    private void addTokenToCurrentScope(String tokenId, Tokeniser.TokenType type,
+            int line, int col) {
+        if (this.symbolTableStack.size() < 1) {
+            System.out.println("No scope to add token to");
+            return;
+        }
+        // this.symbolTableStack.peek().enter(tokenId, type, line, col);
+        System.out.println(this.symbolTableStack.peek().toString());
+        System.out.println("Token added to current scope: " + type.toString());
+    }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
         return currentToken.getType() == expectedType;
@@ -274,7 +236,6 @@ public class Parser {
 
     private Node type(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NRTYPE", "");
-        System.out.println("type hit");
         syncSet.addAll(Arrays.asList(
                 Tokeniser.TokenType.TIDEN,
                 Tokeniser.TokenType.TARRD,
@@ -389,21 +350,6 @@ public class Parser {
         }
         return node;
     }
-
-
-//     private Node func() throws ParseException {
-//         incrementScope();
-//         System.out.println("NFUND Hit");
-//         Node node = new Node("NFUND", "");
-//         consume(Tokeniser.TokenType.TFUNC, node);
-//         consume(Tokeniser.TokenType.TIDEN, node);
-//         consume(Tokeniser.TokenType.TLPAR, node);
-//         node.addChild(pList());
-//         consume(Tokeniser.TokenType.TRPAR, node);
-//         consume(Tokeniser.TokenType.TCOLN, node);
-//         node.addChild(rType());
-//         node.addChild(funcBody());
-//         decrementScope();
 
     private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         syncSet.addAll(Arrays.asList(
@@ -628,12 +574,7 @@ public class Parser {
         return node;
     }
 
-
-
-
     private Node stats(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-          incrementScope();
-
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO)) {
@@ -645,13 +586,6 @@ public class Parser {
                 return node;
             }
         }
-        node.addChild(statsTail());
-        decrementScope();
-        return node;
-    }
-
-    private Node statsTail() throws ParseException {
-        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO) || match(Tokeniser.TokenType.TREPT)
                 || match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TINPT)
@@ -693,8 +627,8 @@ public class Parser {
             node.addChild(repStat(syncSet));
             // TODO: fix this with symbol table - asgnstat and callstatt both start with
             // TIDEN
-            // } else if (match(Tokeniser.TokenType.TIDEN)) {
-            // node.addChild(asgnStat(syncSet));
+        } else if (match(Tokeniser.TokenType.TIDEN)) {
+            node.addChild(asgnStat(syncSet));
         } else if (match(Tokeniser.TokenType.TIDEN)) {
             node.addChild(callStat(syncSet));
         } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
@@ -917,10 +851,30 @@ public class Parser {
     }
 
     private Node asgnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        Node tempNode = var(syncSet);
+        // TODO: Add type checking and math here
+        Node varNode = var(syncSet);
+
         Node node = asgnOp(syncSet);
-        node.addChild(tempNode);
-        node.addChild(bool(syncSet));
+        node.addChild(varNode);
+        Node boolNode = bool(syncSet);
+        node.addChild(boolNode);
+
+        String varName = varNode.getValue();
+        SymbolTable currentSymbolTable = symbolTableStack.peek();
+        SymbolTableEntry entry = currentSymbolTable.find(varName);
+        String value = boolNode.getValue();
+
+        if (entry == null) {
+            entry = new SymbolTableEntry(varName, value);
+            entry.setInitialized(true);
+            currentSymbolTable.enter(entry);
+        } else {
+            if (entry.isConstant()) {
+                throw new ParseException("Cannot assign to a constant variable: " + varName);
+            }
+            entry.setInitialized(true);
+            entry.setValue(value);
+        }
         return node;
     }
 
@@ -985,7 +939,6 @@ public class Parser {
     }
 
     private Node callStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        System.out.println("ncall hit");
         Node node = new Node("NCALL", "");
         consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         consume(Tokeniser.TokenType.TLPAR, node, syncSet);
@@ -1055,13 +1008,17 @@ public class Parser {
                 || match(Tokeniser.TokenType.TFLIT) || match(Tokeniser.TokenType.TTRUE)
                 || match(Tokeniser.TokenType.TFALS)) {
             node.setType("SPECIAL");
-            node.addChild(rel(syncSet));
+            Node relNode = rel(syncSet);
 
             if (match(Tokeniser.TokenType.TTAND) || match(Tokeniser.TokenType.TTTOR)
                     || match(Tokeniser.TokenType.TTXOR)) {
                 node.setType("NBOOL");
+                node.addChild(relNode);
                 node.addChild(logOp(syncSet));
                 node.addChild(rel(syncSet));
+
+            } else {
+                node = relNode;
             }
         } else {
             node.addChild(bool(syncSet));
@@ -1073,12 +1030,15 @@ public class Parser {
 
     private Node rel(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(expr(true, syncSet));
+        Node exprNode = expr(true, syncSet);
         if (match(Tokeniser.TokenType.TEQEQ) || match(Tokeniser.TokenType.TNEQL) || match(Tokeniser.TokenType.TGRTR)
                 || match(Tokeniser.TokenType.TLEQL) || match(Tokeniser.TokenType.TLESS)
                 || match(Tokeniser.TokenType.TGEQL)) {
-            node.addChild(relOp(syncSet));
+            node = relOp(syncSet);
+            node.addChild(exprNode);
             node.addChild(expr(true, syncSet));
+        } else {
+            node = exprNode;
         }
         return node;
     }
@@ -1124,44 +1084,71 @@ public class Parser {
 
     private Node expr(boolean termNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
+        Node termNode = null;
         if (termNeeded) {
-            node.addChild(term(true, syncSet));
+            termNode = term(true, syncSet);
+            // node.addChild(term(true, syncSet));
         }
 
         if (match(Tokeniser.TokenType.TPLUS)) {
             node.setType("NADD");
+            if (termNode != null) {
+                node.addChild(termNode);
+            }
             consume(Tokeniser.TokenType.TPLUS, node, syncSet);
             node.addChild(term(true, syncSet));
             node.addChild(expr(false, syncSet));
         } else if (match(Tokeniser.TokenType.TMINS)) {
             node.setType("NSUB");
+            if (termNode != null) {
+                node.addChild(termNode);
+            }
             consume(Tokeniser.TokenType.TMINS, node, syncSet);
             node.addChild(term(true, syncSet));
             node.addChild(expr(false, syncSet));
+        } else {
+            if (termNode != null) {
+                node = termNode;
+            }
         }
         return node;
     }
 
     private Node term(Boolean factNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
+        Node factNode = null;
         if (factNeeded) {
-            node.addChild(fact(true, syncSet));
+            factNode = fact(true, syncSet);
+            // node.addChild(fact(true, syncSet));
         }
         if (match(Tokeniser.TokenType.TSTAR)) {
             node.setType("NMUL");
+            if (factNode != null) {
+                node.addChild(factNode);
+            }
             consume(Tokeniser.TokenType.TSTAR, node, syncSet);
             node.addChild(fact(true, syncSet));
             node.addChild(term(false, syncSet));
         } else if (match(Tokeniser.TokenType.TDIVD)) {
             node.setType("NDIV");
+            if (factNode != null) {
+                node.addChild(factNode);
+            }
             consume(Tokeniser.TokenType.TDIVD, node, syncSet);
             node.addChild(fact(true, syncSet));
             node.addChild(term(false, syncSet));
         } else if (match(Tokeniser.TokenType.TPERC)) {
             node.setType("NMOD");
+            if (factNode != null) {
+                node.addChild(factNode);
+            }
             consume(Tokeniser.TokenType.TPERC, node, null);
             node.addChild(fact(true, syncSet));
             node.addChild(term(false, syncSet));
+        } else {
+            if (factNode != null) {
+                node = factNode;
+            }
         }
         // ε
         return node;
@@ -1169,14 +1156,23 @@ public class Parser {
 
     private Node fact(Boolean exponentNeeded, Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
+        Node exponentNode = null;
         if (exponentNeeded) {
-            node.addChild(exponent(syncSet));
+            exponentNode = exponent(syncSet);
+            // node.addChild(exponent(syncSet));
         }
         if (match(Tokeniser.TokenType.TCART)) {
             node.setType("NPOW");
+            if (exponentNode != null) {
+                node.addChild(exponentNode);
+            }
             consume(Tokeniser.TokenType.TCART, node, syncSet);
             node.addChild(exponent(syncSet));
             node.addChild(fact(false, syncSet));
+        } else {
+            if (exponentNode != null) {
+                node = exponentNode;
+            }
         }
         return node;
     }
@@ -1190,8 +1186,9 @@ public class Parser {
             node.setType("NFALS");
             consume(Tokeniser.TokenType.TFALS, node, syncSet);
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.setType("SPECIAL");
-            node.addChild(var(syncSet));
+            // node.setType("SPECIAL");
+            // node.addChild(var(syncSet));
+            node = var(syncSet);
         } else if (match(Tokeniser.TokenType.TILIT)) {
             node.setType("NILIT");
             consume(Tokeniser.TokenType.TILIT, node, syncSet);
@@ -1204,7 +1201,8 @@ public class Parser {
             node.addChild(bool(syncSet));
             consume(Tokeniser.TokenType.TRPAR, node, syncSet);
         } else {
-            node.addChild(fnCall(syncSet));
+            // node.addChild(fnCall(syncSet));
+            node = fnCall(syncSet);
         }
         return node;
     }
