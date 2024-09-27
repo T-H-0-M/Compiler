@@ -69,7 +69,10 @@ public class Parser {
             currentToken = scanner.nextToken();
             return false;
         } else {
-            outputController.addParseError(expectedType, currentToken, parentNode);
+            // outputController.addParseError(expectedType, currentToken, parentNode);
+            String errorDescription = "Expected '" + expectedType + "', but found '" + currentToken.getType() + "'";
+            outputController.addParseError(errorDescription, currentToken, parentNode);
+
             if (parentNode != null) {
                 parentNode.setType("NUNDEF");
             } else {
@@ -607,13 +610,18 @@ public class Parser {
     private Node strStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR)) {
-            node.addChild(forStat(syncSet));
+            // node.addChild(forStat(syncSet));
+            node = forStat(syncSet);
         } else if (match(Tokeniser.TokenType.TIFTH)) {
-            node.addChild(ifStat(syncSet));
+            // node.addChild(ifStat(syncSet));
+            node = ifStat(syncSet);
         } else if (match(Tokeniser.TokenType.TSWTH)) {
-            node.addChild(switchStat(syncSet));
+            // node.addChild(switchStat(syncSet));
+            node = switchStat(syncSet);
         } else {
-            node.addChild(doStat(syncSet));
+            // node.addChild(doStat(syncSet));
+            node = doStat(syncSet);
+
         }
         return node;
     }
@@ -757,7 +765,7 @@ public class Parser {
     }
 
     private Node ifStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        Node node = new Node("NIFITH", "");
+        Node node = new Node("NIFTH", "");
         if (consume(Tokeniser.TokenType.TIFTH, node, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
