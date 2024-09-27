@@ -22,6 +22,18 @@ public class SymbolTableEntry {
         this.value = value;
     }
 
+    public SymbolTableEntry(String name) {
+        this.name = name;
+        this.type = null;
+        this.line = -1;
+        this.col = -1;
+        this.isInitialized = false;
+        this.isFunction = false;
+        this.isConstant = false;
+        this.isArray = false;
+        this.value = null;
+    }
+
     // public SymbolTableEntry(String name, Tokeniser.TokenType type, int line, int
     // col) {
     // this.name = name;

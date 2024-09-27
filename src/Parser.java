@@ -69,10 +69,10 @@ public class Parser {
     }
 
     private void incrementScope() {
-        SymbolTable symbolTable = new SymbolTable();
-        this.symbolTableStack.push(symbolTable);
         System.out.println("New scope added, Symbol table size:" +
                 this.symbolTableStack.size());
+        SymbolTable symbolTable = new SymbolTable();
+        this.symbolTableStack.push(symbolTable);
     }
 
     private void decrementScope() {
@@ -345,6 +345,7 @@ public class Parser {
     }
 
     private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        incrementScope();
         syncSet.addAll(Arrays.asList(
                 Tokeniser.TokenType.TFUNC,
                 Tokeniser.TokenType.TTEND,
@@ -359,6 +360,9 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
+
+        String varName = node.getValue();
+
         if (consume(Tokeniser.TokenType.TLPAR, node, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
@@ -374,6 +378,19 @@ public class Parser {
         }
         node.addChild(rType(syncSet));
         node.addChild(funcBody(syncSet));
+        decrementScope();
+
+        SymbolTable currentSymbolTable = symbolTableStack.peek();
+        SymbolTableEntry entry = currentSymbolTable.find(varName);
+        if (entry == null) {
+            entry = new SymbolTableEntry(varName);
+            entry.setInitialized(true);
+            entry.setFunction(true);
+            currentSymbolTable.enter(entry);
+        } else {
+            entry.setInitialized(true);
+            entry.setFunction(true);
+        }
         return node;
     }
 
@@ -621,9 +638,15 @@ public class Parser {
             // TODO: fix this with symbol table - asgnstat and callstatt both start with
             // TIDEN
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.addChild(asgnStat(syncSet));
-        } else if (match(Tokeniser.TokenType.TIDEN)) {
-            node.addChild(callStat(syncSet));
+            String varName = currentToken.getLexeme();
+            SymbolTable currentSymbolTable = symbolTableStack.peek();
+            SymbolTableEntry entry = currentSymbolTable.find(varName);
+            System.out.println(varName + " " + currentToken.getLine());
+            if (entry != null && entry.isFunction()) {
+                node.addChild(callStat(syncSet));
+            } else {
+                node.addChild(asgnStat(syncSet));
+            }
         } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
                 || match(Tokeniser.TokenType.TPRNT)) {
             node.addChild(ioStat(syncSet));
@@ -634,7 +657,7 @@ public class Parser {
     }
 
     private Node forStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        // TODO: increase scope
+        incrementScope();
         Node node = new Node("NFOR", "");
         if (consume(Tokeniser.TokenType.TTFOR, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -659,11 +682,12 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
-        // TODO: decrease scope
+        decrementScope();
         return node;
     }
 
     private Node repStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        incrementScope();
         Node node = new Node("NREPT", "");
         if (consume(Tokeniser.TokenType.TREPT, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -684,10 +708,12 @@ public class Parser {
             return node;
         }
         node.addChild(bool(syncSet));
+        decrementScope();
         return node;
     }
 
     private Node doStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        incrementScope();
         Node node = new Node("NDOWL", "");
         if (consume(Tokeniser.TokenType.TTTDO, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -711,6 +737,7 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
+        decrementScope();
         return node;
     }
 
@@ -939,7 +966,9 @@ public class Parser {
         Node node = new Node("NCALL", "");
         consume(Tokeniser.TokenType.TIDEN, node, syncSet);
         consume(Tokeniser.TokenType.TLPAR, node, syncSet);
-        if (match(Tokeniser.TokenType.TNOTT)) {
+        if (match(Tokeniser.TokenType.TNOTT) || match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TILIT)
+                || match(Tokeniser.TokenType.TFLIT) || match(Tokeniser.TokenType.TTRUE)
+                || match(Tokeniser.TokenType.TFALS)) {
             node.addChild(eList(syncSet));
         }
         consume(Tokeniser.TokenType.TRPAR, node, syncSet);
