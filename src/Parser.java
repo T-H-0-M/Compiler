@@ -1,24 +1,42 @@
+
+import java.util.Stack;
+// TODO: Change error node to NUNDEF
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 
 public class Parser {
     private final Scanner scanner;
     private Token currentToken;
     private Node rootNode;
+    private Stack<SymbolTable> symbolTableStack;
+    public Stack<SymbolTable> removedSymbolTableStack;
     private OutputController outputController;
 
     public Parser() {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
+
+        this.symbolTableStack = new Stack<SymbolTable>();
+        this.removedSymbolTableStack = new Stack<SymbolTable>();
+
+        this.symbolTableStack.push(new SymbolTable());
+
         this.outputController = null;
+
     }
 
     public Parser(Scanner scanner, OutputController outputController) {
         this.scanner = scanner;
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
+
+        this.symbolTableStack = new Stack<SymbolTable>();
+        this.removedSymbolTableStack = new Stack<SymbolTable>();
+
         this.outputController = outputController;
     }
 
@@ -30,6 +48,7 @@ public class Parser {
         if (currentToken.getType() == Tokeniser.TokenType.TTEOF) {
             throw new ParseException("Fatal Error: Reached EOF while synchronising.");
         }
+
     }
 
     private boolean consume(Tokeniser.TokenType expectedType, Node parentNode, Set<Tokeniser.TokenType> syncSet)
@@ -41,7 +60,7 @@ public class Parser {
                     || consumedToken.getType() == Tokeniser.TokenType.TFLIT)) {
                 parentNode.setValue(consumedToken.getLexeme());
             }
-            currentToken = scanner.nextToken();
+                   currentToken = scanner.nextToken();
             return false;
         } else {
             outputController.addParseError(expectedType, currentToken, parentNode);
@@ -56,6 +75,74 @@ public class Parser {
         }
         return parentNode.getType().equals("NUNDEF");
     }
+          
+          
+          
+// TODO: Include this
+//             addTokenToCurrentScope(currentToken.getLexeme(), currentToken.getType(), currentToken.getLine(), currentToken.getCol());
+//             return node;
+//         } else {
+//             parentNode.addChild(new Node("NUNDEF", ""));
+//             String errorMsg = "Expected " + expectedType + ", but found " + currentToken.getType() +
+//                     " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
+//             throw new ParseException(errorMsg);
+//         }
+//     }
+
+//     private void incrementScope() {
+//         SymbolTable symbolTable = new SymbolTable();
+//         this.symbolTableStack.push(symbolTable);
+//         System.out.println("New scope added, Symbol table size:" + this.symbolTableStack.size());
+//     }
+
+//     private void decrementScope() {
+//         if (this.symbolTableStack.size() < 1) {
+//             System.out.println("No scope to remove");
+//             return;
+//         }
+//         this.removedSymbolTableStack.push(this.symbolTableStack.peek().copy());
+//         System.out.println("Removed Symbol table size:" + this.removedSymbolTableStack.size());
+//         this.symbolTableStack.peek().destroy();
+//         this.symbolTableStack.pop();
+//         System.out.println("Removed Symbol table:" + this.removedSymbolTableStack.peek().toString());
+//     }
+
+//     private void addTokenToCurrentScope(String tokenId, Tokeniser.TokenType type, int line, int col) {
+//         if (this.symbolTableStack.size() < 1) {
+//             System.out.println("No scope to add token to");
+//             return;
+//         }
+//         this.symbolTableStack.peek().enter(tokenId, type, line, col);
+//         System.out.println(this.symbolTableStack.peek().toString());
+//         System.out.println("Token added to current scope: " + type.toString());
+//     }
+
+    // private Node consume(Tokeniser.TokenType expectedType, Node parentNode) {
+    // if (currentToken.getType() == expectedType) {
+    // Token consumedToken = currentToken;
+    // currentToken = scanner.nextToken();
+    // Node node = new Node(consumedToken.getType().toString(),
+    // consumedToken.getLexeme());
+    // if (consumedToken.getType().toString().equals("TIDEN")) {
+    // parentNode.setValue(consumedToken.getLexeme());
+    // }
+    // // parentNode.addChild(node);
+    // return node;
+    // } else {
+    // String errorMsg = "Expected " + expectedType + ", but found " +
+    // currentToken.getType() +
+    // " on line " + currentToken.getLine() + " and col " + currentToken.getCol();
+    // System.out.println(errorMsg);
+    // parentNode.addError(errorMsg);
+    // parentNode.setType(errorMsg);
+    // // TODO: Improve this with scope
+    // currentToken = scanner.nextToken();
+    // while (currentToken.getType().toString().equals("TSEMI")) {
+    // currentToken = scanner.nextToken(); // Skip to next ;
+    // }
+    // return null;
+    // }
+    // }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
         return currentToken.getType() == expectedType;
@@ -303,9 +390,22 @@ public class Parser {
         return node;
     }
 
+
+//     private Node func() throws ParseException {
+//         incrementScope();
+//         System.out.println("NFUND Hit");
+//         Node node = new Node("NFUND", "");
+//         consume(Tokeniser.TokenType.TFUNC, node);
+//         consume(Tokeniser.TokenType.TIDEN, node);
+//         consume(Tokeniser.TokenType.TLPAR, node);
+//         node.addChild(pList());
+//         consume(Tokeniser.TokenType.TRPAR, node);
+//         consume(Tokeniser.TokenType.TCOLN, node);
+//         node.addChild(rType());
+//         node.addChild(funcBody());
+//         decrementScope();
+
     private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        // INFO: I did this to create a deep copy of the syncset, to avoid it impacting
-        // other statements
         syncSet.addAll(Arrays.asList(
                 Tokeniser.TokenType.TFUNC,
                 Tokeniser.TokenType.TTEND,
@@ -528,7 +628,12 @@ public class Parser {
         return node;
     }
 
+
+
+
     private Node stats(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+          incrementScope();
+
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO)) {
@@ -540,6 +645,13 @@ public class Parser {
                 return node;
             }
         }
+        node.addChild(statsTail());
+        decrementScope();
+        return node;
+    }
+
+    private Node statsTail() throws ParseException {
+        Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TTFOR) || match(Tokeniser.TokenType.TIFTH) || match(Tokeniser.TokenType.TSWTH)
                 || match(Tokeniser.TokenType.TTTDO) || match(Tokeniser.TokenType.TREPT)
                 || match(Tokeniser.TokenType.TIDEN) || match(Tokeniser.TokenType.TINPT)

@@ -59,6 +59,14 @@ public class A2 {
             // TODO: uncomment this for submission
             parseTree.printPreOrderTraversal();
             parseTree.printTree();
+            System.out.println("Symbol tables:");
+            if (parser.removedSymbolTableStack.empty()) {
+                System.out.println("No scopes were captured.");
+            }
+            while (parser.removedSymbolTableStack.empty() == false) {
+                System.out.println(parser.removedSymbolTableStack.size() + ": " + parser.removedSymbolTableStack.peek().toString()); 
+                parser.removedSymbolTableStack.pop();
+            }
         } else {
             System.out.println("No parse tree generated.");
         }
