@@ -31,11 +31,8 @@ public class A2 {
 
         String sourceDir = ".";
         String sourceFileName = sourceFile.getName();
-        System.out.println(sourceFileName);
         String baseName = sourceFileName.substring(0, sourceFileName.lastIndexOf('.'));
-
         String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
-
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
         Parser parser = new Parser(scanner, outputController);
@@ -55,7 +52,6 @@ public class A2 {
     private static void run(Parser parser) throws ParseException {
         Node parseTree = parser.parse();
         if (parseTree != null) {
-            System.out.println("Parse tree (may be partial if errors occurred):");
             parseTree.printPreOrderTraversal();
             // parseTree.printTree();
         } else {

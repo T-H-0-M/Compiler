@@ -58,7 +58,6 @@ public class SymbolTableEntry {
     }
 
     public void setType(String type) {
-        System.out.println("setting node - " + type);
         this.type = type;
     }
 

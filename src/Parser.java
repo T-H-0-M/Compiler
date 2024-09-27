@@ -83,23 +83,17 @@ public class Parser {
     }
 
     private void incrementScope() {
-        System.out.println("New scope added, Symbol table size:" +
-                this.symbolTableStack.size());
         SymbolTable symbolTable = new SymbolTable();
         this.symbolTableStack.push(symbolTable);
     }
 
     private void decrementScope() {
         if (this.symbolTableStack.size() < 1) {
-            System.out.println("No scope to remove");
             return;
         }
         this.removedSymbolTableStack.push(this.symbolTableStack.peek().copy());
-        System.out.println("Removed Symbol table size:" +
-                this.removedSymbolTableStack.size());
         this.symbolTableStack.peek().destroy();
         this.symbolTableStack.pop();
-        System.out.println("removing table");
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
@@ -641,7 +635,6 @@ public class Parser {
             String varName = currentToken.getLexeme();
             SymbolTable currentSymbolTable = symbolTableStack.peek();
             SymbolTableEntry entry = currentSymbolTable.find(varName);
-            System.out.println(varName + " " + currentToken.getLine());
             if (entry != null && entry.isFunction()) {
                 node.addChild(callStat(syncSet));
             } else {
@@ -898,7 +891,6 @@ public class Parser {
             entry.setValue(value);
         }
 
-        System.out.println("Adding " + entry.toString());
         return node;
     }
 

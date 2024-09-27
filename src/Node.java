@@ -72,7 +72,7 @@ public class Node {
         for (int i = 0; i < output.size(); i++) {
             Node currentNode = output.get(i);
             String nodeOutput = formatNodeOutput(currentNode);
-            System.out.print(nodeOutput + "\t");
+            System.out.print(nodeOutput);
 
             if (currentNode.getType() != null && !currentNode.getValue().equals("")) {
                 columnCount += 2;
@@ -117,9 +117,8 @@ public class Node {
     }
 
     private String padString(String str, int multiple) {
-        if (!str.endsWith(" ")) {
-            str += " ";
-        }
+        str = str.trim();
+        str += " ";
 
         int length = str.length();
         int paddingNeeded = multiple - (length % multiple);
