@@ -145,4 +145,8 @@ public class Tokeniser {
     public static TokenType getOperatorTokenType(String operator) {
         return operatorTable.get(operator);
     }
+
+    public static TokenType getTokenFromString(String token) {
+        return TokenType.valueOf(token.toUpperCase());
+    }
 }
