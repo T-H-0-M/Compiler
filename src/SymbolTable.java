@@ -1,3 +1,5 @@
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * SymbolTable class
@@ -13,10 +15,6 @@
  * @author Thomas Bandy, Benjamin Rogers
  * @version 1.0
  */
-
-import java.util.HashMap;
-import java.util.Map;
-
 public class SymbolTable {
     private Map<String, SymbolTableEntry> table;
 
@@ -42,14 +40,6 @@ public class SymbolTable {
 
     public SymbolTableEntry find(String name) {
         return table.get(name);
-    }
-
-    public SymbolTableEntry set_attributes(String name, String type, int line, int col) {
-        SymbolTableEntry entry = table.get(name);
-        entry.setType(type);
-        entry.setLine(line);
-        entry.setCol(col);
-        return entry;
     }
 
     public SymbolTableEntry get_attributes(String name) {
