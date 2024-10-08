@@ -1,5 +1,3 @@
-
-import java.util.Stack;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -586,6 +584,7 @@ public class Parser {
         return node;
     }
 
+    // TODO: use symbol table to differentiate
     private Node stat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         syncSet = new HashSet<>(Arrays.asList(
@@ -600,8 +599,8 @@ public class Parser {
         if (match(Tokeniser.TokenType.TREPT)) {
             node.addChild(repStat(syncSet));
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            String varName = currentToken.getLexeme();
-            node.addChild(callStat(syncSet));
+            // node.addChild(callStat(syncSet));
+            node.addChild(asgnStat(syncSet));
         } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
                 || match(Tokeniser.TokenType.TPRNT)) {
             node.addChild(ioStat(syncSet));
@@ -612,7 +611,6 @@ public class Parser {
     }
 
     private Node forStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        incrementScope();
         Node node = new Node("NFOR", "");
         if (consume(Tokeniser.TokenType.TTFOR, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -637,12 +635,10 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
-        decrementScope();
         return node;
     }
 
     private Node repStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        incrementScope();
         Node node = new Node("NREPT", "");
         if (consume(Tokeniser.TokenType.TREPT, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -663,12 +659,10 @@ public class Parser {
             return node;
         }
         node.addChild(bool(syncSet));
-        decrementScope();
         return node;
     }
 
     private Node doStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        incrementScope();
         Node node = new Node("NDOWL", "");
         if (consume(Tokeniser.TokenType.TTTDO, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -692,7 +686,6 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
-        decrementScope();
         return node;
     }
 

@@ -16,11 +16,13 @@ import java.nio.file.Paths;
  * @author Thomas Bandy, Benjamin Rogers
  * @version 1.0
  */
-public class A2 {
+public class A3 {
     private static ArrayList<Token> tokenList = new ArrayList<>();
     private static ArrayList<Token> errorList = new ArrayList<>();
     private static OutputController outputController;
+    private static SemanticAnalyser semanticAnalyser;
 
+    // TODO: standardise use of global and local vars
     public static void main(String[] args) throws ParseException {
         if (args.length < 1) {
             System.out.println("Please provide a file path as an argument.");
@@ -36,6 +38,7 @@ public class A2 {
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
         Parser parser = new Parser(scanner, outputController);
+        semanticAnalyser = new SemanticAnalyser();
 
         run(parser);
         outputController.closeOutput();
@@ -50,10 +53,11 @@ public class A2 {
      * @param scanner The Scanner object used to fetch tokens.
      */
     private static void run(Parser parser) throws ParseException {
-        Node parseTree = parser.parse();
-        if (parseTree != null) {
-            parseTree.printPreOrderTraversal();
-            // parseTree.printTree();
+        Node root = parser.parse();
+        if (root != null) {
+            root.printPreOrderTraversal();
+            root.printTree();
+            semanticAnalyser.analyse(root);
         } else {
             System.out.println("No parse tree generated.");
         }
