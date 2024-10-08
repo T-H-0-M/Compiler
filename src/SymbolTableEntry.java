@@ -1,4 +1,3 @@
-
 /**
  * SymbolTableEntry class
  * 
@@ -15,114 +14,95 @@
 
 public class SymbolTableEntry {
     private String name;
-    private String type;
+    private SymbolType symbolType;
+    private String memoryLocation;
     private String value;
-    private int line;
-    private int col;
-    private boolean isInitialized;
-    private boolean isFunction;
-    private boolean isConstant;
-    private boolean isArray;
+    private DataType dataType;
+    private boolean isInitialised;
 
     /* -------------- Constructors -------------- */
-    public SymbolTableEntry(String name, String value) {
-        this.name = name;
-        this.type = null;
-        this.line = -1;
-        this.col = -1;
-        this.isInitialized = false;
-        this.isFunction = false;
-        this.isConstant = false;
-        this.isArray = false;
-        this.value = value;
+    public SymbolTableEntry() {
+        this.name = null;
+        this.symbolType = null;
+        this.memoryLocation = null;
+        this.value = null;
+        this.dataType = null;
+        this.isInitialised = false;
     }
 
     public SymbolTableEntry(String name) {
         this.name = name;
-        this.type = null;
-        this.line = -1;
-        this.col = -1;
-        this.isInitialized = false;
-        this.isFunction = false;
-        this.isConstant = false;
-        this.isArray = false;
+        this.symbolType = null;
+        this.memoryLocation = null;
         this.value = null;
+        this.dataType = null;
+        this.isInitialised = false;
     }
 
+    public SymbolTableEntry(String name, SymbolType symbolType, String value, DataType dataType) {
+        this.name = name;
+        this.symbolType = symbolType;
+        this.memoryLocation = null;
+        this.value = value;
+        this.dataType = dataType;
+        this.isInitialised = false;
+    }
+
+    /* -------------- Getters -------------- */
     public String getName() {
         return name;
     }
 
-    public String getType() {
-        return type;
+    public SymbolType getSymbolType() {
+        return symbolType;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public int getLine() {
-        return line;
-    }
-
-    public void setLine(int line) {
-        this.line = line;
-    }
-
-    public int getCol() {
-        return col;
-    }
-
-    public void setCol(int col) {
-        this.col = col;
-    }
-
-    public boolean isInitialized() {
-        return isInitialized;
-    }
-
-    public void setInitialized(boolean initialized) {
-        isInitialized = initialized;
-    }
-
-    public boolean isFunction() {
-        return isFunction;
-    }
-
-    public boolean isConstant() {
-        return isConstant;
-    }
-
-    public void setFunction(boolean isFunction) {
-        this.isFunction = isFunction;
-    }
-
-    public void setConstant(boolean isConstant) {
-        this.isConstant = isConstant;
-    }
-
-    public boolean isArray() {
-        return isArray;
-    }
-
-    public void setIsArray(boolean isArray) {
-        this.isArray = isArray;
+    public String getMemoryLocation() {
+        return memoryLocation;
     }
 
     public String getValue() {
         return value;
     }
 
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public boolean isInitialised() {
+        return isInitialised;
+    }
+
+    /* -------------- Setters -------------- */
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSymbolType(SymbolType symbolType) {
+        this.symbolType = symbolType;
+    }
+
+    public void setMemoryLocation(String memoryLocation) {
+        this.memoryLocation = memoryLocation;
+    }
+
     public void setValue(String value) {
         this.value = value;
     }
 
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
+    }
+
+    public void setInitialised(boolean isInitialised) {
+        this.isInitialised = isInitialised;
+    }
+
     @Override
     public String toString() {
-        System.out.println(
-                this.type);
         return String.format(
-                "[name: %s, value: %s, type: %s]",
-                name, value, type.toString());
+                "[name: %s, value: %s, type: %s, memoryLocation: %s, dataType: %s, isInitialised: %s]",
+                name, value, symbolType != null ? symbolType.toString() : "null", memoryLocation,
+                dataType != null ? dataType.toString() : "null", isInitialised);
     }
 }
