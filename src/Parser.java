@@ -21,17 +21,12 @@ public class Parser {
     private final Scanner scanner;
     private Token currentToken;
     private Node rootNode;
-    private Stack<SymbolTable> symbolTableStack;
-    public Stack<SymbolTable> removedSymbolTableStack;
     private OutputController outputController;
 
     public Parser() {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
-        this.symbolTableStack = new Stack<SymbolTable>();
-        this.removedSymbolTableStack = new Stack<SymbolTable>();
-        this.symbolTableStack.push(new SymbolTable());
         this.outputController = null;
 
     }
@@ -40,9 +35,6 @@ public class Parser {
         this.scanner = scanner;
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
-        this.symbolTableStack = new Stack<SymbolTable>();
-        this.removedSymbolTableStack = new Stack<SymbolTable>();
-        this.symbolTableStack.push(new SymbolTable());
         this.outputController = outputController;
     }
 
@@ -69,7 +61,6 @@ public class Parser {
             currentToken = scanner.nextToken();
             return false;
         } else {
-            // outputController.addParseError(expectedType, currentToken, parentNode);
             String errorDescription = "Expected '" + expectedType + "', but found '" + currentToken.getType() + "'";
             outputController.addParseError(errorDescription, currentToken, parentNode);
 
@@ -83,20 +74,6 @@ public class Parser {
             }
         }
         return parentNode.getType().equals("NUNDEF");
-    }
-
-    private void incrementScope() {
-        SymbolTable symbolTable = new SymbolTable();
-        this.symbolTableStack.push(symbolTable);
-    }
-
-    private void decrementScope() {
-        if (this.symbolTableStack.size() < 1) {
-            return;
-        }
-        this.removedSymbolTableStack.push(this.symbolTableStack.peek().copy());
-        this.symbolTableStack.peek().destroy();
-        this.symbolTableStack.pop();
     }
 
     private boolean match(Tokeniser.TokenType expectedType) throws ParseException {
@@ -345,7 +322,6 @@ public class Parser {
     }
 
     private Node func(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        incrementScope();
         syncSet.addAll(Arrays.asList(
                 Tokeniser.TokenType.TFUNC,
                 Tokeniser.TokenType.TTEND,
@@ -360,8 +336,6 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
-
-        String varName = node.getValue();
 
         if (consume(Tokeniser.TokenType.TLPAR, node, syncSet)) {
             moveToNextValidToken(syncSet);
@@ -378,19 +352,7 @@ public class Parser {
         }
         node.addChild(rType(syncSet));
         node.addChild(funcBody(syncSet));
-        decrementScope();
 
-        SymbolTable currentSymbolTable = symbolTableStack.peek();
-        SymbolTableEntry entry = currentSymbolTable.find(varName);
-        if (entry == null) {
-            entry = new SymbolTableEntry(varName);
-            entry.setInitialized(true);
-            entry.setFunction(true);
-            currentSymbolTable.enter(entry);
-        } else {
-            entry.setInitialized(true);
-            entry.setFunction(true);
-        }
         return node;
     }
 
@@ -427,7 +389,6 @@ public class Parser {
     }
 
     private Node param(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        // TODO: use symbol table to differentiate
         Node node = new Node("NSIMP", "");
         if (match(Tokeniser.TokenType.TCONS)) {
             node.setType("NARRC");
@@ -480,7 +441,6 @@ public class Parser {
         return node;
     }
 
-    // TODO: Use symbol table to differentiate
     private Node decl(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NSDECL", "");
 
@@ -641,13 +601,7 @@ public class Parser {
             node.addChild(repStat(syncSet));
         } else if (match(Tokeniser.TokenType.TIDEN)) {
             String varName = currentToken.getLexeme();
-            SymbolTable currentSymbolTable = symbolTableStack.peek();
-            SymbolTableEntry entry = currentSymbolTable.find(varName);
-            if (entry != null && entry.isFunction()) {
-                node.addChild(callStat(syncSet));
-            } else {
-                node.addChild(asgnStat(syncSet));
-            }
+            node.addChild(callStat(syncSet));
         } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
                 || match(Tokeniser.TokenType.TPRNT)) {
             node.addChild(ioStat(syncSet));
@@ -872,33 +826,11 @@ public class Parser {
     }
 
     private Node asgnStat(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        // TODO: Add type checking and math here
         Node varNode = var(syncSet);
         Node node = asgnOp(syncSet);
         node.addChild(varNode);
         Node boolNode = bool(syncSet);
         node.addChild(boolNode);
-
-        String varName = varNode.getValue();
-        SymbolTable currentSymbolTable = symbolTableStack.peek();
-        SymbolTableEntry entry = currentSymbolTable.find(varName);
-        String value = boolNode.getValue();
-
-        if (entry == null) {
-            entry = new SymbolTableEntry(varName, value);
-            if (boolNode.getType() != null) {
-                entry.setType(boolNode.getType());
-            }
-            entry.setInitialized(true);
-            currentSymbolTable.enter(entry);
-        } else {
-            if (entry.isConstant()) {
-                throw new ParseException("Cannot assign to a constant variable: " + varName);
-            }
-            entry.setInitialized(true);
-            entry.setValue(value);
-        }
-
         return node;
     }
 
@@ -1262,5 +1194,21 @@ public class Parser {
             node.addChild(expr(true, syncSet));
         }
         return node;
+    }
+
+    // TODO: Reassess where this is located
+    public DataType nodeTypeConversion(String nodeType) {
+        if (nodeType.equals("TFLIT")) {
+            return DataType.FLOAT_LITERAL;
+        } else if (nodeType.equals("TILIT")) {
+            return DataType.INT_LITERAL;
+        } else if (nodeType.equals("TSTRG")) {
+            return DataType.STRING;
+        } else if (nodeType.equals("TFALS")) {
+            return DataType.BOOL;
+        } else if (nodeType.equals("TTRUE")) {
+            return DataType.BOOL;
+        }
+        return DataType.UNDEF;
     }
 }
