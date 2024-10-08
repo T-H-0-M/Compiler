@@ -19,6 +19,10 @@ public class SymbolTableEntry {
     private String value;
     private DataType dataType;
     private boolean isInitialised;
+    private DataType returnType;
+    private boolean containsReturn;
+    private int line;
+    private int col;
 
     /* -------------- Constructors -------------- */
     public SymbolTableEntry() {
@@ -28,6 +32,10 @@ public class SymbolTableEntry {
         this.value = null;
         this.dataType = null;
         this.isInitialised = false;
+        this.returnType = null;
+        this.containsReturn = false;
+        this.line = 0;
+        this.col = 0;
     }
 
     public SymbolTableEntry(String name) {
@@ -37,6 +45,23 @@ public class SymbolTableEntry {
         this.value = null;
         this.dataType = null;
         this.isInitialised = false;
+        this.returnType = null;
+        this.containsReturn = false;
+        this.line = 0;
+        this.col = 0;
+    }
+
+    public SymbolTableEntry(String name, SymbolType symbolType, boolean isInitialised) {
+        this.name = name;
+        this.symbolType = symbolType;
+        this.memoryLocation = null;
+        this.value = null;
+        this.dataType = null;
+        this.isInitialised = isInitialised;
+        this.returnType = null;
+        this.containsReturn = false;
+        this.line = 0;
+        this.col = 0;
     }
 
     public SymbolTableEntry(String name, SymbolType symbolType, String value, DataType dataType) {
@@ -46,6 +71,20 @@ public class SymbolTableEntry {
         this.value = value;
         this.dataType = dataType;
         this.isInitialised = false;
+        this.line = 0;
+        this.col = 0;
+    }
+
+    public SymbolTableEntry(String name, SymbolType symbolType, String value, DataType dataType,
+            boolean isInitialised) {
+        this.name = name;
+        this.symbolType = symbolType;
+        this.memoryLocation = null;
+        this.value = value;
+        this.dataType = dataType;
+        this.isInitialised = isInitialised;
+        this.line = 0;
+        this.col = 0;
     }
 
     /* -------------- Getters -------------- */
@@ -73,6 +112,22 @@ public class SymbolTableEntry {
         return isInitialised;
     }
 
+    public DataType getReturnType() {
+        return returnType;
+    }
+
+    public boolean isContainsReturn() {
+        return containsReturn;
+    }
+
+    public int getLine() {
+        return this.line;
+    }
+
+    public int getCol() {
+        return this.col;
+    }
+
     /* -------------- Setters -------------- */
     public void setName(String name) {
         this.name = name;
@@ -96,6 +151,22 @@ public class SymbolTableEntry {
 
     public void setInitialised(boolean isInitialised) {
         this.isInitialised = isInitialised;
+    }
+
+    public void setReturnType(DataType returnType) {
+        this.returnType = returnType;
+    }
+
+    public void setContainsReturn(boolean containsReturn) {
+        this.containsReturn = containsReturn;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
     }
 
     @Override

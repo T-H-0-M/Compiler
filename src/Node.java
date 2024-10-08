@@ -8,10 +8,10 @@ import java.util.*;
  * errors.
  * Provides methods for constructing and traversing the AST.
  * 
- * Date: 2024-09-27
+ * Date: 2024-10-08
  *
  * @author Thomas Bandy, Benjamin Rogers
- * @version 1.0
+ * @version 1.1
  */
 public class Node {
     private String type;
@@ -136,14 +136,7 @@ public class Node {
         return !errors.isEmpty();
     }
 
-    public List<String> getErrors() {
-        return errors;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
+    /* -------------- Getters -------------- */
     public String getType() {
         return type;
     }
@@ -152,11 +145,28 @@ public class Node {
         return value;
     }
 
+    public List<Node> getChildren() {
+        return children;
+    }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+
     public boolean isSpecial() {
         return this.type.equals("SPECIAL");
     }
 
+    /* -------------- Setters -------------- */
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public void setChildren(List<Node> children) {
+        this.children = children;
     }
 }
