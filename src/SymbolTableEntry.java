@@ -21,6 +21,8 @@ public class SymbolTableEntry {
     private boolean isInitialised;
     private DataType returnType;
     private boolean containsReturn;
+    private boolean isArray;
+    private int arrLength;
     private int line;
     private int col;
 
@@ -34,6 +36,8 @@ public class SymbolTableEntry {
         this.isInitialised = false;
         this.returnType = null;
         this.containsReturn = false;
+        this.isArray = false;
+        this.arrLength = 0;
         this.line = 0;
         this.col = 0;
     }
@@ -47,6 +51,8 @@ public class SymbolTableEntry {
         this.isInitialised = false;
         this.returnType = null;
         this.containsReturn = false;
+        this.isArray = false;
+        this.arrLength = 0;
         this.line = 0;
         this.col = 0;
     }
@@ -60,6 +66,10 @@ public class SymbolTableEntry {
         this.isInitialised = isInitialised;
         this.returnType = null;
         this.containsReturn = false;
+        this.isArray = false;
+        this.arrLength = 0;
+        this.isArray = false;
+        this.arrLength = 0;
         this.line = 0;
         this.col = 0;
     }
@@ -71,6 +81,8 @@ public class SymbolTableEntry {
         this.value = value;
         this.dataType = dataType;
         this.isInitialised = false;
+        this.isArray = false;
+        this.arrLength = 0;
         this.line = 0;
         this.col = 0;
     }
@@ -83,6 +95,22 @@ public class SymbolTableEntry {
         this.value = value;
         this.dataType = dataType;
         this.isInitialised = isInitialised;
+        this.isArray = false;
+        this.arrLength = 0;
+        this.line = 0;
+        this.col = 0;
+    }
+
+    public SymbolTableEntry(String name, SymbolType symbolType, String value, DataType dataType,
+            boolean isInitialised, boolean isArray, int length) {
+        this.name = name;
+        this.symbolType = symbolType;
+        this.memoryLocation = null;
+        this.value = value;
+        this.dataType = dataType;
+        this.isInitialised = isInitialised;
+        this.isArray = isArray;
+        this.arrLength = length;
         this.line = 0;
         this.col = 0;
     }
@@ -120,6 +148,14 @@ public class SymbolTableEntry {
         return containsReturn;
     }
 
+    public boolean isArray() {
+        return isArray;
+    }
+
+    public int getArrLength() {
+        return arrLength;
+    }
+
     public int getLine() {
         return this.line;
     }
@@ -151,6 +187,14 @@ public class SymbolTableEntry {
 
     public void setInitialised(boolean isInitialised) {
         this.isInitialised = isInitialised;
+    }
+
+    public void setIsArray(boolean isArray) {
+        this.isArray = isArray;
+    }
+
+    public void setArrLength(int length) {
+        this.arrLength = length;
     }
 
     public void setReturnType(DataType returnType) {

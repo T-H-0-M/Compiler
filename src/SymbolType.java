@@ -4,5 +4,6 @@ public enum SymbolType {
     CLASS,
     CONSTANT,
     METHOD,
-    PARAMETER
+    PARAMETER,
+    ARRAY
 }

@@ -58,6 +58,13 @@ public class SymbolTable {
         table.put(name, entry);
     }
 
+    public void declare(String name, int arrLen) {
+        SymbolTableEntry entry = new SymbolTableEntry(name);
+        entry.setIsArray(true);
+        entry.setArrLength(arrLen);
+        table.put(name, entry);
+    }
+
     @Override
     public String toString() {
         if (table.isEmpty()) {
