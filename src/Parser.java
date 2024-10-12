@@ -114,7 +114,6 @@ public class Parser {
         node.addChild(types(syncSet));
         Node arraysNode = arrays(syncSet);
         if (!arraysNode.isSpecial()) {
-            // node.addChild(arrays(syncSet));
             node.addChild(arraysNode);
         }
         return node;
@@ -306,7 +305,7 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
-        if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
+        if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
         }
