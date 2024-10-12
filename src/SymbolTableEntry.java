@@ -68,8 +68,6 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.isArray = false;
         this.arrLength = 0;
-        this.isArray = false;
-        this.arrLength = 0;
         this.line = 0;
         this.col = 0;
     }
