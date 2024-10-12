@@ -114,7 +114,8 @@ public class Parser {
         node.addChild(types(syncSet));
         Node arraysNode = arrays(syncSet);
         if (!arraysNode.isSpecial()) {
-            node.addChild(arrays(syncSet));
+            // node.addChild(arrays(syncSet));
+            node.addChild(arraysNode);
         }
         return node;
     }
@@ -203,7 +204,7 @@ public class Parser {
     }
 
     private Node type(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        Node node = new Node("NRTYPE", "");
+        Node node = new Node("NATYPE", "");
         syncSet.addAll(Arrays.asList(
                 Tokeniser.TokenType.TIDEN,
                 Tokeniser.TokenType.TARRD,
@@ -235,11 +236,12 @@ public class Parser {
                 moveToNextValidToken(syncSet);
                 return node;
             }
-            if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
+            if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
         } else {
+            node.setType("NRTYPE");
             node.addChild(fields(syncSet));
         }
         if (consume(Tokeniser.TokenType.TTEND, node, syncSet)) {
@@ -280,15 +282,17 @@ public class Parser {
 
     private Node arrDecls(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(arrDecl(syncSet));
+        Node arrayNode = arrDecl(syncSet);
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NALIST");
+            node.addChild(arrayNode);
             if (consume(Tokeniser.TokenType.TCOMA, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
             node.addChild(arrDecls(syncSet));
         }
+        node = arrayNode;
         return node;
     }
 
