@@ -114,7 +114,8 @@ public class Parser {
         node.addChild(types(syncSet));
         Node arraysNode = arrays(syncSet);
         if (!arraysNode.isSpecial()) {
-            node.addChild(arrays(syncSet));
+            // node.addChild(arrays(syncSet));
+            node.addChild(arraysNode);
         }
         return node;
     }
@@ -281,15 +282,17 @@ public class Parser {
 
     private Node arrDecls(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
-        node.addChild(arrDecl(syncSet));
+        Node arrayNode = arrDecl(syncSet);
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NALIST");
+            node.addChild(arrayNode);
             if (consume(Tokeniser.TokenType.TCOMA, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
             node.addChild(arrDecls(syncSet));
         }
+        node = arrayNode;
         return node;
     }
 
