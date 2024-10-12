@@ -203,7 +203,7 @@ public class Parser {
     }
 
     private Node type(Set<Tokeniser.TokenType> syncSet) throws ParseException {
-        Node node = new Node("NRTYPE", "");
+        Node node = new Node("NATYPE", "");
         syncSet.addAll(Arrays.asList(
                 Tokeniser.TokenType.TIDEN,
                 Tokeniser.TokenType.TARRD,
@@ -235,11 +235,12 @@ public class Parser {
                 moveToNextValidToken(syncSet);
                 return node;
             }
-            if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
+            if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
         } else {
+            node.setType("NRTYPE");
             node.addChild(fields(syncSet));
         }
         if (consume(Tokeniser.TokenType.TTEND, node, syncSet)) {
