@@ -46,6 +46,18 @@ public class SymbolTable {
         return table.get(name);
     }
 
+    public boolean isDeclared(String name) {
+        if (table.get(name) != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public void declare(String name) {
+        SymbolTableEntry entry = new SymbolTableEntry(name);
+        table.put(name, entry);
+    }
+
     @Override
     public String toString() {
         if (table.isEmpty()) {
