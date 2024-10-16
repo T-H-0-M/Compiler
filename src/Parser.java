@@ -182,6 +182,7 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
+        this.currentEntry.setName(node.getValue());
         node.addChild(expr(true, syncSet));
         return node;
     }
@@ -540,8 +541,9 @@ public class Parser {
             System.out.println("ERRRRRORRRR Variable name already used");
         } else {
             SymbolType temp = this.currentEntry.getSymbolType();
+            System.out.println("hit " + this.currentEntry.toString());
             this.symbolTable.enter(this.currentEntry);
-            this.currentEntry = new SymbolTableEntry(temp);
+            // this.currentEntry = new SymbolTableEntry(temp);
         }
 
         return node;
@@ -1167,8 +1169,6 @@ public class Parser {
             node.setType("NFALS");
             consume(Tokeniser.TokenType.TFALS, node, syncSet);
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            // node.setType("SPECIAL");
-            // node.addChild(var(syncSet));
             node = var(syncSet);
         } else if (match(Tokeniser.TokenType.TILIT)) {
             node.setType("NILIT");
@@ -1184,6 +1184,17 @@ public class Parser {
         } else {
             node = fnCall(syncSet);
         }
+        this.currentEntry.setDataType(this.nodeTypeConversion(node.getType()));
+        this.currentEntry.setValue(node.getValue());
+        // TODO: Actually throw an error here
+        if (this.symbolTable.find(this.currentEntry.getName()) != null) {
+            System.out.println("This already exists");
+        } else {
+            System.out.println("hit " + this.currentEntry.toString());
+            this.symbolTable.enter(this.currentEntry);
+            // this.currentEntry = new SymbolTableEntry();
+        }
+
         return node;
     }
 
@@ -1222,5 +1233,18 @@ public class Parser {
 
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
+    }
+
+    public DataType nodeTypeConversion(String nodeType) {
+        if (nodeType.equals("TFLIT")) {
+            return DataType.FLOAT;
+        } else if (nodeType.equals("TILIT")) {
+            return DataType.INTEGER;
+        } else if (nodeType.equals("TSTRG")) {
+            return DataType.STRING;
+        } else if (nodeType.equals("TFALS") || nodeType.equals("TTRUE")) {
+            return DataType.BOOLEAN;
+        }
+        return DataType.UNDEF;
     }
 }
