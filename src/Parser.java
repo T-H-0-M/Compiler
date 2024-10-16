@@ -20,12 +20,16 @@ public class Parser {
     private Token currentToken;
     private Node rootNode;
     private OutputController outputController;
+    private SymbolTable symbolTable;
+    private SymbolTableEntry currentEntry;
 
     public Parser() {
         this.scanner = null;
         this.currentToken = null;
         this.rootNode = null;
         this.outputController = null;
+        this.symbolTable = new SymbolTable();
+        this.currentEntry = new SymbolTableEntry();
 
     }
 
@@ -34,9 +38,12 @@ public class Parser {
         this.currentToken = scanner.nextToken();
         this.rootNode = null;
         this.outputController = outputController;
+        this.symbolTable = new SymbolTable();
+        this.currentEntry = new SymbolTableEntry();
     }
 
     private void moveToNextValidToken(Set<Tokeniser.TokenType> syncSet) throws ParseException {
+        this.currentEntry = null;
         while (!syncSet.contains(currentToken.getType()) &&
                 currentToken.getType() != Tokeniser.TokenType.TTEOF) {
             currentToken = scanner.nextToken();
@@ -127,6 +134,7 @@ public class Parser {
                 Tokeniser.TokenType.TMAIN));
 
         if (match(Tokeniser.TokenType.TCONS)) {
+            this.currentEntry = new SymbolTableEntry(SymbolType.CONSTANT);
             if (consume(Tokeniser.TokenType.TCONS, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
@@ -152,6 +160,8 @@ public class Parser {
                 moveToNextValidToken(syncSet);
                 return node;
             }
+            SymbolType temp = this.currentEntry.getSymbolType();
+            this.currentEntry = new SymbolTableEntry(temp);
             node.addChild(init(syncSet));
         }
         return node;
@@ -444,7 +454,7 @@ public class Parser {
 
     private Node decl(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("NSDECL", "");
-
+        this.currentEntry = new SymbolTableEntry(SymbolType.VARIABLE);
         if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
@@ -494,6 +504,7 @@ public class Parser {
 
     private Node sList(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
+        this.currentEntry = new SymbolTableEntry(SymbolType.VARIABLE);
         node.addChild(sDecl(syncSet));
         if (match(Tokeniser.TokenType.TCOMA)) {
             node.setType("NSDLST");
@@ -521,22 +532,37 @@ public class Parser {
         } else {
             node.addChild(sType(syncSet));
         }
+        this.currentEntry.setName(node.getValue());
+        // INFO: This is a backwards way of doing it but it works for now
+        // this.currentEntry.setDataType(this.currentEntry.literalToDataType(node.getType()));
+        // TODO: Get this to return actual error
+        if (this.symbolTable.find(this.currentEntry.getName()) != null) {
+            System.out.println("ERRRRRORRRR Variable name already used");
+        } else {
+            SymbolType temp = this.currentEntry.getSymbolType();
+            this.symbolTable.enter(this.currentEntry);
+            this.currentEntry = new SymbolTableEntry(temp);
+        }
+
         return node;
     }
 
     private Node sType(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TINTG)) {
+            this.currentEntry.setDataType(DataType.INTEGER);
             if (consume(Tokeniser.TokenType.TINTG, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
         } else if (match(Tokeniser.TokenType.TFLOT)) {
+            this.currentEntry.setDataType(DataType.FLOAT);
             if (consume(Tokeniser.TokenType.TFLOT, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
         } else {
+            this.currentEntry.setDataType(DataType.BOOLEAN);
             if (consume(Tokeniser.TokenType.TBOOL, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
@@ -601,8 +627,11 @@ public class Parser {
 
         if (match(Tokeniser.TokenType.TREPT)) {
             node.addChild(repStat(syncSet));
+        } else if (match(Tokeniser.TokenType.TIDEN)
+                && this.symbolTable.find(this.currentToken.getLexeme()) != null &&
+                this.symbolTable.find(this.currentToken.getLexeme()).getSymbolType() == SymbolType.FUNCTION) {
+            node.addChild(callStat(syncSet));
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            // node.addChild(callStat(syncSet));
             node.addChild(asgnStat(syncSet));
         } else if (match(Tokeniser.TokenType.TINPT) || match(Tokeniser.TokenType.TPRLN)
                 || match(Tokeniser.TokenType.TPRNT)) {
@@ -1072,7 +1101,6 @@ public class Parser {
         Node factNode = null;
         if (factNeeded) {
             factNode = fact(true, syncSet);
-            // node.addChild(fact(true, syncSet));
         }
         if (match(Tokeniser.TokenType.TSTAR)) {
             node.setType("NMUL");
@@ -1192,19 +1220,7 @@ public class Parser {
         return node;
     }
 
-    // TODO: Reassess where this is located
-    public DataType nodeTypeConversion(String nodeType) {
-        if (nodeType.equals("TFLIT")) {
-            return DataType.FLOAT_LITERAL;
-        } else if (nodeType.equals("TILIT")) {
-            return DataType.INT_LITERAL;
-        } else if (nodeType.equals("TSTRG")) {
-            return DataType.STRING;
-        } else if (nodeType.equals("TFALS")) {
-            return DataType.BOOL;
-        } else if (nodeType.equals("TTRUE")) {
-            return DataType.BOOL;
-        }
-        return DataType.UNDEF;
+    public SymbolTable getSymbolTable() {
+        return this.symbolTable;
     }
 }

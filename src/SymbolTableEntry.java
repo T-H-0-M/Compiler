@@ -38,6 +38,19 @@ public class SymbolTableEntry {
         this.col = 0;
     }
 
+    public SymbolTableEntry(SymbolType symbolType) {
+        this.name = null;
+        this.symbolType = symbolType;
+        this.memoryLocation = null;
+        this.value = null;
+        this.dataType = null;
+        this.isInitialised = false;
+        this.returnType = null;
+        this.containsReturn = false;
+        this.line = 0;
+        this.col = 0;
+    }
+
     public SymbolTableEntry(String name) {
         this.name = name;
         this.symbolType = null;

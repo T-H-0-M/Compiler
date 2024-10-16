@@ -1,7 +1,7 @@
 public enum DataType {
-    FLOAT_LITERAL,
-    INT_LITERAL,
+    FLOAT,
+    INTEGER,
     STRING,
-    BOOL,
+    BOOLEAN,
     UNDEF
 }
