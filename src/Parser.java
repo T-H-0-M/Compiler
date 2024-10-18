@@ -246,7 +246,7 @@ public class Parser {
                 moveToNextValidToken(syncSet);
                 return node;
             }
-            if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
+            if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
@@ -540,10 +540,7 @@ public class Parser {
         if (this.symbolTable.find(this.currentEntry.getName()) != null) {
             System.out.println("ERRRRRORRRR Variable name already used");
         } else {
-            SymbolType temp = this.currentEntry.getSymbolType();
-            System.out.println("hit " + this.currentEntry.toString());
             this.symbolTable.enter(this.currentEntry);
-            // this.currentEntry = new SymbolTableEntry(temp);
         }
 
         return node;
@@ -883,7 +880,7 @@ public class Parser {
                 return node;
             }
         } else if (match(Tokeniser.TokenType.TSTEQ)) {
-            node.setType("NSTEA");
+            node.setType("NSTEQ");
             if (consume(Tokeniser.TokenType.TSTEQ, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
@@ -1184,15 +1181,14 @@ public class Parser {
         } else {
             node = fnCall(syncSet);
         }
-        this.currentEntry.setDataType(this.nodeTypeConversion(node.getType()));
+        this.currentEntry.setDataType(SymbolTableEntry.nodeTypeConversion(node.getType()));
         this.currentEntry.setValue(node.getValue());
+        this.currentEntry.setInitialised(true);
         // TODO: Actually throw an error here
         if (this.symbolTable.find(this.currentEntry.getName()) != null) {
             System.out.println("This already exists");
         } else {
-            System.out.println("hit " + this.currentEntry.toString());
             this.symbolTable.enter(this.currentEntry);
-            // this.currentEntry = new SymbolTableEntry();
         }
 
         return node;
@@ -1235,16 +1231,4 @@ public class Parser {
         return this.symbolTable;
     }
 
-    public DataType nodeTypeConversion(String nodeType) {
-        if (nodeType.equals("TFLIT")) {
-            return DataType.FLOAT;
-        } else if (nodeType.equals("TILIT")) {
-            return DataType.INTEGER;
-        } else if (nodeType.equals("TSTRG")) {
-            return DataType.STRING;
-        } else if (nodeType.equals("TFALS") || nodeType.equals("TTRUE")) {
-            return DataType.BOOLEAN;
-        }
-        return DataType.UNDEF;
-    }
 }

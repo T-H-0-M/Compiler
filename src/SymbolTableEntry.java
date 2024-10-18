@@ -189,4 +189,17 @@ public class SymbolTableEntry {
                 name, value, symbolType != null ? symbolType.toString() : "null", memoryLocation,
                 dataType != null ? dataType.toString() : "null", isInitialised);
     }
+
+    public static DataType nodeTypeConversion(String nodeType) {
+        if (nodeType.equals("NFLIT")) {
+            return DataType.FLOAT;
+        } else if (nodeType.equals("NILIT")) {
+            return DataType.INTEGER;
+        } else if (nodeType.equals("NSTRG")) {
+            return DataType.STRING;
+        } else if (nodeType.equals("NFALS") || nodeType.equals("NTRUE")) {
+            return DataType.BOOLEAN;
+        }
+        return DataType.UNDEF;
+    }
 }
