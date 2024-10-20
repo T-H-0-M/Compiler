@@ -57,7 +57,11 @@ public class A3 {
         if (root != null) {
             root.printPreOrderTraversal();
             root.printTree();
-            semanticAnalyser.analyse(root);
+
+            // System.out.println(parser.getSymbolTable());
+            semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable());
+            SymbolTable symbolTable = semanticAnalyser.analyse(root);
+            System.out.println(symbolTable);
         } else {
             System.out.println("No parse tree generated.");
         }

@@ -38,6 +38,19 @@ public class SymbolTableEntry {
         this.col = 0;
     }
 
+    public SymbolTableEntry(SymbolType symbolType) {
+        this.name = null;
+        this.symbolType = symbolType;
+        this.memoryLocation = null;
+        this.value = null;
+        this.dataType = null;
+        this.isInitialised = false;
+        this.returnType = null;
+        this.containsReturn = false;
+        this.line = 0;
+        this.col = 0;
+    }
+
     public SymbolTableEntry(String name) {
         this.name = name;
         this.symbolType = null;
@@ -175,5 +188,18 @@ public class SymbolTableEntry {
                 "[name: %s, value: %s, type: %s, memoryLocation: %s, dataType: %s, isInitialised: %s]",
                 name, value, symbolType != null ? symbolType.toString() : "null", memoryLocation,
                 dataType != null ? dataType.toString() : "null", isInitialised);
+    }
+
+    public static DataType nodeTypeConversion(String nodeType) {
+        if (nodeType.equals("NFLIT")) {
+            return DataType.FLOAT;
+        } else if (nodeType.equals("NILIT")) {
+            return DataType.INTEGER;
+        } else if (nodeType.equals("NSTRG")) {
+            return DataType.STRING;
+        } else if (nodeType.equals("NFALS") || nodeType.equals("NTRUE")) {
+            return DataType.BOOLEAN;
+        }
+        return DataType.UNDEF;
     }
 }
