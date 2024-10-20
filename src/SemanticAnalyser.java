@@ -34,11 +34,42 @@ public class SemanticAnalyser {
             case "NASGN":
                 handleAssignment(node);
                 break;
+            case "NADD":
+                handleAddition(node);
+                break;
+            case "NSUB":
+                handleSubtraction(node);
+                break;
             default:
+
                 for (Node child : node.getChildren()) {
                     traverse(child);
                 }
                 break;
+        }
+    }
+
+    private void handleSubtraction(Node node) {
+        if (node.getChildren().size() != 2) {
+            errors.add("Subtraction node does not have exactly 2 children.");
+            return;
+        }
+
+        if (node.getChildren().get(0).getType() != node.getChildren().get(1).getType()) {
+            errors.add("Types must match for subtraction operation.");
+            return;
+        }
+    }
+
+    private void handleAddition(Node node) {
+        if (node.getChildren().size() != 2) {
+            errors.add("Subtraction node does not have exactly 2 children.");
+            return;
+        }
+
+        if (node.getChildren().get(0).getType() != node.getChildren().get(1).getType()) {
+            errors.add("Types must match for subtraction operation.");
+            return;
         }
     }
 
