@@ -22,7 +22,11 @@ public class SymbolTableEntry {
     private DataType returnType;
     private boolean containsReturn;
     private boolean isArray;
+<<<<<<< Updated upstream
     private int arrLength;
+=======
+    private int length;
+>>>>>>> Stashed changes
     private int line;
     private int col;
 
@@ -37,7 +41,11 @@ public class SymbolTableEntry {
         this.returnType = null;
         this.containsReturn = false;
         this.isArray = false;
+<<<<<<< Updated upstream
         this.arrLength = 0;
+=======
+        this.length = 0;
+>>>>>>> Stashed changes
         this.line = 0;
         this.col = 0;
     }
@@ -52,7 +60,11 @@ public class SymbolTableEntry {
         this.returnType = null;
         this.containsReturn = false;
         this.isArray = false;
+<<<<<<< Updated upstream
         this.arrLength = 0;
+=======
+        this.length = 0;
+>>>>>>> Stashed changes
         this.line = 0;
         this.col = 0;
     }
@@ -67,7 +79,13 @@ public class SymbolTableEntry {
         this.returnType = null;
         this.containsReturn = false;
         this.isArray = false;
+<<<<<<< Updated upstream
         this.arrLength = 0;
+=======
+        this.length = 0;
+        this.isArray = false;
+        this.length = 0;
+>>>>>>> Stashed changes
         this.line = 0;
         this.col = 0;
     }
@@ -80,7 +98,11 @@ public class SymbolTableEntry {
         this.dataType = dataType;
         this.isInitialised = false;
         this.isArray = false;
+<<<<<<< Updated upstream
         this.arrLength = 0;
+=======
+        this.length = 0;
+>>>>>>> Stashed changes
         this.line = 0;
         this.col = 0;
     }
@@ -94,7 +116,11 @@ public class SymbolTableEntry {
         this.dataType = dataType;
         this.isInitialised = isInitialised;
         this.isArray = false;
+<<<<<<< Updated upstream
         this.arrLength = 0;
+=======
+        this.length = 0;
+>>>>>>> Stashed changes
         this.line = 0;
         this.col = 0;
     }
@@ -108,7 +134,11 @@ public class SymbolTableEntry {
         this.dataType = dataType;
         this.isInitialised = isInitialised;
         this.isArray = isArray;
+<<<<<<< Updated upstream
         this.arrLength = length;
+=======
+        this.length = length;
+>>>>>>> Stashed changes
         this.line = 0;
         this.col = 0;
     }
@@ -150,8 +180,13 @@ public class SymbolTableEntry {
         return isArray;
     }
 
+<<<<<<< Updated upstream
     public int getArrLength() {
         return arrLength;
+=======
+    public int getLength() {
+        return length;
+>>>>>>> Stashed changes
     }
 
     public int getLine() {
@@ -191,8 +226,13 @@ public class SymbolTableEntry {
         this.isArray = isArray;
     }
 
+<<<<<<< Updated upstream
     public void setArrLength(int length) {
         this.arrLength = length;
+=======
+    public void setLength(int length) {
+        this.length = length;
+>>>>>>> Stashed changes
     }
 
     public void setReturnType(DataType returnType) {

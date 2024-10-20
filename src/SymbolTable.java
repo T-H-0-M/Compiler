@@ -58,11 +58,23 @@ public class SymbolTable {
         table.put(name, entry);
     }
 
+<<<<<<< Updated upstream
     public void declare(String name, int arrLen) {
         SymbolTableEntry entry = new SymbolTableEntry(name);
         entry.setIsArray(true);
         entry.setArrLength(arrLen);
         table.put(name, entry);
+=======
+    public boolean isArray(String name) {
+        SymbolTableEntry entry = table.get(name);
+        return entry.isArray();
+    }
+
+    public void declareArray(String name, int length) {
+        SymbolTableEntry entry = table.get(name);
+        entry.setIsArray(true);
+        entry.setLength(length);
+>>>>>>> Stashed changes
     }
 
     @Override

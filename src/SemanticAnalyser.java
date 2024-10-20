@@ -34,11 +34,16 @@ public class SemanticAnalyser {
             case "NASGN":
                 handleAssignment(node);
                 break;
+<<<<<<< Updated upstream
             case "NADD":
                 handleAddition(node);
                 break;
             case "NSUB":
                 handleSubtraction(node);
+=======
+            case "TARAY":
+                handleArrayUsage(node);
+>>>>>>> Stashed changes
                 break;
             default:
 
@@ -99,6 +104,19 @@ public class SemanticAnalyser {
         } else {
             errors.add("Assignment node does not have enough children.");
         }
+    }
+
+    private void handleArrayDecl(Node node) {
+        String varName = node.getValue();
+        if (symbolTable.isDeclared(varName)) {
+            errors.add("Variable '" + varName + "' is already declared.");
+        } else {
+            symbolTable.declareArray(varName, 0);
+        }   
+    }
+
+    private void handleArrayUsage(Node node) {
+        
     }
 
     private void handleVarUsage(Node node) {
