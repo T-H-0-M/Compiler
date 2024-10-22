@@ -22,6 +22,7 @@ public class Parser {
     private OutputController outputController;
     private SymbolTable symbolTable;
     private SymbolTableEntry currentEntry;
+    private String programIdentifier;
 
     public Parser() {
         this.scanner = null;
@@ -30,6 +31,7 @@ public class Parser {
         this.outputController = null;
         this.symbolTable = new SymbolTable();
         this.currentEntry = new SymbolTableEntry();
+        this.programIdentifier = "";
 
     }
 
@@ -40,6 +42,7 @@ public class Parser {
         this.outputController = outputController;
         this.symbolTable = new SymbolTable();
         this.currentEntry = new SymbolTableEntry();
+        this.programIdentifier = "";
     }
 
     private void moveToNextValidToken(Set<Tokeniser.TokenType> syncSet) throws ParseException {
@@ -103,6 +106,9 @@ public class Parser {
             moveToNextValidToken(programSyncSet);
             return node;
         }
+        this.programIdentifier = node.getValue();
+        SymbolTableEntry entry = new SymbolTableEntry(programIdentifier, SymbolType.PROGRAM, true);
+        symbolTable.enter(entry);
         if (consume(Tokeniser.TokenType.TIDEN, node, programSyncSet)) {
             moveToNextValidToken(programSyncSet);
             return node;
@@ -496,6 +502,9 @@ public class Parser {
         }
         // INFO: pass node null as is at the end of the program (otherwise main node
         // will be name set to the identifier)
+        if (!this.programIdentifier.equals(currentToken.getLexeme())) {
+            outputController.addSemanticError("Program names to not match", currentToken, node);
+        }
         if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;

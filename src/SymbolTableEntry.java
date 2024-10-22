@@ -21,6 +21,7 @@ public class SymbolTableEntry {
     private boolean isInitialised;
     private DataType returnType;
     private boolean containsReturn;
+    private boolean programNamesMatch;
     private int line;
     private int col;
 
@@ -36,6 +37,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     public SymbolTableEntry(SymbolType symbolType) {
@@ -49,6 +51,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     public SymbolTableEntry(String name) {
@@ -62,6 +65,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     public SymbolTableEntry(String name, SymbolType symbolType, boolean isInitialised) {
@@ -98,6 +102,7 @@ public class SymbolTableEntry {
         this.isInitialised = isInitialised;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     /* -------------- Getters -------------- */
@@ -141,6 +146,10 @@ public class SymbolTableEntry {
         return this.col;
     }
 
+    public boolean getProgramsNameMatch() {
+        return this.programNamesMatch;
+    }
+
     /* -------------- Setters -------------- */
     public void setName(String name) {
         this.name = name;
@@ -180,6 +189,10 @@ public class SymbolTableEntry {
 
     public void setCol(int col) {
         this.col = col;
+    }
+
+    public void setProgramsNameMatch(boolean match) {
+        this.programNamesMatch = match;
     }
 
     @Override
