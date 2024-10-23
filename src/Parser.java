@@ -22,6 +22,7 @@ public class Parser {
     private OutputController outputController;
     private SymbolTable symbolTable;
     private SymbolTableEntry currentEntry;
+    private String programIdentifier;
 
     public Parser() {
         this.scanner = null;
@@ -30,6 +31,7 @@ public class Parser {
         this.outputController = null;
         this.symbolTable = new SymbolTable();
         this.currentEntry = new SymbolTableEntry();
+        this.programIdentifier = "";
 
     }
 
@@ -40,6 +42,7 @@ public class Parser {
         this.outputController = outputController;
         this.symbolTable = new SymbolTable();
         this.currentEntry = new SymbolTableEntry();
+        this.programIdentifier = "";
     }
 
     private void moveToNextValidToken(Set<Tokeniser.TokenType> syncSet) throws ParseException {
@@ -62,6 +65,8 @@ public class Parser {
                     || consumedToken.getType() == Tokeniser.TokenType.TILIT
                     || consumedToken.getType() == Tokeniser.TokenType.TFLIT)) {
                 parentNode.setValue(consumedToken.getLexeme());
+                parentNode.setLine(consumedToken.getLine());
+                parentNode.setCol(consumedToken.getCol());
             }
             currentToken = scanner.nextToken();
             return false;
@@ -75,8 +80,10 @@ public class Parser {
                 parentNode = new Node("NUNDEF", "");
             }
             if (syncSet == null || syncSet.isEmpty()) {
-                throw new ParseException("Fatal Error: Unable to synchronize.");
+                throw new ParseException("Fatal Error: Unable to synchronise.");
             }
+            parentNode.setLine(currentToken.getLine());
+            parentNode.setCol(currentToken.getCol());
         }
         return parentNode.getType().equals("NUNDEF");
     }
@@ -103,6 +110,10 @@ public class Parser {
             moveToNextValidToken(programSyncSet);
             return node;
         }
+        this.programIdentifier = node.getValue();
+        // SymbolTableEntry entry = new SymbolTableEntry(programIdentifier,
+        // SymbolType.PROGRAM, true);
+        // symbolTable.enter(entry);
         if (consume(Tokeniser.TokenType.TIDEN, node, programSyncSet)) {
             moveToNextValidToken(programSyncSet);
             return node;
@@ -182,6 +193,7 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
+        this.currentEntry.setName(node.getValue());
         node.addChild(expr(true, syncSet));
         return node;
     }
@@ -245,7 +257,7 @@ public class Parser {
                 moveToNextValidToken(syncSet);
                 return node;
             }
-            if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
+            if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
             }
@@ -493,6 +505,10 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
+        if (!this.programIdentifier.equals(currentToken.getLexeme())) {
+            outputController.addSemanticError("Program names to not match", currentToken.getCol(),
+                    currentToken.getLine());
+        }
         // INFO: pass node null as is at the end of the program (otherwise main node
         // will be name set to the identifier)
         if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
@@ -533,15 +549,12 @@ public class Parser {
             node.addChild(sType(syncSet));
         }
         this.currentEntry.setName(node.getValue());
-        // INFO: This is a backwards way of doing it but it works for now
-        // this.currentEntry.setDataType(this.currentEntry.literalToDataType(node.getType()));
-        // TODO: Get this to return actual error
         if (this.symbolTable.find(this.currentEntry.getName()) != null) {
-            System.out.println("ERRRRRORRRR Variable name already used");
+            outputController.addSemanticError("Variable name " + this.currentEntry.getName() + " already used",
+                    currentToken.getCol(), currentToken.getLine());
         } else {
-            SymbolType temp = this.currentEntry.getSymbolType();
+            System.out.println("Current Entry - " + this.currentEntry.toString());
             this.symbolTable.enter(this.currentEntry);
-            this.currentEntry = new SymbolTableEntry(temp);
         }
 
         return node;
@@ -881,7 +894,7 @@ public class Parser {
                 return node;
             }
         } else if (match(Tokeniser.TokenType.TSTEQ)) {
-            node.setType("NSTEA");
+            node.setType("NSTEQ");
             if (consume(Tokeniser.TokenType.TSTEQ, node, syncSet)) {
                 moveToNextValidToken(syncSet);
                 return node;
@@ -1167,8 +1180,6 @@ public class Parser {
             node.setType("NFALS");
             consume(Tokeniser.TokenType.TFALS, node, syncSet);
         } else if (match(Tokeniser.TokenType.TIDEN)) {
-            // node.setType("SPECIAL");
-            // node.addChild(var(syncSet));
             node = var(syncSet);
         } else if (match(Tokeniser.TokenType.TILIT)) {
             node.setType("NILIT");
@@ -1184,6 +1195,7 @@ public class Parser {
         } else {
             node = fnCall(syncSet);
         }
+        this.currentEntry.setInitialised(true);
         return node;
     }
 
@@ -1223,4 +1235,5 @@ public class Parser {
     public SymbolTable getSymbolTable() {
         return this.symbolTable;
     }
+
 }

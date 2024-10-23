@@ -207,7 +207,7 @@ public class OutputController {
         int line = currentToken.getLine();
         int col = currentToken.getCol();
 
-        String errorMsg = String.format("syntax error – improperly formed %s on (line %d, column %d)\n",
+        String errorMsg = String.format("Syntax Error – improperly formed %s on (line %d, column %d)\n",
                 nonTerminal, line, col);
         if (nonTerminal.equals("SPECIAL")) {
             errorMsg = String.format("syntax error – Undefined Error on (line %d, column %d)\n",
@@ -215,6 +215,14 @@ public class OutputController {
 
         }
 
+        outputErrorToListing(errorMsg, col);
+        formattedLines.add(errorMsg);
+    }
+
+    public void addSemanticError(String errorDescription, int col, int line) {
+
+        String errorMsg = String.format("Semantic Error – %s (line %d, column %d)\n",
+                errorDescription, line, col);
         outputErrorToListing(errorMsg, col);
         formattedLines.add(errorMsg);
     }
