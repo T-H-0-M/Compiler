@@ -21,6 +21,7 @@ public class SymbolTableEntry {
     private boolean isInitialised;
     private DataType returnType;
     private boolean containsReturn;
+    private boolean programNamesMatch;
     private int line;
     private int col;
 
@@ -36,6 +37,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     public SymbolTableEntry(SymbolType symbolType) {
@@ -49,6 +51,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     public SymbolTableEntry(String name) {
@@ -62,6 +65,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     public SymbolTableEntry(String name, SymbolType symbolType, boolean isInitialised) {
@@ -98,6 +102,7 @@ public class SymbolTableEntry {
         this.isInitialised = isInitialised;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
     }
 
     /* -------------- Getters -------------- */
@@ -141,6 +146,10 @@ public class SymbolTableEntry {
         return this.col;
     }
 
+    public boolean getProgramsNameMatch() {
+        return this.programNamesMatch;
+    }
+
     /* -------------- Setters -------------- */
     public void setName(String name) {
         this.name = name;
@@ -182,11 +191,28 @@ public class SymbolTableEntry {
         this.col = col;
     }
 
+    public void setProgramsNameMatch(boolean match) {
+        this.programNamesMatch = match;
+    }
+
     @Override
     public String toString() {
         return String.format(
                 "[name: %s, value: %s, type: %s, memoryLocation: %s, dataType: %s, isInitialised: %s]",
                 name, value, symbolType != null ? symbolType.toString() : "null", memoryLocation,
                 dataType != null ? dataType.toString() : "null", isInitialised);
+    }
+
+    public static DataType nodeTypeConversion(String nodeType) {
+        if (nodeType.equals("NFLIT")) {
+            return DataType.FLOAT;
+        } else if (nodeType.equals("NILIT")) {
+            return DataType.INTEGER;
+        } else if (nodeType.equals("NSTRG")) {
+            return DataType.STRING;
+        } else if (nodeType.equals("NFALS") || nodeType.equals("NTRUE")) {
+            return DataType.BOOLEAN;
+        }
+        return DataType.UNDEF;
     }
 }
