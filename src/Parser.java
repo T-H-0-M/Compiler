@@ -339,10 +339,12 @@ public class Parser {
                 Tokeniser.TokenType.TMAIN,
                 Tokeniser.TokenType.TCD24));
         Node node = new Node("NFUND", "");
+        this.currentEntry = new SymbolTableEntry(SymbolType.FUNCTION);
         if (consume(Tokeniser.TokenType.TFUNC, node, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
         }
+        this.currentEntry.setName(this.currentToken.getLexeme());
         if (consume(Tokeniser.TokenType.TIDEN, node, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
@@ -363,6 +365,8 @@ public class Parser {
         }
         node.addChild(rType(syncSet));
         node.addChild(funcBody(syncSet));
+        this.symbolTable.enter(this.currentEntry);
+        System.out.println(this.symbolTable.toString());
 
         return node;
     }
@@ -370,6 +374,7 @@ public class Parser {
     private Node rType(Set<Tokeniser.TokenType> syncSet) throws ParseException {
         Node node = new Node("SPECIAL", "");
         if (match(Tokeniser.TokenType.TVOID)) {
+            this.currentEntry.setDataType(DataType.VOID);
             consume(Tokeniser.TokenType.TVOID, node, syncSet);
             return node;
         } else {
