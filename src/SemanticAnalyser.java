@@ -4,15 +4,18 @@ import java.util.ArrayList;
 public class SemanticAnalyser {
     private SymbolTable symbolTable;
     private List<String> errors;
+    private OutputController outputController;
 
     public SemanticAnalyser() {
         this.symbolTable = new SymbolTable();
         this.errors = new ArrayList<>();
+        this.outputController = new OutputController();
     }
 
-    public SemanticAnalyser(SymbolTable symbolTable) {
+    public SemanticAnalyser(SymbolTable symbolTable, OutputController outputController) {
         this.symbolTable = symbolTable;
         this.errors = new ArrayList<>();
+        this.outputController = outputController;
     }
 
     public SymbolTable analyse(Node root) {
@@ -35,19 +38,19 @@ public class SemanticAnalyser {
 
         switch (nodeType) {
             case "NASGN":
-                handleAssignment(node);
+                handleAssignmentChecks(node);
                 break;
             case "NPLEQ":
-                handlePlusEqual(node);
+                handleAssignmentChecks(node);
                 break;
             case "NMNEQ":
-                handleMinusEqual(node);
+                handleAssignmentChecks(node);
                 break;
             case "NSTEQ":
-                handleStarEqual(node);
+                handleAssignmentChecks(node);
                 break;
             case "NDVEQ":
-                handleDivEqual(node);
+                handleAssignmentChecks(node);
                 break;
             default:
                 for (Node child : node.getChildren()) {
@@ -57,18 +60,7 @@ public class SemanticAnalyser {
         }
     }
 
-    // TODO: add checks for all relevant nodes here
-
-    // private void handleVarDecl(Node node) {
-    // String varName = node.getValue();
-    // if (symbolTable.isDeclared(varName)) {
-    // errors.add("Variable '" + varName + "' is already declared.");
-    // } else {
-    // symbolTable.declare(varName);
-    // }
-    // }
-
-    private void handleAssignment(Node node) {
+    private void handleAssignmentChecks(Node node) {
         List<Node> children = node.getChildren();
         if (children.size() >= 2) {
             Node varNode = children.get(0);
@@ -77,234 +69,92 @@ public class SemanticAnalyser {
             if (!symbolTable.isDeclared(varName)) {
                 errors.add("Variable '" + varName + "' is not declared.");
             }
-
             SymbolTableEntry currentEntry = this.symbolTable.find(varName);
-            // INFO: Type check
-            if (currentEntry.getDataType() == SymbolTableEntry.nodeTypeConversion(exprNode.getType())) {
-                currentEntry.setValue(exprNode.getValue());
-                currentEntry.setInitialised(true);
+            if (exprNode.getType().equals("NADD") || exprNode.getType().equals("NSUB")
+                    || exprNode.getType().equals("NMUL") || exprNode.getType().equals("NDIV")
+                    || exprNode.getType().equals("NMOD") || exprNode.getType().equals("NPOW")) {
+                if (!checkTypeChildNodes(exprNode, currentEntry.getDataType())) {
+                    outputController.addSemanticError("Type mismatch on - " + varNode.getValue(),
+                            varNode.getCol(), varNode.getLine());
+                }
+
             } else {
-                System.out.println("does not match");
+                // INFO: Type check
+                if (checkTypeChildNodes(node, currentEntry.getDataType())) {
+                    currentEntry.setInitialised(true);
+                } else {
+                    outputController.addSemanticError("Type mismatch on - " + varNode.getValue(),
+                            varNode.getCol(), varNode.getLine());
+                }
             }
         } else {
             errors.add("Assignment node does not have enough children.");
         }
     }
 
-    private void handleVarUsage(Node node) {
-        String varName = node.getValue();
-        if (!symbolTable.isDeclared(varName)) {
-            node.addError("Variable '" + varName + "' is not declared.");
-        }
-    }
-
-    private void handlePlusEqual(Node node) {
+    private boolean checkTypeChildNodes(Node node, DataType dataType) {
+        // TODO: Add type checking for bool
         List<Node> children = node.getChildren();
         Node child1 = children.get(0);
         Node child2 = children.get(1);
-        SymbolTableEntry entry1 = symbolTable.find(child1.getValue());
 
-        if (child2.getValue() == "NSIMV") {
+        // INFO: var + var
+        if (child1.getType().equals("NSIMV") && child2.getType().equals("NSIMV")) {
+            SymbolTableEntry entry1 = symbolTable.find(child1.getValue());
             SymbolTableEntry entry2 = symbolTable.find(child2.getValue());
-            if (entry1.getDataType() == entry2.getDataType()) {
+            if (entry1.getDataType() == entry2.getDataType() && entry1.getDataType() == dataType) {
                 if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) + Integer.parseInt(entry2.getValue())));
+                    return true;
                 } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) + Double.parseDouble(entry2.getValue())));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        } else {
-
-            String entry2 = child2.getValue();
-            DataType entry2DataType = SymbolTableEntry.nodeTypeConversion(child2.getType());
-            if (entry1.getDataType() == entry2DataType) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) + Integer.parseInt(entry2)));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) + Double.parseDouble(entry2)));
-                } else {
-                    // TODO: Throw Error
+                    return true;
                 }
             }
         }
+        // INFO: var + float/int
+        else if (child1.getType().equals("NSIMV") && child2.getType().equals("NILIT")
+                || child2.getValue().equals("NFLIT")) {
+            SymbolTableEntry var = symbolTable.find(child1.getValue());
+            if (var.getDataType() == DataType.INTEGER && child2.getType().equals("NILIT")
+                    && var.getDataType() == dataType) {
+                return true;
+            } else if (var.getDataType() == DataType.FLOAT && child2.getType().equals("NFLIT")
+                    && var.getDataType() == dataType) {
+                return true;
+            }
+        }
+        // INFO: float/int + var
+        else if (child1.getType().equals("NILIT")
+                || child1.getType().equals("NFLIT") && child2.getType().equals("NSIMV")) {
+            SymbolTableEntry var = symbolTable.find(child2.getValue());
+            if (child1.getType().equals("NILIT") && var.getDataType() == DataType.INTEGER
+                    && var.getDataType() == dataType) {
+                return true;
+            } else if (var.getDataType() == DataType.FLOAT && child2.getValue().equals("NFLIT")
+                    && var.getDataType() == dataType) {
+                return true;
+            }
+        }
+        // INFO: float/int + float/int
+        else if (child1.getType().equals("NILIT")
+                || child1.getType().equals("NFLIT") && child2.getType().equals("NILIT")
+                || child2.getType().equals("NFLIT")) {
+            if (child1.getType().equals("NILIT") && child1.getType().equals("NILIT")
+                    && SymbolTableEntry.nodeTypeConversion(child1.getType()) == dataType) {
+                return true;
+            } else if (child1.getType().equals("NFLIT") && child1.getType().equals("NFLIT")
+                    && SymbolTableEntry.nodeTypeConversion(child1.getType()) == dataType) {
+                return true;
+            }
 
+        }
+        return false;
     }
 
-    // TODO: modify the <>Equal to improve code read ability
-
-    private void handleMinusEqual(Node node) {
-        List<Node> children = node.getChildren();
-        Node child1 = children.get(0);
-        Node child2 = children.get(1);
-        SymbolTableEntry entry1 = symbolTable.find(child1.getValue());
-
-        if (child2.getValue() == "NSIMV") {
-            SymbolTableEntry entry2 = symbolTable.find(child2.getValue());
-            if (entry1.getDataType() == entry2.getDataType()) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) - Integer.parseInt(entry2.getValue())));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) - Double.parseDouble(entry2.getValue())));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        } else {
-
-            String entry2 = child2.getValue();
-            DataType entry2DataType = SymbolTableEntry.nodeTypeConversion(child2.getType());
-            if (entry1.getDataType() == entry2DataType) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) - Integer.parseInt(entry2)));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) - Double.parseDouble(entry2)));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        }
+    public void addError(String error) {
+        this.errors.add(error);
     }
 
-    private void handleStarEqual(Node node) {
-        List<Node> children = node.getChildren();
-        Node child1 = children.get(0);
-        Node child2 = children.get(1);
-        SymbolTableEntry entry1 = symbolTable.find(child1.getValue());
-
-        if (child2.getValue() == "NSIMV") {
-            SymbolTableEntry entry2 = symbolTable.find(child2.getValue());
-            if (entry1.getDataType() == entry2.getDataType()) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) * Integer.parseInt(entry2.getValue())));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) * Double.parseDouble(entry2.getValue())));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        } else {
-
-            String entry2 = child2.getValue();
-            DataType entry2DataType = SymbolTableEntry.nodeTypeConversion(child2.getType());
-            if (entry1.getDataType() == entry2DataType) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) * Integer.parseInt(entry2)));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) * Double.parseDouble(entry2)));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        }
-    }
-
-    private void handleDivEqual(Node node) {
-        List<Node> children = node.getChildren();
-        Node child1 = children.get(0);
-        Node child2 = children.get(1);
-        SymbolTableEntry entry1 = symbolTable.find(child1.getValue());
-
-        if (child2.getValue() == "NSIMV") {
-            SymbolTableEntry entry2 = symbolTable.find(child2.getValue());
-            if (entry1.getDataType() == entry2.getDataType()) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) / Integer.parseInt(entry2.getValue())));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) / Double.parseDouble(entry2.getValue())));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        } else {
-
-            String entry2 = child2.getValue();
-            DataType entry2DataType = SymbolTableEntry.nodeTypeConversion(child2.getType());
-            if (entry1.getDataType() == entry2DataType) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) / Integer.parseInt(entry2)));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) / Double.parseDouble(entry2)));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        }
-
-    }
-
-    private void handleAdd(Node node) {
-        List<Node> children = node.getChildren();
-        Node child1 = children.get(0);
-        Node child2 = children.get(1);
-        SymbolTableEntry entry1 = symbolTable.find(child1.getValue());
-
-        if (child2.getValue() == "NSIMV") {
-            SymbolTableEntry entry2 = symbolTable.find(child2.getValue());
-            if (entry1.getDataType() == entry2.getDataType()) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) / Integer.parseInt(entry2.getValue())));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) / Double.parseDouble(entry2.getValue())));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        } else {
-
-            String entry2 = child2.getValue();
-            DataType entry2DataType = SymbolTableEntry.nodeTypeConversion(child2.getType());
-            if (entry1.getDataType() == entry2DataType) {
-                if (entry1.getDataType() == DataType.INTEGER) {
-                    System.out.println();
-                    entry1.setValue(
-                            String.valueOf(Integer.parseInt(entry1.getValue()) / Integer.parseInt(entry2)));
-                } else if (entry1.getDataType() == DataType.FLOAT) {
-                    entry1.setValue(
-                            String.valueOf(
-                                    Double.parseDouble(entry1.getValue()) / Double.parseDouble(entry2)));
-                } else {
-                    // TODO: Throw Error
-                }
-            }
-        }
-
+    public List<String> getErrors() {
+        return this.errors;
     }
 }

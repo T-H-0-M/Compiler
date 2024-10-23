@@ -219,10 +219,8 @@ public class OutputController {
         formattedLines.add(errorMsg);
     }
 
-    public void addSemanticError(String errorDescription, Token currentToken, Node parentNode) {
+    public void addSemanticError(String errorDescription, int col, int line) {
 
-        int line = currentToken.getLine();
-        int col = currentToken.getCol();
         String errorMsg = String.format("Semantic Error – %s (line %d, column %d)\n",
                 errorDescription, line, col);
         outputErrorToListing(errorMsg, col);

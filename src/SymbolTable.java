@@ -35,7 +35,9 @@ public class SymbolTable {
     }
 
     public void enter(SymbolTableEntry symbolTableEntry) {
-        table.put(symbolTableEntry.getName(), symbolTableEntry);
+        if (!symbolTableEntry.getName().equals("")) {
+            table.put(symbolTableEntry.getName(), symbolTableEntry);
+        }
     }
 
     public SymbolTableEntry find(String name) {
@@ -65,7 +67,7 @@ public class SymbolTable {
         }
         StringBuilder result = new StringBuilder();
         for (Map.Entry<String, SymbolTableEntry> entry : table.entrySet()) {
-            result.append(entry.toString());
+            result.append(entry.toString() + "\n");
         }
         return result.toString();
     }

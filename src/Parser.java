@@ -65,6 +65,8 @@ public class Parser {
                     || consumedToken.getType() == Tokeniser.TokenType.TILIT
                     || consumedToken.getType() == Tokeniser.TokenType.TFLIT)) {
                 parentNode.setValue(consumedToken.getLexeme());
+                parentNode.setLine(consumedToken.getLine());
+                parentNode.setCol(consumedToken.getCol());
             }
             currentToken = scanner.nextToken();
             return false;
@@ -78,8 +80,10 @@ public class Parser {
                 parentNode = new Node("NUNDEF", "");
             }
             if (syncSet == null || syncSet.isEmpty()) {
-                throw new ParseException("Fatal Error: Unable to synchronize.");
+                throw new ParseException("Fatal Error: Unable to synchronise.");
             }
+            parentNode.setLine(currentToken.getLine());
+            parentNode.setCol(currentToken.getCol());
         }
         return parentNode.getType().equals("NUNDEF");
     }
@@ -107,8 +111,9 @@ public class Parser {
             return node;
         }
         this.programIdentifier = node.getValue();
-        SymbolTableEntry entry = new SymbolTableEntry(programIdentifier, SymbolType.PROGRAM, true);
-        symbolTable.enter(entry);
+        // SymbolTableEntry entry = new SymbolTableEntry(programIdentifier,
+        // SymbolType.PROGRAM, true);
+        // symbolTable.enter(entry);
         if (consume(Tokeniser.TokenType.TIDEN, node, programSyncSet)) {
             moveToNextValidToken(programSyncSet);
             return node;
@@ -500,11 +505,12 @@ public class Parser {
             moveToNextValidToken(syncSet);
             return node;
         }
+        if (!this.programIdentifier.equals(currentToken.getLexeme())) {
+            outputController.addSemanticError("Program names to not match", currentToken.getCol(),
+                    currentToken.getLine());
+        }
         // INFO: pass node null as is at the end of the program (otherwise main node
         // will be name set to the identifier)
-        if (!this.programIdentifier.equals(currentToken.getLexeme())) {
-            outputController.addSemanticError("Program names to not match", currentToken, node);
-        }
         if (consume(Tokeniser.TokenType.TIDEN, null, syncSet)) {
             moveToNextValidToken(syncSet);
             return node;
@@ -543,12 +549,11 @@ public class Parser {
             node.addChild(sType(syncSet));
         }
         this.currentEntry.setName(node.getValue());
-        // INFO: This is a backwards way of doing it but it works for now
-        // this.currentEntry.setDataType(this.currentEntry.literalToDataType(node.getType()));
-        // TODO: Get this to return actual error
         if (this.symbolTable.find(this.currentEntry.getName()) != null) {
-            System.out.println("ERRRRRORRRR Variable name already used");
+            outputController.addSemanticError("Variable name " + this.currentEntry.getName() + " already used",
+                    currentToken.getCol(), currentToken.getLine());
         } else {
+            System.out.println("Current Entry - " + this.currentEntry.toString());
             this.symbolTable.enter(this.currentEntry);
         }
 
@@ -1190,16 +1195,7 @@ public class Parser {
         } else {
             node = fnCall(syncSet);
         }
-        this.currentEntry.setDataType(SymbolTableEntry.nodeTypeConversion(node.getType()));
-        this.currentEntry.setValue(node.getValue());
         this.currentEntry.setInitialised(true);
-        // TODO: Actually throw an error here
-        if (this.symbolTable.find(this.currentEntry.getName()) != null) {
-            System.out.println("This already exists");
-        } else {
-            this.symbolTable.enter(this.currentEntry);
-        }
-
         return node;
     }
 

@@ -59,7 +59,7 @@ public class A3 {
             root.printTree();
 
             // System.out.println(parser.getSymbolTable());
-            semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable());
+            semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable(), outputController);
             SymbolTable symbolTable = semanticAnalyser.analyse(root);
             System.out.println(symbolTable);
         } else {

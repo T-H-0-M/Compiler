@@ -3,6 +3,6 @@ public enum SymbolType {
     VARIABLE,
     CLASS,
     CONSTANT,
-    METHOD,
+    PROGRAM,
     PARAMETER
 }
