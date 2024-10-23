@@ -112,7 +112,7 @@ public class SemanticAnalyser {
         }
         // INFO: var + float/int
         else if (child1.getType().equals("NSIMV") && child2.getType().equals("NILIT")
-                || child2.getValue().equals("NFLIT")) {
+                || child2.getType().equals("NFLIT")) {
             SymbolTableEntry var = symbolTable.find(child1.getValue());
             if (var.getDataType() == DataType.INTEGER && child2.getType().equals("NILIT")
                     && var.getDataType() == dataType) {

@@ -1200,7 +1200,6 @@ public class Parser {
         } else {
             node = fnCall(syncSet);
         }
-        this.currentEntry.setInitialised(true);
         return node;
     }
 
