@@ -12,7 +12,6 @@ public class CodeGenerator {
     private List<String> code;
     // TODO: add in constants
     private int programCounter;
-    private int labelCounter;
     private Map<String, String> opcodeMap;
     private OutputController outputController;
 
@@ -27,7 +26,6 @@ public class CodeGenerator {
         this.symbolTable = symbolTable;
         this.code = new ArrayList<>();
         this.programCounter = 0;
-        this.labelCounter = 0;
         this.outputController = outputController;
         initialiseOpcodeMap();
     }
@@ -40,6 +38,7 @@ public class CodeGenerator {
     public void generateCode() throws IOException {
         generateNode(rootNode);
         writeInstruction("HALT");
+
         // TODO: go back and correct machine code here
         writeToFile();
         System.out.println(code);
@@ -68,8 +67,21 @@ public class CodeGenerator {
             case "NASGN":
                 handleAssignment(node);
                 break;
+
             case "NPRINT":
                 handlePrint(node);
+                break;
+            case "NPLEQ":
+                handleCompoundAssignment(node, "ADD");
+                break;
+            case "NMNEQ":
+                handleCompoundAssignment(node, "SUB");
+                break;
+            case "NSTEQ":
+                handleCompoundAssignment(node, "MUL");
+                break;
+            case "NDVEQ":
+                handleCompoundAssignment(node, "DIV");
                 break;
             default:
                 for (Node child : node.getChildren()) {
@@ -88,7 +100,6 @@ public class CodeGenerator {
      * @throws IOException If an I/O error occurs.
      */
     private void handleVarDeclaration(Node node) throws IOException {
-        // TODO: update this to use all data types, not just ints
         ArrayList<Integer> offsetList = processNSDLST(node);
         loadInteger(offsetList.size());
         writeInstruction("ALLOC");
@@ -107,7 +118,6 @@ public class CodeGenerator {
                 writeInstruction("FTYPE");
                 writeInstruction("ST");
             }
-
         }
     }
 
@@ -163,16 +173,16 @@ public class CodeGenerator {
     private void handleExpression(Node node) throws IOException {
         switch (node.getType()) {
             case "NADD":
-                handleAdd(node);
+                handleArithmetic(node, "ADD");
                 break;
             case "NSUB":
-                handleSub(node);
+                handleArithmetic(node, "SUB");
                 break;
             case "NMUL":
-                handleMul(node);
+                handleArithmetic(node, "MUL");
                 break;
             case "NDIV":
-                handleDiv(node);
+                handleArithmetic(node, "DIV");
                 break;
             case "NILIT":
                 handleIntegerLiteral(node);
@@ -186,11 +196,27 @@ public class CodeGenerator {
             case "NFALS":
                 handleFalse(node);
                 break;
+            case "NGRT":
+                handleComparison(node, "GT");
+                break;
+            case "NLSS":
+                handleComparison(node, "LT");
+                break;
+            case "NEQL":
+                handleComparison(node, "EQ");
+                break;
+            case "NNEQ":
+                handleComparison(node, "NE");
+                break;
+            case "NLEQ":
+                handleComparison(node, "LE");
+                break;
+            case "NGEQ":
+                handleComparison(node, "GE");
+                break;
             case "NSIMV":
                 handleVariable(node);
                 break;
-
-            // TODO: add bool and float
             default:
                 throw new UnsupportedOperationException("Unsupported expression type: " + node.getType());
         }
@@ -238,40 +264,36 @@ public class CodeGenerator {
         loadInteger(value);
     }
 
-    private void handleAdd(Node node) throws IOException {
+    private void handleArithmetic(Node node, String operation) throws IOException {
         List<Node> children = node.getChildren();
         Node left = children.get(0);
         Node right = children.get(1);
         handleExpression(left);
         handleExpression(right);
-        writeInstruction("ADD");
+        writeInstruction(operation);
     }
 
-    private void handleSub(Node node) throws IOException {
+    private void handleCompoundAssignment(Node node, String operation) {
         List<Node> children = node.getChildren();
         Node left = children.get(0);
+        int offset = symbolTable.find(left.getValue()).getOffset();
         Node right = children.get(1);
-        handleExpression(left);
-        handleExpression(right);
-        writeInstruction("SUB");
+        writeInstruction("LA1");
+        writePaddedInstruction(offset, 4);
+        writeInstruction("LV1");
+        writePaddedInstruction(offset, 4);
+        if (right.getType().equals("NFLIT")) {
+            loadFloat(Double.valueOf(right.getValue()));
+        } else if (right.getType().equals("NILIT")) {
+            loadInteger(Integer.valueOf(right.getValue()));
+        }
+        writeInstruction(operation);
+        writeInstruction("ST");
     }
 
-    private void handleMul(Node node) throws IOException {
-        List<Node> children = node.getChildren();
-        Node left = children.get(0);
-        Node right = children.get(1);
-        handleExpression(left);
-        handleExpression(right);
-        writeInstruction("MUL");
-    }
-
-    private void handleDiv(Node node) throws IOException {
-        List<Node> children = node.getChildren();
-        Node left = children.get(0);
-        Node right = children.get(1);
-        handleExpression(left);
-        handleExpression(right);
-        writeInstruction("DIV");
+    private void handleComparison(Node node, String operation) throws IOException {
+        handleArithmetic(node, "SUB");
+        writeInstruction(operation);
     }
 
     public void writePaddedInstruction(int value, int padding) {
@@ -293,56 +315,6 @@ public class CodeGenerator {
 
         for (String byteStr : bytes) {
             writeInstruction(byteStr);
-        }
-    }
-
-    /**
-     * Handles binary operations by emitting the corresponding instruction.
-     *
-     * @param operator The binary operator.
-     * @throws IOException If an I/O error occurs.
-     */
-    private void handleBinaryOperation(String operator) throws IOException {
-        switch (operator) {
-            case "+":
-                writeInstruction("ADD");
-                break;
-            case "-":
-                writeInstruction("SUB");
-                break;
-            case "*":
-                writeInstruction("MUL");
-                break;
-            case "/":
-                writeInstruction("DIV");
-                break;
-            case "&&":
-                writeInstruction("AND");
-                break;
-            case "||":
-                writeInstruction("OR");
-                break;
-            case "==":
-                writeInstruction("EQ");
-                break;
-            case "!=":
-                writeInstruction("NE");
-                break;
-            case "<":
-                writeInstruction("LT");
-                break;
-            case "<=":
-                writeInstruction("LE");
-                break;
-            case ">":
-                writeInstruction("GT");
-                break;
-            case ">=":
-                writeInstruction("GE");
-                break;
-            default:
-                throw new UnsupportedOperationException("Unsupported binary operator: " +
-                        operator);
         }
     }
 
@@ -368,12 +340,8 @@ public class CodeGenerator {
         }
 
         String valueStr = String.valueOf(decimal);
-        if (valueStr == null || valueStr.isEmpty()) {
-            throw new IllegalArgumentException("Node value is null or empty.");
-        }
 
         String[] parts = valueStr.split("\\.");
-
         int integerPart;
         try {
             integerPart = Integer.parseInt(parts[0]);
