@@ -12,9 +12,11 @@ CD24 SimpleWorking
 **/
 
 main
-j: int, i:int, k:int
+j: int, i:int, k:int, f: float
 
 begin
+    f = 44.508;
+    print f;
     i = 150;
     j = 418;
    /**input i;

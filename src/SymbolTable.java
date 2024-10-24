@@ -47,6 +47,15 @@ public class SymbolTable {
         return table.get(name);
     }
 
+    public SymbolTableEntry findWithOffset(int offset) {
+        for (Map.Entry<String, SymbolTableEntry> i : this.table.entrySet()) {
+            if (i.getValue().getOffset() == offset) {
+                return this.table.get(i.getKey());
+            }
+        }
+        return null;
+    }
+
     public SymbolTableEntry get_attributes(String name) {
         return table.get(name);
     }

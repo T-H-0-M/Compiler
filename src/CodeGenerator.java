@@ -9,11 +9,11 @@ public class CodeGenerator {
 
     private Node rootNode;
     private SymbolTable symbolTable;
-    private List<String> code; // Array structure to store generated code
+    private List<String> code;
     // TODO: add in constants
-    private int programCounter; // Tracks the address of the next instruction
-    private int labelCounter; // For generating unique labels
-    private Map<String, String> opcodeMap; // Maps mnemonic to opcode
+    private int programCounter;
+    private int labelCounter;
+    private Map<String, String> opcodeMap;
     private OutputController outputController;
 
     /**
@@ -58,11 +58,9 @@ public class CodeGenerator {
 
         switch (node.getType()) {
             case "NPROG":
-                writeComment("Program Start");
                 for (Node child : node.getChildren()) {
                     generateNode(child);
                 }
-                writeComment("Program End");
                 break;
             case "NSDLST":
                 handleVarDeclaration(node);
@@ -92,15 +90,22 @@ public class CodeGenerator {
     private void handleVarDeclaration(Node node) throws IOException {
         // TODO: update this to use all data types, not just ints
         ArrayList<Integer> offsetList = processNSDLST(node);
-        writeInstruction("LH");
-        writePaddedInstruction(offsetList.size(), 2);
+        loadInteger(offsetList.size());
         writeInstruction("ALLOC");
         for (int i : offsetList) {
-            writeInstruction("LA1");
-            writePaddedInstruction(i, 4);
-            writeInstruction("LH");
-            writePaddedInstruction(0, 2);
-            writeInstruction("ST");
+            if (symbolTable.findWithOffset(i).getDataType() == DataType.INTEGER) {
+                writeInstruction("LA1");
+                writePaddedInstruction(i, 4);
+                loadInteger(0);
+                writeInstruction("ST");
+            } else if (symbolTable.findWithOffset(i).getDataType() == DataType.FLOAT) {
+                System.out.println("Float hahaha ");
+                writeInstruction("LA1");
+                writePaddedInstruction(i, 4);
+                loadInteger(0);
+                writeInstruction("FTYPE");
+                writeInstruction("ST");
+            }
 
         }
     }
@@ -129,21 +134,9 @@ public class CodeGenerator {
         List<Node> children = node.getChildren();
         Node child1 = children.get(0);
         Node child2 = children.get(1);
-        System.out.println("Child 1 - " + child1.getType());
-        System.out.println("Child 2 - " + child2.getType());
-
-        // Load the address of the variable
-        // LA 1
         handleLoadAddress(child1);
         handleExpression(child2);
-        // Store the value from the top of the stack into the variable
         writeInstruction("ST");
-    }
-
-    private void loadByte(int numberBytes) {
-        writeInstruction("LB");
-        writeInstruction(String.valueOf(numberBytes));
-        writeInstruction("ALLOC");
     }
 
     /**
@@ -155,7 +148,6 @@ public class CodeGenerator {
     private void handleLoadAddress(Node node) throws IOException {
         String varName = node.getValue();
         int offset = symbolTable.getOffset(varName);
-        System.out.println("Offset  - " + offset);
         writeInstruction("LA1");
         writePaddedInstruction(offset, 4);
     }
@@ -183,6 +175,9 @@ public class CodeGenerator {
                 break;
             case "NILIT":
                 handleIntegerLiteral(node);
+                break;
+            case "NFLIT":
+                handleFloatLiteral(node);
                 break;
             case "NSIMV":
                 handleVariable(node);
@@ -216,6 +211,11 @@ public class CodeGenerator {
         String baseRegister = "LV1";
         writeInstruction(baseRegister);
         writePaddedInstruction(offset, 4);
+    }
+
+    private void handleFloatLiteral(Node node) {
+        double value = Double.parseDouble(node.getValue());
+        loadFloat(value);
     }
 
     private void handleIntegerLiteral(Node node) {
@@ -273,7 +273,7 @@ public class CodeGenerator {
             decimalValue = String.format("%08d", value);
         }
         for (int i = 0; i < padding; i++) {
-            bytes[i] = decimalValue.substring(i * 2, (i * 2) + 2); // Each byte is represented by 2 digits
+            bytes[i] = decimalValue.substring(i * 2, (i * 2) + 2);
         }
 
         for (String byteStr : bytes) {
@@ -341,26 +341,52 @@ public class CodeGenerator {
         String msbBinary = binaryString.substring(0, 8); // INFO: Most significant byte (first 8 bits)
         String lsbBinary = binaryString.substring(8, 16); // INFO: Least significant byte (last 8 bits)
 
-        // Convert each binary byte to its decimal equivalent
-        int msb = Integer.parseInt(msbBinary, 2); // Convert MSB to decimal
-        int lsb = Integer.parseInt(lsbBinary, 2); // Convert LSB to decimal
+        int msb = Integer.parseInt(msbBinary, 2); // INFO: Convert MSB to decimal
+        int lsb = Integer.parseInt(lsbBinary, 2); // INFO: Convert LSB to decimal
 
         writeInstruction("LH");
         writeInstruction(String.format("%02d", msb));
         writeInstruction(String.format("%02d", lsb));
     }
 
-    /**
-     * Loads the value of a variable onto the stack.
-     *
-     * @param varName The name of the variable.
-     * @param scope   The scope of the variable ("global" or "local").
-     * @throws IOException If an I/O error occurs.
-     */
-    private void loadVariableValue(String varName, String scope) throws IOException {
-        int offset = symbolTable.getOffset(varName);
-        int baseRegister = 1;
-        writeInstruction("LV " + baseRegister + ", " + offset);
+    private void loadFloat(double decimal) {
+        if (decimal < -32768 || decimal > 32767) {
+            throw new IllegalArgumentException("Value must be a 16-bit signed integer (-32768 to 32767).");
+        }
+
+        String valueStr = String.valueOf(decimal);
+        if (valueStr == null || valueStr.isEmpty()) {
+            throw new IllegalArgumentException("Node value is null or empty.");
+        }
+
+        String[] parts = valueStr.split("\\.");
+
+        int integerPart;
+        try {
+            integerPart = Integer.parseInt(parts[0]);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Invalid integer part: " + parts[0], e);
+        }
+
+        int fractionalPart = 0;
+        String[] divisorString = String.valueOf(Math.pow(10, parts[1].length())).split("\\.");
+        int divisor = Integer.parseInt(divisorString[0]);
+        System.out.println("divisor" + divisor);
+        if (parts.length > 1) {
+            try {
+                fractionalPart = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid fractional part: " + parts[1], e);
+            }
+        }
+
+        loadInteger(fractionalPart);
+        writeInstruction("FTYPE");
+        loadInteger(divisor);
+        writeInstruction("DIV");
+        loadInteger(integerPart);
+        writeInstruction("ADD");
+
     }
 
     /**
@@ -378,35 +404,6 @@ public class CodeGenerator {
     }
 
     /**
-     * Writes a comment to the code array. Comments are prefixed with a semicolon.
-     *
-     * @param comment The comment text.
-     */
-    private void writeComment(String comment) {
-        // code.add("; " + comment);
-        // programCounter++;
-    }
-
-    /**
-     * Generates a unique label.
-     *
-     * @return A unique label string.
-     */
-    private String generateLabel() {
-        return "L" + (labelCounter++);
-    }
-
-    /**
-     * Writes a label to the code array. Labels are suffixed with a colon.
-     *
-     * @param label The label name.
-     */
-    private void writeLabel(String label) {
-        code.add(label + ":");
-        // Labels do not increment the program counter as they are markers
-    }
-
-    /**
      * Writes the generated code to a .mod file.
      *
      * @param fileName The name of the output file.
@@ -416,8 +413,8 @@ public class CodeGenerator {
         String fileName = outputController.getOutputFileName() + ".mod";
         try (FileWriter writer = new FileWriter(fileName)) {
 
-            int codeWordCount = (code.size() + 7) / 8; // Divide by 8 and round up
-            writer.write(codeWordCount + "\n"); // Write the count as the first line
+            int codeWordCount = (code.size() + 7) / 8;
+            writer.write(codeWordCount + "\n");
 
             int instructionCount = 0;
             StringBuilder line = new StringBuilder();
@@ -430,9 +427,9 @@ public class CodeGenerator {
                 instructionCount++;
 
                 if (instructionCount == 8) {
-                    writer.write("  " + line.toString() + "\n"); // Indent by 2 spaces
-                    line.setLength(0); // Clear the line
-                    instructionCount = 0; // Reset the count
+                    writer.write("  " + line.toString() + "\n");
+                    line.setLength(0);
+                    instructionCount = 0;
                 }
             }
 
@@ -551,7 +548,6 @@ public class CodeGenerator {
     private int handleNSDECL(Node node) throws IOException {
         String varName = node.getValue();
         String scope = node.getScope();
-        writeComment("Declare variable: " + varName + " (" + scope + ")");
         int offset = allocateVariable(varName, scope);
         symbolTable.setOffset(varName, offset);
         return offset;
