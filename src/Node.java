@@ -169,6 +169,11 @@ public class Node {
         return this.col;
     }
 
+    // TODO: Replace this with actual scope implementation
+    public String getScope() {
+        return "1";
+    }
+
     /* -------------- Setters -------------- */
     public void setType(String type) {
         this.type = type;

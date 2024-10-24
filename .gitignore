@@ -26,3 +26,4 @@ replay_pid*
 ./Documentation/
 .DS_Store
 *.lst
+*.mod
