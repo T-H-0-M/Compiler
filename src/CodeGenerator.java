@@ -10,9 +10,11 @@ public class CodeGenerator {
     private Node rootNode;
     private SymbolTable symbolTable;
     private List<String> code; // Array structure to store generated code
+    // TODO: add in constants
     private int programCounter; // Tracks the address of the next instruction
     private int labelCounter; // For generating unique labels
     private Map<String, String> opcodeMap; // Maps mnemonic to opcode
+    private OutputController outputController;
 
     /**
      * Constructor for CodeGenerator.
@@ -20,13 +22,14 @@ public class CodeGenerator {
      * @param rootNode    The root node of the AST.
      * @param symbolTable The symbol table containing variable information.
      */
-    public CodeGenerator(Node rootNode, SymbolTable symbolTable) {
+    public CodeGenerator(Node rootNode, SymbolTable symbolTable, OutputController outputController) {
         this.rootNode = rootNode;
         this.symbolTable = symbolTable;
         this.code = new ArrayList<>();
         this.programCounter = 0;
         this.labelCounter = 0;
-        initializeOpcodeMap();
+        this.outputController = outputController;
+        initialiseOpcodeMap();
     }
 
     /**
@@ -35,31 +38,11 @@ public class CodeGenerator {
      * @throws IOException If an I/O error occurs.
      */
     public void generateCode() throws IOException {
-        // Initialize any necessary system setup
-        // initialiseRegisters();
-
-        // Traverse the AST and generate code
         generateNode(rootNode);
-
-        // Append the HALT instruction at the end
         writeInstruction("HALT");
-
         // TODO: go back and correct machine code here
-
-        // Write the generated code to the output file
-        writeToFile("output.mod");
+        writeToFile();
         System.out.println(code);
-    }
-
-    /**
-     * Initialises base registers and stack pointer.
-     *
-     * @throws IOException If an I/O error occurs.
-     */
-    private void initializeRegisters() throws IOException {
-        writeComment("Initialise base registers and stack pointer");
-        writeInstruction("NO-OP"); // Placeholder for actual initialization
-        // TODO: probably define float, int and string sections here
     }
 
     /**
@@ -87,6 +70,9 @@ public class CodeGenerator {
             case "NASGN":
                 handleAssignment(node);
                 break;
+            case "NPRINT":
+                handlePrint(node);
+                break;
             default:
                 for (Node child : node.getChildren()) {
                     generateNode(child);
@@ -104,10 +90,19 @@ public class CodeGenerator {
      * @throws IOException If an I/O error occurs.
      */
     private void handleVarDeclaration(Node node) throws IOException {
-        int byteCounter = 0;
-        byteCounter = processNSDLST(node);
-        loadByte(byteCounter);
+        // TODO: update this to use all data types, not just ints
+        ArrayList<Integer> offsetList = processNSDLST(node);
+        writeInstruction("LH");
+        writePaddedInstruction(offsetList.size(), 2);
         writeInstruction("ALLOC");
+        for (int i : offsetList) {
+            writeInstruction("LA1");
+            writePaddedInstruction(i, 4);
+            writeInstruction("LH");
+            writePaddedInstruction(0, 2);
+            writeInstruction("ST");
+
+        }
     }
 
     /**
@@ -134,6 +129,8 @@ public class CodeGenerator {
         List<Node> children = node.getChildren();
         Node child1 = children.get(0);
         Node child2 = children.get(1);
+        System.out.println("Child 1 - " + child1.getType());
+        System.out.println("Child 2 - " + child2.getType());
 
         // Load the address of the variable
         // LA 1
@@ -157,13 +154,10 @@ public class CodeGenerator {
      */
     private void handleLoadAddress(Node node) throws IOException {
         String varName = node.getValue();
-        String scope = node.getScope();
-        writeComment("Load address of variable: " + varName + " (" + scope + ")");
         int offset = symbolTable.getOffset(varName);
         System.out.println("Offset  - " + offset);
-        String baseRegister = "LA1";
-        writeInstruction(baseRegister);
-        writePaddedValue(offset);
+        writeInstruction("LA1");
+        writePaddedInstruction(offset, 4);
     }
 
     /**
@@ -190,10 +184,24 @@ public class CodeGenerator {
             case "NILIT":
                 handleIntegerLiteral(node);
                 break;
+            case "NSIMV":
+                handleVariable(node);
+                break;
+
             // TODO: add bool and float
             default:
                 throw new UnsupportedOperationException("Unsupported expression type: " + node.getType());
         }
+    }
+
+    private void handlePrint(Node node) {
+        Node variableNode = node.getChildren().getFirst();
+        String variableName = variableNode.getValue();
+        int offset = symbolTable.getOffset(variableName);
+        writeInstruction("LV1");
+        writePaddedInstruction(offset, 4);
+        writeInstruction("VALPR");
+        writeInstruction("NEWLN");
     }
 
     /**
@@ -202,34 +210,25 @@ public class CodeGenerator {
      * @param node The variable node representing the variable.
      * @throws IOException If an I/O error occurs.
      */
-    private void handleVarLoad(Node node) throws IOException {
+    private void handleVariable(Node node) throws IOException {
         String varName = node.getValue();
-        String scope = node.getScope();
-        writeComment("Load value of variable: " + varName + " (" + scope + ")");
         int offset = symbolTable.getOffset(varName);
         String baseRegister = "LV1";
         writeInstruction(baseRegister);
-        writePaddedValue(offset);
+        writePaddedInstruction(offset, 4);
     }
 
     private void handleIntegerLiteral(Node node) {
-        String value = node.getValue();
-        writeInstruction("READI");
-        writeInstruction(value);
-
+        int value = Integer.parseInt(node.getValue());
+        loadInteger(value);
     }
 
     private void handleAdd(Node node) throws IOException {
         List<Node> children = node.getChildren();
         Node left = children.get(0);
         Node right = children.get(1);
-
-        // Evaluate left and right expressions
         handleExpression(left);
         handleExpression(right);
-
-        // Perform addition
-        writeComment("Perform addition");
         writeInstruction("ADD");
     }
 
@@ -237,13 +236,8 @@ public class CodeGenerator {
         List<Node> children = node.getChildren();
         Node left = children.get(0);
         Node right = children.get(1);
-
-        // Evaluate left and right expressions
         handleExpression(left);
         handleExpression(right);
-
-        // Perform subtraction
-        writeComment("Perform subtraction");
         writeInstruction("SUB");
     }
 
@@ -251,13 +245,8 @@ public class CodeGenerator {
         List<Node> children = node.getChildren();
         Node left = children.get(0);
         Node right = children.get(1);
-
-        // Evaluate left and right expressions
         handleExpression(left);
         handleExpression(right);
-
-        // Perform multiplication
-        writeComment("Perform multiplication");
         writeInstruction("MUL");
     }
 
@@ -265,26 +254,25 @@ public class CodeGenerator {
         List<Node> children = node.getChildren();
         Node left = children.get(0);
         Node right = children.get(1);
-
-        // Evaluate left and right expressions
         handleExpression(left);
         handleExpression(right);
-
-        // Perform division
-        writeComment("Perform division");
         writeInstruction("DIV");
     }
 
-    public void writePaddedValue(int value) {
-        String[] bytes = new String[4];
+    public void writePaddedInstruction(int value, int padding) {
+        String[] bytes = new String[padding];
+        String decimalValue;
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < padding; i++) {
             bytes[i] = "00";
         }
 
-        String decimalValue = String.format("%08d", value); // 8 digits for a 4-byte value in base 10
-
-        for (int i = 0; i < 4; i++) {
+        if (padding == 2) {
+            decimalValue = String.format("%04d", value);
+        } else {
+            decimalValue = String.format("%08d", value);
+        }
+        for (int i = 0; i < padding; i++) {
             bytes[i] = decimalValue.substring(i * 2, (i * 2) + 2); // Each byte is represented by 2 digits
         }
 
@@ -343,19 +331,23 @@ public class CodeGenerator {
         }
     }
 
-    /**
-     * Loads the address of a variable onto the stack.
-     *
-     * @param varName The name of the variable.
-     * @param scope   The scope of the variable ("global" or "local").
-     * @throws IOException If an I/O error occurs.
-     */
-    private void loadVariableAddress(String varName, String scope) throws IOException {
-        int offset = symbolTable.getOffset(varName);
-        // TODO: update this when scope is implemented
-        int baseRegister = 1;
-        // writeInstruction("LA " + baseRegister + ", " + offset);
-        writeInstruction("L " + offset + " ALLOC");
+    private void loadInteger(int decimal) {
+        if (decimal < -32768 || decimal > 32767) {
+            throw new IllegalArgumentException("Value must be a 16-bit signed integer (-32768 to 32767).");
+        }
+
+        String binaryString = String.format("%16s", Integer.toBinaryString(decimal & 0xFFFF)).replace(' ', '0');
+
+        String msbBinary = binaryString.substring(0, 8); // INFO: Most significant byte (first 8 bits)
+        String lsbBinary = binaryString.substring(8, 16); // INFO: Least significant byte (last 8 bits)
+
+        // Convert each binary byte to its decimal equivalent
+        int msb = Integer.parseInt(msbBinary, 2); // Convert MSB to decimal
+        int lsb = Integer.parseInt(lsbBinary, 2); // Convert LSB to decimal
+
+        writeInstruction("LH");
+        writeInstruction(String.format("%02d", msb));
+        writeInstruction(String.format("%02d", lsb));
     }
 
     /**
@@ -420,8 +412,13 @@ public class CodeGenerator {
      * @param fileName The name of the output file.
      * @throws IOException If an I/O error occurs.
      */
-    private void writeToFile(String fileName) throws IOException {
+    private void writeToFile() throws IOException {
+        String fileName = outputController.getOutputFileName() + ".mod";
         try (FileWriter writer = new FileWriter(fileName)) {
+
+            int codeWordCount = (code.size() + 7) / 8; // Divide by 8 and round up
+            writer.write(codeWordCount + "\n"); // Write the count as the first line
+
             int instructionCount = 0;
             StringBuilder line = new StringBuilder();
 
@@ -433,7 +430,7 @@ public class CodeGenerator {
                 instructionCount++;
 
                 if (instructionCount == 8) {
-                    writer.write(line.toString() + "\n");
+                    writer.write("  " + line.toString() + "\n"); // Indent by 2 spaces
                     line.setLength(0); // Clear the line
                     instructionCount = 0; // Reset the count
                 }
@@ -441,15 +438,18 @@ public class CodeGenerator {
 
             if (instructionCount > 0) {
                 while (instructionCount < 8) {
+
                     line.append(" 00");
                     instructionCount++;
                 }
-                writer.write(line.toString() + "\n");
+                writer.write("  " + line.toString() + "\n");
             }
+
+            writer.write("0\n0\n0\n");
         }
     }
 
-    private void initializeOpcodeMap() {
+    private void initialiseOpcodeMap() {
         opcodeMap = new HashMap<>();
         opcodeMap.put("HALT", "00");
         opcodeMap.put("NO-OP", "01");
@@ -513,11 +513,11 @@ public class CodeGenerator {
      * Recursively processes the NSDLST subtree and handles NSDECL nodes.
      *
      * @param node The current AST node to process.
-     * @return The total number of bytes allocated for variable declarations.
+     * @return An ArrayList of all variable offsets
      * @throws IOException If an I/O error occurs.
      */
-    private int processNSDLST(Node node) throws IOException {
-        int totalBytes = 0;
+    private ArrayList<Integer> processNSDLST(Node node) throws IOException {
+        ArrayList<Integer> totalVariables = new ArrayList<>();
 
         if (node.getType().equals("NSDLST")) {
             List<Node> children = node.getChildren();
@@ -525,27 +525,27 @@ public class CodeGenerator {
             for (Node child : children) {
                 // INFO: If the child is another NSDLST, recurse
                 if (child.getType().equals("NSDLST")) {
-                    totalBytes += processNSDLST(child);
+                    totalVariables.addAll(processNSDLST(child));
                 } else if (child.getType().equals("NSDECL")) {
-                    totalBytes += handleNSDECL(child);
+                    totalVariables.add(handleNSDECL(child));
                 } else {
                     throw new IOException("Unexpected node type: " + child.getType());
                 }
             }
         } else if (node.getType().equals("NSDECL")) {
-            totalBytes += handleNSDECL(node);
+            totalVariables.add(handleNSDECL(node));
         } else {
             throw new IOException("Unexpected node type: " + node.getType());
         }
 
-        return totalBytes;
+        return totalVariables;
     }
 
     /**
      * Handles a single NSDECL node (variable declaration).
      *
      * @param node The NSDECL node to handle.
-     * @return The number of bytes allocated for this variable.
+     * @return The offset of the variable
      * @throws IOException If an I/O error occurs.
      */
     private int handleNSDECL(Node node) throws IOException {
@@ -554,6 +554,6 @@ public class CodeGenerator {
         writeComment("Declare variable: " + varName + " (" + scope + ")");
         int offset = allocateVariable(varName, scope);
         symbolTable.setOffset(varName, offset);
-        return 1;
+        return offset;
     }
 }

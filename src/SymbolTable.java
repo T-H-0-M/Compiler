@@ -21,8 +21,8 @@ public class SymbolTable {
 
     public SymbolTable() {
         table = new HashMap<String, SymbolTableEntry>();
-        this.globalOffset = 1000;
-        // this.globalOffset = 0;
+        // this.globalOffset = 1000;
+        this.globalOffset = 0;
     }
 
     public void destroy() {

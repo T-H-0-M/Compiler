@@ -36,7 +36,8 @@ public class A3 {
         String sourceDir = ".";
         String sourceFileName = sourceFile.getName();
         String baseName = sourceFileName.substring(0, sourceFileName.lastIndexOf('.'));
-        String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
+        // String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
+        String outputFilePath = Paths.get(sourceDir, baseName).toString();
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
         Parser parser = new Parser(scanner, outputController);
@@ -59,11 +60,9 @@ public class A3 {
         if (root != null) {
             root.printPreOrderTraversal();
             root.printTree();
-
-            // System.out.println(parser.getSymbolTable());
             semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable(), outputController);
             SymbolTable symbolTable = semanticAnalyser.analyse(root);
-            CodeGenerator codeGenerator = new CodeGenerator(root, symbolTable);
+            CodeGenerator codeGenerator = new CodeGenerator(root, symbolTable, outputController);
             codeGenerator.generateCode();
 
         } else {
