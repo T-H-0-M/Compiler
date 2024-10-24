@@ -67,8 +67,21 @@ public class CodeGenerator {
             case "NASGN":
                 handleAssignment(node);
                 break;
+
             case "NPRINT":
                 handlePrint(node);
+                break;
+            case "NPLEQ":
+                handleCompoundAssignment(node, "ADD");
+                break;
+            case "NMNEQ":
+                handleCompoundAssignment(node, "SUB");
+                break;
+            case "NSTEQ":
+                handleCompoundAssignment(node, "MUL");
+                break;
+            case "NDVEQ":
+                handleCompoundAssignment(node, "DIV");
                 break;
             default:
                 for (Node child : node.getChildren()) {
@@ -258,6 +271,24 @@ public class CodeGenerator {
         handleExpression(left);
         handleExpression(right);
         writeInstruction(operation);
+    }
+
+    private void handleCompoundAssignment(Node node, String operation) {
+        List<Node> children = node.getChildren();
+        Node left = children.get(0);
+        int offset = symbolTable.find(left.getValue()).getOffset();
+        Node right = children.get(1);
+        writeInstruction("LA1");
+        writePaddedInstruction(offset, 4);
+        writeInstruction("LV1");
+        writePaddedInstruction(offset, 4);
+        if (right.getType().equals("NFLIT")) {
+            loadFloat(Double.valueOf(right.getValue()));
+        } else if (right.getType().equals("NILIT")) {
+            loadInteger(Integer.valueOf(right.getValue()));
+        }
+        writeInstruction(operation);
+        writeInstruction("ST");
     }
 
     private void handleComparison(Node node, String operation) throws IOException {
