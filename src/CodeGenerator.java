@@ -183,6 +183,24 @@ public class CodeGenerator {
             case "NFALS":
                 handleFalse(node);
                 break;
+            case "NGRT":
+                handleComparison(node, "GT");
+                break;
+            case "NLSS":
+                handleComparison(node, "LT");
+                break;
+            case "NEQL":
+                handleComparison(node, "EQ");
+                break;
+            case "NNEQ":
+                handleComparison(node, "NE");
+                break;
+            case "NLEQ":
+                handleComparison(node, "LE");
+                break;
+            case "NGEQ":
+                handleComparison(node, "GE");
+                break;
             case "NSIMV":
                 handleVariable(node);
                 break;
@@ -239,6 +257,11 @@ public class CodeGenerator {
         Node right = children.get(1);
         handleExpression(left);
         handleExpression(right);
+        writeInstruction(operation);
+    }
+
+    private void handleComparison(Node node, String operation) throws IOException {
+        handleArithmetic(node, "SUB");
         writeInstruction(operation);
     }
 
