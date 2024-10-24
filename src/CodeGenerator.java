@@ -93,7 +93,8 @@ public class CodeGenerator {
         loadInteger(offsetList.size());
         writeInstruction("ALLOC");
         for (int i : offsetList) {
-            if (symbolTable.findWithOffset(i).getDataType() == DataType.INTEGER) {
+            if (symbolTable.findWithOffset(i).getDataType() == DataType.INTEGER
+                    || symbolTable.findWithOffset(i).getDataType() == DataType.BOOLEAN) {
                 writeInstruction("LA1");
                 writePaddedInstruction(i, 4);
                 loadInteger(0);
@@ -179,6 +180,12 @@ public class CodeGenerator {
             case "NFLIT":
                 handleFloatLiteral(node);
                 break;
+            case "NTRUE":
+                handleTrue(node);
+                break;
+            case "NFALS":
+                handleFalse(node);
+                break;
             case "NSIMV":
                 handleVariable(node);
                 break;
@@ -216,6 +223,14 @@ public class CodeGenerator {
     private void handleFloatLiteral(Node node) {
         double value = Double.parseDouble(node.getValue());
         loadFloat(value);
+    }
+
+    private void handleFalse(Node node) {
+        writeInstruction("FALSE");
+    }
+
+    private void handleTrue(Node node) {
+        writeInstruction("TRUE");
     }
 
     private void handleIntegerLiteral(Node node) {
@@ -337,10 +352,8 @@ public class CodeGenerator {
         }
 
         String binaryString = String.format("%16s", Integer.toBinaryString(decimal & 0xFFFF)).replace(' ', '0');
-
         String msbBinary = binaryString.substring(0, 8); // INFO: Most significant byte (first 8 bits)
         String lsbBinary = binaryString.substring(8, 16); // INFO: Least significant byte (last 8 bits)
-
         int msb = Integer.parseInt(msbBinary, 2); // INFO: Convert MSB to decimal
         int lsb = Integer.parseInt(lsbBinary, 2); // INFO: Convert LSB to decimal
 

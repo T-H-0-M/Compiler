@@ -12,9 +12,11 @@ CD24 SimpleWorking
 **/
 
 main
-j: int, i:int, k:int, f: float
+j: int, i:int, k:int, f: float, b: bool
 
 begin
+    b = true;
+    print b;
     f = 44.508;
     print f;
     i = 150;
