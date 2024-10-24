@@ -26,6 +26,7 @@ public class OutputController {
     private int lineNumber;
     private boolean isFirstOutput = true;
     private int currentCol = 4;
+    private String outputFileName;
 
     public OutputController() {
     }
@@ -34,6 +35,7 @@ public class OutputController {
         this.currentLine = new StringBuilder();
         this.formattedLines = new ArrayList<>();
         this.lineNumber = 1;
+        this.outputFileName = outputFileName;
         initialiseWriter(outputFileName);
     }
 
@@ -291,7 +293,7 @@ public class OutputController {
      */
     private void initialiseWriter(String outputFilePath) {
         try {
-            File file = new File(outputFilePath);
+            File file = new File(outputFilePath + ".lst");
             file.getParentFile().mkdirs();
             if (!file.exists()) {
                 file.createNewFile();
@@ -387,5 +389,9 @@ public class OutputController {
         if (writer != null) {
             writer.close();
         }
+    }
+
+    public String getOutputFileName() {
+        return this.outputFileName;
     }
 }
