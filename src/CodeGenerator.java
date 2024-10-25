@@ -115,7 +115,6 @@ public class CodeGenerator {
                 loadInteger(0);
                 writeInstruction("ST");
             } else if (symbolTable.findWithOffset(i).getDataType() == DataType.FLOAT) {
-                System.out.println("Float hahaha ");
                 writeInstruction("LA1");
                 writePaddedInstruction(i, 4);
                 loadInteger(0);
@@ -173,7 +172,6 @@ public class CodeGenerator {
 
         int count = programCounter - 10000;
         for (String byteStr : bytes) {
-            System.out.println("byteStr - " + byteStr);
             code.set(count, byteStr);
             count++;
         }
@@ -281,7 +279,7 @@ public class CodeGenerator {
     }
 
     private void handlePrint(Node node) {
-        Node variableNode = node.getChildren().getFirst();
+        Node variableNode = node.getChildren().get(0);
         String variableName = variableNode.getValue();
         int offset = symbolTable.getOffset(variableName);
         writeInstruction("LV1");
@@ -410,7 +408,6 @@ public class CodeGenerator {
         int fractionalPart = 0;
         String[] divisorString = String.valueOf(Math.pow(10, parts[1].length())).split("\\.");
         int divisor = Integer.parseInt(divisorString[0]);
-        System.out.println("divisor" + divisor);
         if (parts.length > 1) {
             try {
                 fractionalPart = Integer.parseInt(parts[1]);

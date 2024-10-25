@@ -1,0 +1,35 @@
+CD24 ArithmeticFloat
+/**
+ * Program: Arithmetic
+ * Description: This is a program that demonstrates all integer arithmetic 
+ * operators as well as variable declaration.
+ *
+ * Features:
+ * - None
+ *
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 25/10/2024
+ * Version: 1.0
+**/
+
+
+main
+i:float, j:float, k: float, l: float
+
+begin
+    i = 15.6;
+    print i;
+    j = 10.464;
+    print j;
+    k = k + j;
+    print k;
+    l = i - j;
+    print l;
+    j = k * i;
+    print j;
+    l = j / k;
+    print l;
+
+
+end CD24 ArithmeticFloat
