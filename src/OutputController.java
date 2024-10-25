@@ -349,18 +349,6 @@ public class OutputController {
      * @param error The error message to output.
      * @param col   The column where the error occurred.
      */
-    // public void outputErrorToListing(String error, int col) {
-    // if (writer == null) {
-    // System.err.println("Writer is not initialised. Cannot output to listing.");
-    // return;
-    // }
-    // // String indentation = " ".repeat(Math.max(0, col + 4));
-    // // String formattedError = String.format("\n%s^%s", indentation, error);
-    // writer.print(formattedError);
-    // currentCol = 0;
-    // writer.flush();
-    // }
-
     public void outputErrorToListing(String error, int col) {
         if (writer == null) {
             System.err.println("Writer is not initialised. Cannot output to listing.");
@@ -393,5 +381,12 @@ public class OutputController {
 
     public String getOutputFileName() {
         return this.outputFileName;
+    }
+
+    public boolean hasErrors() {
+        if (this.formattedLines.size() > 0) {
+            return true;
+        }
+        return false;
     }
 }

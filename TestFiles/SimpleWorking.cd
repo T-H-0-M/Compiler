@@ -11,27 +11,16 @@ CD24 SimpleWorking
  * Version: 1.0
 **/
 
+
 main
-j: int, i:int, k:int, f: float, b: bool
+i:int, j:int
 
 begin
-    b = true;
-    print b;
-    f = 44.508;
-    print f;
-    i = 150;
-    j = 418;
-   /**input i;
-    input j;**/
-    k = i + j;
-    print k;
 
-    k = k - j;
-    print k;
+    i = 16;
+    j=10;
+    print i;
+    print j;
 
-    k = j * k;
-    print k;
-    
-    k = k / j;
-    print k;
+
 end CD24 SimpleWorking

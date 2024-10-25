@@ -12,7 +12,7 @@
 <!--INFO: Left Recursion - Left factored: <typelist> ::= <type> <typelist> | <type>-->
 <typelist> ::= <type> <typelisttail>
 <typelisttail> ::= <typelist> | ε
-<!--INFO: Concatinated for readability -->
+<!--INFO: Concatenated for readability -->
 <type> ::= <structid> def <fields> end | <typeid> def array \[ <expr> \] of <structid> end
 <!--INFO: Left factored: <fields> ::= <sdecl> | <sdecl> , <fields>-->
 <fields> ::= <sdecl> <fieldstail>
@@ -24,7 +24,6 @@
 <arrdeclstail> ::= , <arrdecls> | ε
 <arrdecl> ::= <id> : <typeid>
 
-<!--BUG: Im not sure how to factor this one-->
 <funcs> ::= <func> <funcs> | ε
 <func> ::= func <id> ( <plist> ) : <rtype> <funcbody>
 <rtype> ::= <stype> | void
@@ -95,15 +94,12 @@
 <logop> ::= and | or | xor
 <relop> ::= == | != | > | <= | < | >=
 
-<!--BUG: Return to this not completely factored-->
 <!--INFO: Left recursive - Left factored: <expr> ::= <expr> + <term> | <expr> - <term> | <term>-->
 <expr> ::= <term> <exprtail>
 <exprtail> ::= + <term> <exprtail> | - <term> <exprtail> | ε
-<!--BUG: Return to this not completely factored-->
 <!--INFO: Left recursive - Left factored: <term> ::= <term> * <fact> | <term> / <fact> | <term> % <fact> | <fact>-->
 <term> ::= <fact> <termtail>
 <termtail> ::= * <fact> <termtail> | / <fact> <termtail> | % <fact> <termtail> | ε
-<!--BUG: Return to this not completely factored-->
 <!--INFO: Left recursive - Left factored: <fact> ::= <fact> ^ <exponent> | <exponent>-->
 <fact> ::= <exponent> <facttail>
 <facttail> ::= ^ <exponent> <facttail> | ε
@@ -115,4 +111,3 @@
 <prlist> ::= <printitem> <prlisttail>
 <prlisttail> ::= , <prlist> | ε
 <printitem> ::= <expr> | <string>
-

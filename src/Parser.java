@@ -110,10 +110,7 @@ public class Parser {
             moveToNextValidToken(programSyncSet);
             return node;
         }
-        this.programIdentifier = node.getValue();
-        // SymbolTableEntry entry = new SymbolTableEntry(programIdentifier,
-        // SymbolType.PROGRAM, true);
-        // symbolTable.enter(entry);
+        this.programIdentifier = currentToken.getLexeme();
         if (consume(Tokeniser.TokenType.TIDEN, node, programSyncSet)) {
             moveToNextValidToken(programSyncSet);
             return node;
@@ -379,7 +376,6 @@ public class Parser {
         node.addChild(rType(syncSet));
         node.addChild(funcBody(syncSet));
         this.symbolTable.enter(this.currentEntry);
-        System.out.println(this.symbolTable.toString());
 
         return node;
     }
@@ -559,7 +555,6 @@ public class Parser {
             outputController.addSemanticError("Variable name " + this.currentEntry.getName() + " already used",
                     currentToken.getCol(), currentToken.getLine());
         } else {
-            System.out.println("Current Entry - " + this.currentEntry.toString());
             this.symbolTable.enter(this.currentEntry);
         }
 

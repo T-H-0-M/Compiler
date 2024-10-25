@@ -40,10 +40,8 @@ public class CodeGenerator {
     public void generateCode() throws IOException {
         generateNode(rootNode);
         writeInstruction("HALT");
-
-        // TODO: go back and correct machine code here
         writeToFile();
-        System.out.println(code);
+        System.out.println(outputController.getOutputFileName().replace("./", "") + " compiled successfully");
     }
 
     /**

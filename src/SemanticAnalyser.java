@@ -20,14 +20,6 @@ public class SemanticAnalyser {
 
     public SymbolTable analyse(Node root) {
         traverse(root);
-        if (!errors.isEmpty()) {
-            System.out.println("Semantic Errors:");
-            for (String error : errors) {
-                System.out.println(error);
-            }
-        } else {
-            System.out.println("Semantic analysis completed without errors.");
-        }
         return this.symbolTable;
     }
 
