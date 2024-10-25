@@ -36,7 +36,6 @@ public class A3 {
         String sourceDir = ".";
         String sourceFileName = sourceFile.getName();
         String baseName = sourceFileName.substring(0, sourceFileName.lastIndexOf('.'));
-        // String outputFilePath = Paths.get(sourceDir, baseName + ".lst").toString();
         String outputFilePath = Paths.get(sourceDir, baseName).toString();
         outputController = new OutputController(outputFilePath);
         Scanner scanner = new Scanner(sourceFilePath, outputController);
@@ -58,13 +57,14 @@ public class A3 {
     private static void run(Parser parser) throws ParseException, IOException {
         Node root = parser.parse();
         if (root != null) {
-            root.printPreOrderTraversal();
-            root.printTree();
+            // root.printPreOrderTraversal();
+            // root.printTree();
             semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable(), outputController);
             SymbolTable symbolTable = semanticAnalyser.analyse(root);
-            CodeGenerator codeGenerator = new CodeGenerator(root, symbolTable, outputController);
-            codeGenerator.generateCode();
-
+            if (!outputController.hasErrors()) {
+                CodeGenerator codeGenerator = new CodeGenerator(root, symbolTable, outputController);
+                codeGenerator.generateCode();
+            }
         } else {
             System.out.println("No parse tree generated.");
         }
@@ -75,11 +75,8 @@ public class A3 {
         if (root != null) {
             root.printPreOrderTraversal();
             root.printTree();
-
-            // System.out.println(parser.getSymbolTable());
             semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable(), outputController);
             SymbolTable symbolTable = semanticAnalyser.analyse(root);
-            System.out.println(symbolTable);
         } else {
             System.out.println("No parse tree generated.");
         }
