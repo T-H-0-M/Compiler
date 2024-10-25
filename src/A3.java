@@ -22,7 +22,6 @@ public class A3 {
     private static ArrayList<Token> errorList = new ArrayList<>();
     private static OutputController outputController;
     private static SemanticAnalyser semanticAnalyser;
-    // private static CodeGenerator codeGenerator;
 
     // TODO: standardise use of global and local vars
     public static void main(String[] args) throws ParseException, IOException {
@@ -56,14 +55,20 @@ public class A3 {
      */
     private static void run(Parser parser) throws ParseException, IOException {
         Node root = parser.parse();
+        SymbolTable symbolTable = null;
         if (root != null) {
-            // root.printPreOrderTraversal();
-            // root.printTree();
-            semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable(), outputController);
-            SymbolTable symbolTable = semanticAnalyser.analyse(root);
+            if (!outputController.hasErrors()) {
+                semanticAnalyser = new SemanticAnalyser(parser.getSymbolTable(), outputController);
+                symbolTable = semanticAnalyser.analyse(root);
+            } else {
+                System.out.println("Compiler stopped at end parse stage");
+            }
             if (!outputController.hasErrors()) {
                 CodeGenerator codeGenerator = new CodeGenerator(root, symbolTable, outputController);
                 codeGenerator.generateCode();
+            } else {
+                System.out.println("Compiler stopped at end semantic analysis stage");
+
             }
         } else {
             System.out.println("No parse tree generated.");
