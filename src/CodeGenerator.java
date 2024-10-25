@@ -12,6 +12,7 @@ public class CodeGenerator {
     private List<String> code;
     // TODO: add in constants
     private int programCounter;
+    private Map<Integer, Integer> labelMap;
     private Map<String, String> opcodeMap;
     private OutputController outputController;
 
@@ -25,8 +26,9 @@ public class CodeGenerator {
         this.rootNode = rootNode;
         this.symbolTable = symbolTable;
         this.code = new ArrayList<>();
-        this.programCounter = 0;
+        this.programCounter = 10000;
         this.outputController = outputController;
+        this.labelMap = new HashMap<>();
         initialiseOpcodeMap();
     }
 
@@ -67,7 +69,9 @@ public class CodeGenerator {
             case "NASGN":
                 handleAssignment(node);
                 break;
-
+            case "NINPUT":
+                handleInput(node);
+                break;
             case "NPRINT":
                 handlePrint(node);
                 break;
@@ -83,6 +87,8 @@ public class CodeGenerator {
             case "NDVEQ":
                 handleCompoundAssignment(node, "DIV");
                 break;
+            case "NIFTH":
+                handleIF(node);
             default:
                 for (Node child : node.getChildren()) {
                     generateNode(child);
@@ -118,6 +124,60 @@ public class CodeGenerator {
                 writeInstruction("FTYPE");
                 writeInstruction("ST");
             }
+        }
+    }
+
+    private void handleInput(Node node) {
+        List<Node> children = node.getChildren();
+        Node varNode = children.get(0);
+        int offset = symbolTable.find(varNode.getValue()).getOffset();
+        writeInstruction("LA1");
+        writePaddedInstruction(offset, 4);
+        writeInstruction("READI");
+        writeInstruction("ST");
+
+    }
+
+    private void handleIF(Node node) throws IOException {
+        List<Node> children = node.getChildren();
+        Node expressionNode = children.get(0);
+        Node actionNode = children.get(1);
+        writeInstruction("LA1");
+        int beforeLoop = programCounter;
+        writePaddedInstruction(programCounter, 4);
+        handleExpression(expressionNode);
+        writeInstruction("BF");
+        generateNode(actionNode);
+        int endLoop = programCounter;
+        updatePaddedInstruction(endLoop, beforeLoop);
+    }
+
+    private void updateInstruction(String instruction, int programCounter) {
+        if (opcodeMap.get(instruction) != null) {
+            code.set(programCounter - 1000, opcodeMap.get(instruction));
+        } else {
+            code.set(programCounter - 1000, instruction);
+        }
+    }
+
+    private void updatePaddedInstruction(int value, int programCounter) {
+        String[] bytes = new String[4];
+        String decimalValue;
+
+        for (int i = 0; i < 4; i++) {
+            bytes[i] = "00";
+        }
+        decimalValue = String.format("%08d", value);
+
+        for (int i = 0; i < 4; i++) {
+            bytes[i] = decimalValue.substring(i * 2, (i * 2) + 2);
+        }
+
+        int count = programCounter - 10000;
+        for (String byteStr : bytes) {
+            System.out.println("byteStr - " + byteStr);
+            code.set(count, byteStr);
+            count++;
         }
     }
 
