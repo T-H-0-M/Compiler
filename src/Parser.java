@@ -194,6 +194,7 @@ public class Parser {
             return node;
         }
         this.currentEntry.setName(node.getValue());
+        this.symbolTable.enter(this.currentEntry);
         node.addChild(expr(true, syncSet));
         return node;
     }
