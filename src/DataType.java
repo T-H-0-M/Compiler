@@ -3,5 +3,6 @@ public enum DataType {
     INTEGER,
     STRING,
     BOOLEAN,
+    VOID,
     UNDEF
 }

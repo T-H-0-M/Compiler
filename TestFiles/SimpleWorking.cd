@@ -10,13 +10,28 @@ CD24 SimpleWorking
  * Date: 04/08/2024
  * Version: 1.0
 **/
-constants
-num = 10
 
 main
-i: int
-
+j: int, i:int, k:int, f: float, b: bool
 
 begin
-    i = 1;
+    b = true;
+    print b;
+    f = 44.508;
+    print f;
+    i = 150;
+    j = 418;
+   /**input i;
+    input j;**/
+    k = i + j;
+    print k;
+
+    k = k - j;
+    print k;
+
+    k = j * k;
+    print k;
+    
+    k = k / j;
+    print k;
 end CD24 SimpleWorking

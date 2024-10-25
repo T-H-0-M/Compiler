@@ -18,12 +18,16 @@ public class Node {
     private String value;
     private List<Node> children;
     private List<String> errors;
+    private int line;
+    private int col;
 
     public Node(String type, String value) {
         this.type = type;
         this.value = value;
         this.children = new ArrayList<>();
         this.errors = new ArrayList<>();
+        this.line = 0;
+        this.col = 0;
     }
 
     public void addChild(Node child) {
@@ -157,6 +161,19 @@ public class Node {
         return this.type.equals("SPECIAL");
     }
 
+    public int getLine() {
+        return this.line;
+    }
+
+    public int getCol() {
+        return this.col;
+    }
+
+    // TODO: Replace this with actual scope implementation
+    public String getScope() {
+        return "1";
+    }
+
     /* -------------- Setters -------------- */
     public void setType(String type) {
         this.type = type;
@@ -168,5 +185,13 @@ public class Node {
 
     public void setChildren(List<Node> children) {
         this.children = children;
+    }
+
+    public void setLine(int line) {
+        this.line = line;
+    }
+
+    public void setCol(int col) {
+        this.col = col;
     }
 }

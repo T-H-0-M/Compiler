@@ -17,9 +17,12 @@ import java.util.Map;
  */
 public class SymbolTable {
     private Map<String, SymbolTableEntry> table;
+    private int globalOffset;
 
     public SymbolTable() {
         table = new HashMap<String, SymbolTableEntry>();
+        // this.globalOffset = 1000;
+        this.globalOffset = 0;
     }
 
     public void destroy() {
@@ -35,11 +38,22 @@ public class SymbolTable {
     }
 
     public void enter(SymbolTableEntry symbolTableEntry) {
-        table.put(symbolTableEntry.getName(), symbolTableEntry);
+        if (!symbolTableEntry.getName().equals("")) {
+            table.put(symbolTableEntry.getName(), symbolTableEntry);
+        }
     }
 
     public SymbolTableEntry find(String name) {
         return table.get(name);
+    }
+
+    public SymbolTableEntry findWithOffset(int offset) {
+        for (Map.Entry<String, SymbolTableEntry> i : this.table.entrySet()) {
+            if (i.getValue().getOffset() == offset) {
+                return this.table.get(i.getKey());
+            }
+        }
+        return null;
     }
 
     public SymbolTableEntry get_attributes(String name) {
@@ -51,6 +65,31 @@ public class SymbolTable {
             return true;
         }
         return false;
+    }
+
+    public DataType getDataType(String name) {
+        return table.get(name).getDataType();
+    }
+
+    // TODO: Currently only allocating in a global scope
+    public int allocateGlobal() {
+        int currentOffset = globalOffset;
+        globalOffset += 8;
+        return currentOffset;
+
+    }
+
+    public String getScope(String name) {
+        return "1";
+    }
+
+    public void setOffset(String name, int offset) {
+        SymbolTableEntry entry = table.get(name);
+        entry.setOffset(offset);
+    }
+
+    public int getOffset(String name) {
+        return table.get(name).getOffset();
     }
 
     public void declare(String name) {
@@ -65,7 +104,7 @@ public class SymbolTable {
         }
         StringBuilder result = new StringBuilder();
         for (Map.Entry<String, SymbolTableEntry> entry : table.entrySet()) {
-            result.append(entry.toString());
+            result.append(entry.toString() + "\n");
         }
         return result.toString();
     }

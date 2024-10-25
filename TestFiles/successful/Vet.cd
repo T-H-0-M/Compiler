@@ -115,12 +115,12 @@ begin
 
 
     /-- Main program
-    createDocs();
-    createPets();
+    createDocs()
+    createPets()
 
-    assignDoc(doctors[1].docId, pet[2].petId);
-    assignDoc(doctors[0].docId, pet[1].petId);
-    assignDoc(doctors[2].docId, pet[0].petId);
+    assignDoc(doctors[1].docId, pet[2].petId)
+    assignDoc(doctors[0].docId, pet[1].petId)
+    assignDoc(doctors[2].docId, pet[0].petId)
 
     printAssignments();
 

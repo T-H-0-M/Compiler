@@ -21,8 +21,10 @@ public class SymbolTableEntry {
     private boolean isInitialised;
     private DataType returnType;
     private boolean containsReturn;
+    private boolean programNamesMatch;
     private int line;
     private int col;
+    private int offset;
 
     /* -------------- Constructors -------------- */
     public SymbolTableEntry() {
@@ -36,6 +38,8 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
+        this.offset = 0;
     }
 
     public SymbolTableEntry(SymbolType symbolType) {
@@ -49,6 +53,8 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
+        this.offset = 0;
     }
 
     public SymbolTableEntry(String name) {
@@ -62,6 +68,8 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
+        this.offset = 0;
     }
 
     public SymbolTableEntry(String name, SymbolType symbolType, boolean isInitialised) {
@@ -75,6 +83,7 @@ public class SymbolTableEntry {
         this.containsReturn = false;
         this.line = 0;
         this.col = 0;
+        this.offset = 0;
     }
 
     public SymbolTableEntry(String name, SymbolType symbolType, String value, DataType dataType) {
@@ -86,6 +95,7 @@ public class SymbolTableEntry {
         this.isInitialised = false;
         this.line = 0;
         this.col = 0;
+        this.offset = 0;
     }
 
     public SymbolTableEntry(String name, SymbolType symbolType, String value, DataType dataType,
@@ -98,6 +108,8 @@ public class SymbolTableEntry {
         this.isInitialised = isInitialised;
         this.line = 0;
         this.col = 0;
+        this.programNamesMatch = false;
+        this.offset = 0;
     }
 
     /* -------------- Getters -------------- */
@@ -141,6 +153,14 @@ public class SymbolTableEntry {
         return this.col;
     }
 
+    public boolean getProgramsNameMatch() {
+        return this.programNamesMatch;
+    }
+
+    public int getOffset() {
+        return this.offset;
+    }
+
     /* -------------- Setters -------------- */
     public void setName(String name) {
         this.name = name;
@@ -180,6 +200,14 @@ public class SymbolTableEntry {
 
     public void setCol(int col) {
         this.col = col;
+    }
+
+    public void setProgramsNameMatch(boolean match) {
+        this.programNamesMatch = match;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 
     @Override
