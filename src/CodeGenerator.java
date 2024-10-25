@@ -334,14 +334,28 @@ public class CodeGenerator {
         Node left = children.get(0);
         int offset = symbolTable.find(left.getValue()).getOffset();
         Node right = children.get(1);
+        SymbolTableEntry rightEntry = symbolTable.find(right.getValue());
+        DataType type = rightEntry.getDataType();
+
         writeInstruction("LA1");
         writePaddedInstruction(offset, 4);
         writeInstruction("LV1");
         writePaddedInstruction(offset, 4);
-        if (right.getType().equals("NFLIT")) {
-            loadFloat(Double.valueOf(right.getValue()));
-        } else if (right.getType().equals("NILIT")) {
-            loadInteger(Integer.valueOf(right.getValue()));
+        if (right.getType().equals("NFLIT") || type == DataType.FLOAT) {
+            if (type != null) {
+                writeInstruction("LV1");
+                writePaddedInstruction(rightEntry.getOffset(), 4);
+            } else {
+                loadFloat(Double.valueOf(right.getValue()));
+            }
+        } else if (right.getType().equals("NILIT") || type == DataType.INTEGER) {
+            if (type != null) {
+
+                writeInstruction("LV1");
+                writePaddedInstruction(rightEntry.getOffset(), 4);
+            } else {
+                loadInteger(Integer.valueOf(right.getValue()));
+            }
         }
         writeInstruction(operation);
         writeInstruction("ST");

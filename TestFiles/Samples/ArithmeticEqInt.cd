@@ -1,7 +1,8 @@
-CD24 ArithmeticFloat
+
+CD24 ArithmeticEqInt
 /**
  * Program: Arithmetic
- * Description: This is a program that demonstrates all float arithmetic 
+ * Description: This is a program that demonstrates all integer arithmetic 
  * operators as well as variable declaration.
  *
  * Features:
@@ -15,21 +16,25 @@ CD24 ArithmeticFloat
 
 
 main
-i:float, j:float, k: float, l: float
+i:int, j:int, k: int, l: int
 
 begin
-    i = 15.6;
+    i = 15;
     print i;
-    j = 10.464;
+    j = 10;
     print j;
-    k = k + j;
+    l = 5;
+    print l;
+    k = 6;
     print k;
-    l = i - j;
+    k += j;
+    print k;
+   l -= i;
     print l;
-    j = k * i;
+    j *= l;
     print j;
-    l = j / k;
+    l /= j;
     print l;
 
 
-end CD24 ArithmeticFloat
+end CD24 ArithmeticEqInt
