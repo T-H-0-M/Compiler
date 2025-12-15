@@ -1,22 +1,10 @@
 # CD24 Compiler
 
-A Java-based compiler for the CD24 programming language.
+A Java-based compiler for the CD24 programming language that translates CD24 source code into SM24 machine code.
 
 ## Overview
 
-This project implements a compiler for the CD24 programming language using Java.
-The compiler translates CD24 source code into SM24 machine code.
-
-## Current Features
-
-## Eventual Features
-
-- Full support for the CD24 language specification
-- Efficient lexical analysis and parsing
-- Semantic analysis and type checking
-- Intermediate code generation
-- Optimization passes
-- Target code generation
+This is a complete 4-stage compiler implementation featuring lexical analysis, syntax parsing with AST generation, semantic analysis, and SM24 code generation. The compiler processes CD24 source files (.cd) and produces executable SM24 machine code (.sm24).
 
 ## Requirements
 
@@ -24,42 +12,100 @@ The compiler translates CD24 source code into SM24 machine code.
 
 ## Building the Compiler
 
-To build the compiler, run the following command in the project root directory:
+Navigate to the src/ directory and compile the main entry point:
 
-`javac A1.java`
+```bash
+cd src
+javac A3.java
+```
+
+Alternatively, use the provided build script which compiles, tests, and cleans up class files:
+
+```bash
+cd src
+./compile.sh
+```
 
 ## Usage
 
-After building the project, you can run the compiler as follows:
+Run the compiler from the src/ directory:
 
-`java A1 <path-to-source-file>`
+```bash
+java A3 <path-to-cd24-file>
+```
 
-Replace `<path-to-source-file>` with the path to your cd24 source code file.
-
-## Command-line Options
-
-<!--TODO: Complete this-->
+The compiler generates an .sm24 output file in the current directory.
 
 ## Example
 
-`java A1.jar  testfiles/source.cd`
+```bash
+cd src
+java A3 ../TestFiles/successful/Vet.cd
+```
 
-This command compiles the `source.cd` file with optimizations enabled and
-generates the SM24 machine code in a file named `output.sm24`.
+This compiles the Vet.cd program and generates the corresponding SM24 machine code.
 
-## Development Road Map
+## Language Features
 
-Currently there are 3 stages of development -
+The CD24 language supports:
 
-- [ ] Scanner
-- [ ] Parser
-- [ ] Code Generator
+**Data Types:**
+- Primitive types: int, float, bool
+- Composite types: structs, arrays
+- Constants and type definitions
 
-Currently in progress is the Scanner, its estimated completion date is the
-16/08/24.
+**Control Structures:**
+- Conditionals: if/elif/else, switch/case
+- Loops: for, repeat/until, do/while
 
-## Other Notes
+**Operations:**
+- Arithmetic: +, -, *, /, %, ^ (power)
+- Logical: and, or, xor, not
+- Relational: ==, !=, <, <=, >, >=
+- Assignment variants: =, +=, -=, *=, /=
 
-For writing CD24 code, check out the
-[CD24 code highlighting extension](https://github.com/T-H-0-M/CD24-Syntax-Highlighting)
+**I/O Operations:**
+- input - read variables
+- print - output expressions
+- printline - output with newline
 
+**Functions:**
+- Function declarations with parameters
+- Return values (or void)
+- Function calls with arguments
+
+## Compiler Architecture
+
+The compiler implements a traditional multi-stage design:
+
+1. **Scanner** (Lexical Analysis) - Tokenizes source code, detects lexical errors
+2. **Parser** (Syntax Analysis) - Recursive descent parser, builds Abstract Syntax Tree (AST)
+3. **Semantic Analyser** - Symbol table management, type checking, semantic validation
+4. **Code Generator** - SM24 machine code generation with stack-based operations
+
+## Test Suite
+
+The TestFiles/ directory contains a comprehensive test suite organised by category:
+
+- **successful/** - 9 programs that compile correctly
+- **lexical-failures/** - 4 test cases for scanner error detection
+- **syntactic-failures/** - 4 test cases for parser error detection
+- **semantic-failures/** - 4 test cases for semantic error detection
+
+## Project Structure
+
+```
+src/            Source code (A3.java, Scanner.java, Parser.java, SemanticAnalyser.java, CodeGenerator.java, etc.)
+TestFiles/      Test cases organized by category
+Documentation/  Grammar specification, First and Follow sets
+```
+
+## Documentation
+
+- **Grammar.txt** - Complete CD24 language grammar
+- **First Sets.txt** - First sets for parser implementation
+- **Follow Sets.txt** - Follow sets for parser implementation
+
+## Additional Resources
+
+For syntax highlighting when writing CD24 code, check out the [CD24 Syntax Highlighting Extension](https://github.com/T-H-0-M/CD24-Syntax-Highlighting)
