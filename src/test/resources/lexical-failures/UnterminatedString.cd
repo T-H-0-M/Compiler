@@ -1,0 +1,21 @@
+CD24 UnterminatedString
+/**
+ * Program: UnterminatedString
+ * Description: This is a program that is designed to fail lexically via 
+ * a string that is not terminated correctly.  
+ * 
+ * Features:
+ * - Declares a string and attempts to initialise it
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 15/08/2024
+ * Version: 1.0
+ **/
+main
+test: int 
+
+begin /-- Program will fail lexically here, 
+    hello = "hello bad string;
+                            
+end CD24 UnterminatedString

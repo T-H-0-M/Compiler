@@ -1,0 +1,26 @@
+CD24 SimpleWorking
+/**
+ * Program: Simple
+ * Description: This is the simplest working program I could come up with
+ * Features:
+ * - None
+ *
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+**/
+
+
+main
+i:int, j:int
+
+begin
+
+    i = 16;
+    j=10;
+    print i;
+    print j;
+
+
+end CD24 SimpleWorking

@@ -1,0 +1,33 @@
+CD24 Success
+/**
+ * Program: Arrays
+ * Description: This is a simple program that takes 3 numbers, multiplies 
+ * the first two and then subtracts the third
+ * 
+ * Features:
+ * - Populates an array, then adds and subtracts number from the array
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+ **/
+
+constants
+NUM = 10
+
+main
+num1: float, num2: int, num3: int
+
+begin
+    num1 = 2.0;
+    num2 = 6;
+    num3 = 5;
+
+    num1 += 5.0;
+    num1 *= 5.0;
+
+    num2 = num1 + num2;
+
+
+end CD24 Success

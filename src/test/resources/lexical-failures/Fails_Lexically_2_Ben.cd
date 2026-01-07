@@ -1,0 +1,15 @@
+/**
+ * This program adds two constant values and prints the result.
+ * This program fails lexically because the symbol _num1 is not valid.
+ **/
+
+CD24 FailsLexically2
+
+constants 
+    _num1 = 1 /--fails because _num1 is not a valid symbol
+    num2 = 2
+
+main
+    begin
+        printline _num1 + num2 /--fails because _num1 is not a valid symbol
+end CD24 FailsLexically2
