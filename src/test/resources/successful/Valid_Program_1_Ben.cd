@@ -1,0 +1,11 @@
+/**
+- Prints hello world to the console
+**/
+
+CD24 ValidProgram1
+
+main
+    begin
+        printline ("Hello World")
+    end
+CD24 ValidProgram1

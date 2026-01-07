@@ -1,0 +1,27 @@
+/**
+ * This program initializes an array of widgets and assigns each widget a unique ID.
+ * This program fails semantically because the loop will go out of bounds.
+ **/
+
+CD24 FailsSemSuccLexSyn1
+
+typedef
+    widget begin
+        id: int;
+    end
+
+    widgetArray begin
+        array [10] of widget;
+    end
+
+arraydef
+    widgets: widgetArray
+
+main
+    int i;
+
+    begin
+        for (i = 0; i < 12; i = i + 1) /-- fails semantically because the loop will go out of bounds
+            widgets[i].id = i;
+        end
+end CD24 FailsSemSuccLexSyn1

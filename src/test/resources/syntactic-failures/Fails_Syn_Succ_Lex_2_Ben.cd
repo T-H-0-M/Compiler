@@ -1,0 +1,14 @@
+/**
+ - This program calculates the difference between two numbers.
+ - This program fails semantically because it incorrectly inputs num2 before num1.
+ **/
+
+CD24 failsSynSuccLex2
+main
+    num1 : int;
+    num2: int;
+    begin
+        num1 = -1; /--fails syntactically because literals cannot be -1 ... '-' and '1' form two valid symbols not one
+        num2 = 2;
+        printline num1 + num2
+end CD24 failsSynSuccLex2

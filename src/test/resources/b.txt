@@ -1,0 +1,96 @@
+
+
+/-- Valid Delimiters
+; [ ] , ( ) = + - * / % ^ < > ! : . <= >= != == += -= *= /= 
+
+/-- Keywords - all valid
+cd24 constants typedef def arraydef main begin end array of func void const int float bool for repeat until do while if else elif switch case default break input print printline return not and or xor true false
+
+
+@ # ~ ` ?@@#  ?@$@#
+?@/@#
+?@-$$@#   
+:'|==&&_ 
+
+/-- Valid strings
+"The quick brown fox jumps over the lazy dog."
+"This is our commenting glyph /-- which is in a string lit"
+"                                                       "		/-- Blank String
+
+/-- invalid strings
+"this string wraps around a line so 
+should not be right"
+
+"This SHOULD NOT"BE RIGHT either";
+124
+3244
+244565
+24.995
+654.72
+
+/-- Challenges
+124.abc				/-- TINTG 124   TDOTT TSTRG "abc"
+124.345.789			/-- TREAL 124.456     TDOTT TINTG 789
+124.4bc				/-- test
+124,456.789
+124.O
+192.168.12.222 
+-22
+-0.124456
+Dan.COMP3290.newcastle,
+[COMP]
+(zero)
+(101+47)
+[3.14159 * 11 = x]
+<== %== *=== %/- "asdlkfj@"
+!!= =-= (/-=) >=.
+"String #@??\# Boo" 
+"#@??\# String ":/
+"#@??\#" 
+
+
+/-- Invalid challenges
+124.4@5.789			/-- two valid TREAL and a TUNDF @
+Energi$ed
+Unenerg|sed
+00.00..00.0
+.5
+
+/-- bad comments
+
+/- comment
+-/-/--/////-------////******
+
+/**
+Trick
+Catch */
+"CAUGHT YOU"
+**/
+
+/-- talkies
+>>= >> =>=>>
+<<= << =<=<<
+
+/-- No out of limits numbers
+
+2147483647 /-- Signed int
+4294967295 /-- Unsigned int
+
+1244567890
+
+0000000000000000009.9000000000000000000
+1244456778890124445244.1
+2.3333333333333333333333333
+1244456778890124445244.158588888888888865
+98988987866574746536354244524352432134213124.788788777768750
+457654567885656745676578690.467870766788959987899689543677489
+657543.898675
+
+
+$$$$$$$$ %$^#
+!! !!!=
+
+
+<<= >>=< 
+
+/** this is a comment

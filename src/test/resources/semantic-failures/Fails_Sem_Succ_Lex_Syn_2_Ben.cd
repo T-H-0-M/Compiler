@@ -1,0 +1,22 @@
+/**
+ * This program calculates the difference between two numbers.
+ * This program fails semantically because it incorrectly inputs num2 before num1.
+ **/
+
+CD24 FailsSemSuccLexSyn2
+
+main
+    num1: int;
+    num2: int;
+    result: int;
+
+    begin
+        printline "calculates num1 - num2";
+        printline "enter num1";
+        input num2; /-- fails semantically because num2 is inputted first
+        printline "enter num1";
+        input num1;
+        result = num1 - num2;
+        print result;
+    end
+CD24 FailsSemSuccLexSyn1

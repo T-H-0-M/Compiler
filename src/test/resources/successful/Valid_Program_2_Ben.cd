@@ -1,0 +1,17 @@
+/**
+ - This program demonstrates the use of constants and arithmetic operations in CD24 language.
+ - The main function calculates the sum of _num1 and num2 and prints the result.
+ **/
+
+CD24 ValidProgram2
+
+main
+
+    constants 
+        num1 = 1
+        num2 = 2
+
+    begin
+        printline num1 + num2
+    end
+CD24 ValidProgram2

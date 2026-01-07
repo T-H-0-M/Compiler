@@ -1,0 +1,12 @@
+/**
+ * This program adds two constant values and prints the result.
+ * This program fails lexically because the symbol _num1 is not valid.
+ **/
+
+CD24 FailsLexically1
+
+main
+    begin
+        printline#("Hello World") /--Fails because # is not a valid symbol
+    end
+CD24 FailsLexically1

@@ -1,0 +1,22 @@
+/**
+ - This program defines a frog and prints the word "Ribbit".
+ - This program fails semantically because hasUdders is not a field of frog
+ **/
+
+CD24 failsSynSuccLex1
+typedef frog
+    begin
+        legs: int;
+        croak: string;
+        hasEggs: bool;
+    end
+
+main
+    creature: frog;
+
+    begin
+        creature.legs = 4;  
+        creature.croak = "Ribbit";
+        creature.hasUdders = true;  /-- fails syntactically because hasUdders is not a field of frog
+        printline creature.croak;
+end CD24 failsSynSuccLex1

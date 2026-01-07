@@ -9,29 +9,36 @@ This is a complete 4-stage compiler implementation featuring lexical analysis, s
 ## Requirements
 
 - Java Development Kit (JDK) 17 or higher
+- Apache Maven 3.6 or higher
 
 ## Building the Compiler
 
-Navigate to the src/ directory and compile the main entry point:
+Compile the project using Maven:
 
 ```bash
-cd src
-javac A3.java
+mvn clean compile
 ```
 
-Alternatively, use the provided build script which compiles, tests, and cleans up class files:
+Create an executable JAR:
 
 ```bash
-cd src
-./compile.sh
+mvn package
 ```
+
+This will create `cd24-compiler-0.1.0.jar` in the `target/` directory.
 
 ## Usage
 
-Run the compiler from the src/ directory:
+Run the compiler using the JAR file:
 
 ```bash
-java A3 <path-to-cd24-file>
+java -jar target/cd24-compiler-0.1.0.jar <path-to-cd24-file>
+```
+
+Or run directly via Maven:
+
+```bash
+mvn exec:java -Dexec.mainClass="com.compiler.cd24.A3" -Dexec.args="<path-to-cd24-file>"
 ```
 
 The compiler generates an .sm24 output file in the current directory.
@@ -39,8 +46,12 @@ The compiler generates an .sm24 output file in the current directory.
 ## Example
 
 ```bash
-cd src
-java A3 ../TestFiles/successful/Vet.cd
+# Using JAR
+mvn package
+java -jar target/cd24-compiler-0.1.0.jar src/test/resources/successful/Vet.cd
+
+# Using Maven exec
+mvn exec:java -Dexec.mainClass="com.compiler.cd24.A3" -Dexec.args="src/test/resources/successful/Vet.cd"
 ```
 
 This compiles the Vet.cd program and generates the corresponding SM24 machine code.
@@ -95,9 +106,19 @@ The TestFiles/ directory contains a comprehensive test suite organised by catego
 ## Project Structure
 
 ```
-src/            Source code (A3.java, Scanner.java, Parser.java, SemanticAnalyser.java, CodeGenerator.java, etc.)
-TestFiles/      Test cases organized by category
-Documentation/  Grammar specification, First and Follow sets
+src/
+├── main/java/com/compiler/cd24/
+│   ├── A3.java                    # Main entry point
+│   ├── lexer/                     # Lexical analysis (Scanner, Tokeniser, Token)
+│   ├── parser/                    # Syntax analysis (Parser, ParseException)
+│   ├── semantic/                  # Semantic analysis (SemanticAnalyser, SymbolTable, etc.)
+│   ├── codegen/                   # Code generation (CodeGenerator)
+│   └── util/                      # Shared utilities (Node, DataType, OutputController)
+└── test/resources/                # Test files (.cd programs)
+    ├── successful/
+    ├── lexical-failures/
+    ├── syntactic-failures/
+    └── semantic-failures/
 ```
 
 ## Documentation

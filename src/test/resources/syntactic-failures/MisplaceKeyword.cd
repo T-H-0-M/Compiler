@@ -1,0 +1,30 @@
+CD24 MisplacedKeyword
+/**
+ * Program: MisplacedKeyword
+ * Description: This is a program that is designed to fail syntactically via 
+ * a misplaced keyword
+ * 
+ * Features:
+ * - Declares an int and initialises it. An if statement is then used to check 
+ * if the int is 0
+ * 
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 04/08/2024
+ * Version: 1.0
+ **/
+main
+i: int
+
+begin
+    i = 0;
+    if(i == 0)
+        print "is not zero";
+    end 
+    else    /-- Program will fail syntactically here, due to the if statement being closed before the else keyword
+        print "is zero";
+    end 
+
+    return i;
+
+end CD24 MisplacedKeyword

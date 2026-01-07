@@ -1,0 +1,16 @@
+/**
+- Description: This program subtracts two numbers and prints the result.
+ **/
+
+CD24 ValidProgram3
+
+main
+    num1 : int;
+    num2: int;
+
+    begin
+        num1 = 1;
+        num2 = 2;
+        printline num1 - num2
+    end
+CD24 ValidProgram3

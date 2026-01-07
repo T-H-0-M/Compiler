@@ -1,0 +1,5 @@
+/**
+- This is the simplest program that is syntaxtically correct
+- It does nothing but it is a valid CD24 program
+**/
+CD24 simplestProgram main begin end CD24 simplestProgram

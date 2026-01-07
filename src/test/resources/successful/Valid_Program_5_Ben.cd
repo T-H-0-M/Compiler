@@ -1,0 +1,66 @@
+/** 
+ - This program allows the user to calculate distance, time, or speed based on the given inputs.
+ - It provides three functions: calculateDistance, calculateTime, and calculateSpeed.
+ - The user is prompted to choose a function and then enter the required inputs.
+ - The program then performs the calculation and prints the result.
+ - If an invalid choice is made, an error message is displayed.
+**/
+CD24 ValidProgram5
+
+/-- Function to calculate distance based on speed and time
+func calculateDistance (speed: int, time: int) : int 
+begin
+    return speed * time
+end
+
+/-- Function to calculate time based on speed and distance
+func calculateTime (speed: int, distance: int) : int
+begin
+    return distance / speed
+end
+
+/-- Function to calculate speed based on distance and time
+func calculateSpeed (distance: int, time: int) : int
+begin
+    return distance / time
+end
+
+main
+    chosenFunction: int;
+    speed: int;
+    time: int;
+    distance: int;
+
+    begin
+        /-- Prompt the user to choose a function
+        printline "choose a function, 1 for distance, 2 for time, 3 for speed"
+        input chosenFunction;
+
+        switch (chosenFunction)
+            begin
+                case 1:
+                    /-- Calculate and print distance
+                    printline "enter speed"
+                    input speed
+                    printline "enter time"
+                    input time
+                    printline calculateDistance(speed, time)
+                case 2:
+                    /-- Calculate and print time
+                    printline "enter speed"
+                    input speed
+                    printline "enter distance"
+                    input distance
+                    printline calculateTime(speed, distance)
+                case 3:
+                    /-- Calculate and print speed
+                    printline "enter distance"
+                    input distance
+                    printline "enter time"
+                    input time
+                    printline calculateSpeed(distance, time)
+                default:
+                    /-- Invalid choice
+                    printline "invalid choice"
+            end
+end CD24 ValidProgram5

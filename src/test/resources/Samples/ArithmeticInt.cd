@@ -1,0 +1,35 @@
+CD24 ArithmeticInt
+/**
+ * Program: Arithmetic
+ * Description: This is a program that demonstrates all integer arithmetic 
+ * operators as well as variable declaration.
+ *
+ * Features:
+ * - None
+ *
+ * Author: Thomas Bandy
+ * Student ID: 3374048
+ * Date: 25/10/2024
+ * Version: 1.0
+**/
+
+
+main
+i:int, j:int, k: int, l: int
+
+begin
+    i = 15;
+    print i;
+    j = 10;
+    print j;
+    k = k + j;
+    print k;
+    l = i - j;
+    print l;
+    j = k * i;
+    print j;
+    l = j / i;
+    print l;
+
+
+end CD24 ArithmeticInt
